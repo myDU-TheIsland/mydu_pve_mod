@@ -12,8 +12,19 @@ public static class StatsRecorder
     {
         public long MinTime { get; private set; } = long.MaxValue;
         public long MaxTime { get; private set; } = long.MinValue;
-        public double Average => _times.Average();
-        
+        public double Average
+        {
+            get
+            {
+                if (_times.Count == 0)
+                {
+                    return 0;
+                }
+                
+                return _times.Average();
+            }
+        }
+
         private readonly Queue<long> _times = new(50);
 
         // Method to add new time occurrence
