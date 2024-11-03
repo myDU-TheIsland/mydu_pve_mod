@@ -8,24 +8,30 @@ namespace Mod.DynamicEncounters;
 
 public static class StatsRecorder
 {
+    private static object _lock = new();
+
     public class Stat
     {
         public long MinTime { get; private set; } = long.MaxValue;
         public long MaxTime { get; private set; } = long.MinValue;
+
         public double Average
         {
             get
             {
                 try
                 {
-                    var timesList = _times.ToList();
-                
-                    if (timesList.Count == 0)
+                    lock (_lock)
                     {
-                        return 0;
+                        var timesList = _times.ToList();
+
+                        if (timesList.Count == 0)
+                        {
+                            return 0;
+                        }
+
+                        return timesList.Average();
                     }
-                
-                    return timesList.Average();
                 }
                 catch (Exception)
                 {
@@ -85,7 +91,7 @@ public static class StatsRecorder
                 return stat;
             });
     }
-    
+
     public static void Record(string name, long time)
     {
         CustomStats.AddOrUpdate(
@@ -105,7 +111,7 @@ public static class StatsRecorder
 
     public static ConcurrentDictionary<BehaviorTaskCategory, Stat> GetStats() => Stats;
     public static ConcurrentDictionary<string, Stat> GetCustomStats() => CustomStats;
-    
+
     public static void ClearAll()
     {
         foreach (var kvp in Stats)
