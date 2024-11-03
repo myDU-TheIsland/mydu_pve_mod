@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Numerics;
 using System.Threading.Tasks;
 using BotLib.Generated;
@@ -80,8 +81,24 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                 time = TimePoint.Now(),
                 grounded = false,
             };
-            
-            await ModBase.Bot.Req.ConstructUpdate(cUpdate);
+
+            _ = Task.Run(async () =>
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+                
+                try
+                {
+                    await ModBase.Bot.Req.ConstructUpdate(cUpdate);
+                }
+                catch (Exception e)
+                {
+                    ModBase.ServiceProvider.CreateLogger<FollowTargetBehaviorV2>()
+                        .LogError(e, "Failed to send Construct Update Fire-And-Forget");
+                }
+                
+                StatsRecorder.Record("ConstructUpdate", sw.ElapsedMilliseconds);
+            });
             
             return;
         }
@@ -216,7 +233,11 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
             try
             {
-                await ModBase.Bot.Reconnect();
+                await ModBase.Bot.Factory.Connect(
+                    ModBase.Bot.LoginInformations,
+                    allowExisting: true
+                );
+                // await ModBase.Bot.Reconnect();
             }
             catch (Exception e)
             {
