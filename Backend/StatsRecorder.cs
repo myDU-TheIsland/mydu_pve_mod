@@ -16,12 +16,21 @@ public static class StatsRecorder
         {
             get
             {
-                if (_times.Count == 0)
+                try
+                {
+                    var timesList = _times.ToList();
+                
+                    if (timesList.Count == 0)
+                    {
+                        return 0;
+                    }
+                
+                    return timesList.Average();
+                }
+                catch (Exception)
                 {
                     return 0;
                 }
-                
-                return _times.ToList().Average();
             }
         }
 
