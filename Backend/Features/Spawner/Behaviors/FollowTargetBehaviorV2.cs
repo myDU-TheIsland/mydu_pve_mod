@@ -110,25 +110,29 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
             acceleration *= 1 + Math.Abs(velToTargetDot);
         }
         
-        var brakingDistance = VelocityHelper.CalculateBrakingDistance(
-            context.Velocity.Size(), 
-            acceleration
-        );
-        var shouldBrake = VelocityHelper.ShouldStartBraking(
-            context.Position.Value.ToVector3(),
-            context.GetTargetMovePosition().ToVector3(),
-            context.Velocity.ToVector3(),
-            acceleration
-        );
+        // var brakingDistance = VelocityHelper.CalculateBrakingDistance(
+        //     context.Velocity.Size(), 
+        //     acceleration
+        // );
 
         var accelForward = forward * acceleration * context.RealismFactor;
         var accelMove = moveDirection * acceleration * (1 - context.RealismFactor);
 
         var accelV = accelForward + accelMove;
         
-        if (context.IsMoveModeWaypoint() && shouldBrake)
+        if (context.IsMoveModeWaypoint())
         {
-            context.SetBraking(true);
+            var shouldBrake = VelocityHelper.ShouldStartBraking(
+                context.Position.Value.ToVector3(),
+                context.GetTargetMovePosition().ToVector3(),
+                context.Velocity.ToVector3(),
+                acceleration
+            );
+
+            if (shouldBrake)
+            {
+                context.SetBraking(true);
+            }
         }
 
         if (context.IsBraking())
@@ -138,14 +142,6 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
         }
 
         var velocity = context.Velocity;
-
-        _logger.LogDebug(
-            "Construct 1 {Construct} | {DT} | Vel = {Vel:N0}kph | Accel = {Accel}", 
-            constructId, 
-            context.DeltaTime,
-            velocity.Size() * 3.6d,
-            accelV
-        );
         
         var position = VelocityHelper.LinearInterpolateWithVelocity(
             npcPos,
@@ -166,23 +162,9 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
             deltaV = deltaV.NormalizeSafe() * maxDeltaV;
             velocity = v0 + deltaV;
             position = npcPos + velocity * context.DeltaTime;
-            
-            _logger.LogDebug("Construct {Construct} Delta V Discrepancy {DV}. V set to {V}Kph", 
-                constructId, 
-                deltaV.Size() * 3.6d,
-                velocity
-            );
         }
         
         context.SetProperty(BehaviorContext.V0Property, velocity);
-
-        _logger.LogDebug(
-            "Construct 2 {Construct} | {DT} |  Vel = {Vel:N0}kph | Accel = {Accel}", 
-            constructId, 
-            context.DeltaTime,
-            velocity.Size() * 3.6d,
-            accelV
-        );
         
         context.Velocity = velocity;
         
@@ -225,7 +207,36 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                 grounded = false,
             };
             
-            await ModBase.Bot.Req.ConstructUpdate(cUpdate);
+            _ = Task.Run(async () =>
+            {
+                var sw = new Stopwatch();
+                sw.Start();
+
+                try
+                {
+                    await ModBase.Bot.Req.ConstructUpdate(cUpdate);
+                }
+                catch (BusinessException bex)
+                {
+                    if (bex.error.code == ErrorCode.InvalidSession)
+                    {
+                        ModBase.ServiceProvider.CreateLogger<FollowTargetBehaviorV2>()
+                            .LogError(bex, "Invalid Session - Reconnecting Bot");
+                        
+                        await ModBase.Bot.Factory.Connect(
+                            ModBase.Bot.LoginInformations,
+                            allowExisting: true
+                        );
+                    }
+                }
+                catch (Exception e)
+                {
+                    ModBase.ServiceProvider.CreateLogger<FollowTargetBehaviorV2>()
+                        .LogError(e, "Failed to send Construct Update Fire-And-Forget");
+                }
+                
+                StatsRecorder.Record("ConstructUpdate", sw.ElapsedMilliseconds);
+            });
         }
         catch (BusinessException be)
         {
