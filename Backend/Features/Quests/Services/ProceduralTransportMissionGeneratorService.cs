@@ -144,17 +144,18 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
         {
             multiplier++;
         }
+        
+        var pickupInSafeZone = await _constructService.IsInSafeZone(pickupConstructInfo.Info.rData.constructId);
+        var dropInSafeZone = await _constructService.IsInSafeZone(dropConstructInfo.Info.rData.constructId);
+        var isSafe = pickupInSafeZone && dropInSafeZone;
 
         var quantaMultiplier = MissionProceduralGenerationConfig.TransportQuantaMultiplier;
-        var quantaReward = (long)(distanceSu * 10000d * 100d * quantaMultiplier * multiplier);
+        var unsafeMultiplier = isSafe ? 1 : MissionProceduralGenerationConfig.UnsafeMultiplier;
+        var quantaReward = (long)(distanceSu * 10000d * 100d * quantaMultiplier * multiplier * unsafeMultiplier);
         var influenceReward = 1;
 
         var kergonQuantity = new LitreQuantity(3000);
 
-        var pickupInSafeZone = await _constructService.IsInSafeZone(pickupConstructInfo.Info.rData.constructId);
-        var dropInSafeZone = await _constructService.IsInSafeZone(dropConstructInfo.Info.rData.constructId);
-        var isSafe = pickupInSafeZone && dropInSafeZone;
-        
         return ProceduralQuestOutcome.Created(
             new ProceduralQuestItem(
                 questGuid,

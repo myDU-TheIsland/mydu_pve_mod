@@ -137,16 +137,17 @@ public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider 
         {
             multiplier++;
         }
-
-        var quantaMultiplier = MissionProceduralGenerationConfig.ReverseTransportMultiplier;
-        var quantaReward = (long)(distanceSu * 10000d * 100d * quantaMultiplier * multiplier);
-        var influenceReward = 1;
-
-        var kergonQuantity = new LitreQuantity(3000);
         
         var pickupInSafeZone = await _constructService.IsInSafeZone(pickupConstructInfo.Info.rData.constructId);
         var dropInSafeZone = await _constructService.IsInSafeZone(deliverConstructInfo.Info.rData.constructId);
         var isSafe = pickupInSafeZone && dropInSafeZone;
+
+        var quantaMultiplier = MissionProceduralGenerationConfig.ReverseTransportMultiplier;
+        var unsafeMultiplier = isSafe ? 1 : MissionProceduralGenerationConfig.UnsafeMultiplier;
+        var quantaReward = (long)(distanceSu * 10000d * 100d * quantaMultiplier * multiplier * unsafeMultiplier);
+        var influenceReward = 1;
+
+        var kergonQuantity = new LitreQuantity(3000);
         
         return ProceduralQuestOutcome.Created(
             new ProceduralQuestItem(
