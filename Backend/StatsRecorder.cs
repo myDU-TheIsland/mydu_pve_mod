@@ -21,7 +21,7 @@ public static class StatsRecorder
                     return 0;
                 }
                 
-                return _times.Average();
+                return _times.ToList().Average();
             }
         }
 
