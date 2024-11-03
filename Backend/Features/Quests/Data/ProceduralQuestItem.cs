@@ -12,6 +12,7 @@ public class ProceduralQuestItem(
     string type,
     int seed,
     string title,
+    bool safe,
     ProceduralQuestProperties properties,
     IEnumerable<QuestTaskItem> taskItems
 )
@@ -21,6 +22,7 @@ public class ProceduralQuestItem(
     public string Type { get; } = type;
     public int Seed { get; } = seed;
     public string Title { get; } = title;
+    public bool Safe { get; } = safe;
     public ProceduralQuestProperties Properties { get; } = properties;
     public IEnumerable<QuestTaskItem> TaskItems { get; } = taskItems;
     public double Distance => CalculateTotalDistance();

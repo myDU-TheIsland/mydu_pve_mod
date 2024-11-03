@@ -25,6 +25,9 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
     private readonly ILogger<ProceduralQuestGeneratorService> _logger =
         provider.CreateLogger<ProceduralQuestGeneratorService>();
 
+    private readonly IConstructService _constructService =
+        provider.GetRequiredService<IConstructService>();
+
     public async Task<ProceduralQuestOutcome> GenerateAsync(
         PlayerId playerId,
         FactionId factionId,
@@ -147,6 +150,10 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
         var influenceReward = 1;
 
         var kergonQuantity = new LitreQuantity(3000);
+
+        var pickupInSafeZone = await _constructService.IsInSafeZone(pickupConstructInfo.Info.rData.constructId);
+        var dropInSafeZone = await _constructService.IsInSafeZone(dropConstructInfo.Info.rData.constructId);
+        var isSafe = pickupInSafeZone && dropInSafeZone;
         
         return ProceduralQuestOutcome.Created(
             new ProceduralQuestItem(
@@ -155,6 +162,7 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
                 questType,
                 questSeed,
                 missionTemplate.Title,
+                isSafe,
                 new ProceduralQuestProperties
                 {
                     RewardTextList =
@@ -220,7 +228,7 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
                             Type = "assert-task-completion",
                             FactionId = factionId,
                             TerritoryId = territoryId,
-                            ConstructId = pickupConstructInfo.Info.rData.constructId,
+                            ConstructId = dropConstructInfo.Info.rData.constructId,
                             Properties =
                             {
                                 { "questId", questGuid },

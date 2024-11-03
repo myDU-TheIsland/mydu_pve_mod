@@ -315,7 +315,7 @@ public class QuestController : Controller
         public string Title { get; set; }
         public string Type { get; set; }
         public bool Accepted { get; set; }
-        public bool Safe { get; set; } = true; // TODO grab that from quest later
+        public bool Safe { get; set; }
 
         public IEnumerable<QuestTaskViewModel> Tasks { get; set; }
         public IEnumerable<string> Rewards { get; set; }
@@ -328,6 +328,7 @@ public class QuestController : Controller
             Tasks = item.TaskItems.Select(t => new QuestTaskViewModel(t));
             Rewards = item.Properties.RewardTextList;
             Accepted = accepted;
+            Safe = item.Safe;
         }
 
         public QuestViewModel(PlayerQuestItem item)

@@ -24,6 +24,9 @@ public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider 
 {
     private readonly ILogger<ProceduralQuestGeneratorService> _logger =
         provider.CreateLogger<ProceduralQuestGeneratorService>();
+    
+    private readonly IConstructService _constructService =
+        provider.GetRequiredService<IConstructService>();
 
     public async Task<ProceduralQuestOutcome> GenerateAsync(
         PlayerId playerId,
@@ -141,6 +144,10 @@ public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider 
 
         var kergonQuantity = new LitreQuantity(3000);
         
+        var pickupInSafeZone = await _constructService.IsInSafeZone(pickupConstructInfo.Info.rData.constructId);
+        var dropInSafeZone = await _constructService.IsInSafeZone(deliverConstructInfo.Info.rData.constructId);
+        var isSafe = pickupInSafeZone && dropInSafeZone;
+        
         return ProceduralQuestOutcome.Created(
             new ProceduralQuestItem(
                 questGuid,
@@ -148,6 +155,7 @@ public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider 
                 questType,
                 questSeed,
                 missionTemplate.Title,
+                isSafe,
                 new ProceduralQuestProperties
                 {
                     RewardTextList =
@@ -213,7 +221,7 @@ public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider 
                             Type = "assert-task-completion",
                             FactionId = factionId,
                             TerritoryId = territoryId,
-                            ConstructId = pickupConstructInfo.Info.rData.constructId,
+                            ConstructId = deliverConstructInfo.Info.rData.constructId,
                             Properties =
                             {
                                 { "questId", questGuid },
