@@ -220,13 +220,10 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                 {
                     if (bex.error.code == ErrorCode.InvalidSession)
                     {
-                        ModBase.ServiceProvider.CreateLogger<FollowTargetBehaviorV2>()
-                            .LogError(bex, "Invalid Session - Reconnecting Bot");
-                        
-                        await ModBase.Bot.Factory.Connect(
-                            ModBase.Bot.LoginInformations,
-                            allowExisting: true
-                        );
+                        ConstructBehaviorContextCache.RaiseBotDisconnected();
+                        ModBase.ServiceProvider
+                            .CreateLogger<FollowTargetBehaviorV2>()
+                            .LogError(bex, "Need to reconnect the Bot");
                     }
                 }
                 catch (Exception e)
@@ -244,11 +241,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
             try
             {
-                await ModBase.Bot.Factory.Connect(
-                    ModBase.Bot.LoginInformations,
-                    allowExisting: true
-                );
-                // await ModBase.Bot.Reconnect();
+                await ModBase.Bot.Reconnect();
             }
             catch (Exception e)
             {
