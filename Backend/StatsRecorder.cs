@@ -8,7 +8,7 @@ namespace Mod.DynamicEncounters;
 
 public static class StatsRecorder
 {
-    private static object _lock = new();
+    private static readonly object Lock = new();
 
     public class Stat
     {
@@ -21,7 +21,7 @@ public static class StatsRecorder
             {
                 try
                 {
-                    lock (_lock)
+                    lock (Lock)
                     {
                         var timesList = _times.ToList();
 
@@ -40,7 +40,7 @@ public static class StatsRecorder
             }
         }
 
-        private readonly Queue<long> _times = new(50);
+        private readonly ConcurrentQueue<long> _times = new();
 
         // Method to add new time occurrence
         public void AddTime(long time)
@@ -48,7 +48,7 @@ public static class StatsRecorder
             if (_times.Count == 50)
             {
                 // Discard the oldest time
-                _times.Dequeue();
+                _times.TryDequeue(out _);
             }
 
             // Add new time
