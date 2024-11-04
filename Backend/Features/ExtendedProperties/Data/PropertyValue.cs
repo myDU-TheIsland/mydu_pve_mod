@@ -6,7 +6,7 @@ public class PropertyValue(object? value) : IPropertyValue
 {
     public object? Value { get; } = value;
 
-    public T? As<T>()
+    public T? ValueAs<T>()
     {
         return (T)Value;
     }

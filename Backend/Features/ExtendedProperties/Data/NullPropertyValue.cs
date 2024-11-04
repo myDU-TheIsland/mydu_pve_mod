@@ -6,7 +6,7 @@ public class NullPropertyValue : IPropertyValue
 {
     public object? Value => default;
 
-    public T? As<T>()
+    public T? ValueAs<T>()
     {
         return default;
     }

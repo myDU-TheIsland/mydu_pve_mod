@@ -21,10 +21,51 @@ public class TraitRepository(IServiceProvider provider) : ITraitRepository
 
         var result = (await db.QueryAsync<DbRowTraitProp>(
             """
-            SELECT T.name trait_name, T.description trait_description, TP.* 
+            SELECT T.name trait_name, T.description trait_description, TP.*, TP.default_value as value 
             FROM public.mod_trait_properties TP
             INNER JOIN public.mod_trait T ON (T.id = TP.trait_id)
             """
+        )).ToList();
+
+        var traitMap = new Dictionary<string, ITrait>();
+        
+        foreach (var row in result)
+        {
+            var trait = MapTrait(row);
+            var prop = MapTraitProperties(row);
+
+            traitMap.TryAdd(row.trait_name, trait);
+            traitMap[row.trait_name].Properties.TryAdd(row.name, prop);
+        }
+
+        return new TraitCollection(
+            traitMap
+        );
+    }
+    
+    public async Task<ITraitCollection> GetElementTraits(string elementTypeName)
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        var result = (await db.QueryAsync<DbRowTraitProp>(
+            """
+            SELECT 
+            	T.name trait_name, 
+            	T.description trait_description, 
+            	TP.id,
+            	TP.trait_id,
+            	TP.name,
+            	TP.type,
+            	COALESCE(ETP.value, TP.default_value) as value
+            FROM public.mod_trait_properties TP
+            INNER JOIN public.mod_trait T ON (T.id = TP.trait_id)
+            INNER JOIN public.mod_element_trait ET ON ET.trait_id = T.id
+            LEFT JOIN public.mod_element_trait_properties ETP ON ETP.trait_property_id = TP.id
+            WHERE ET.element_name = @elementName
+            ORDER BY trait_name, TP.name
+            """,
+            new { elementName = elementTypeName }
         )).ToList();
 
         var traitMap = new Dictionary<string, ITrait>();
@@ -60,7 +101,7 @@ public class TraitRepository(IServiceProvider provider) : ITraitRepository
                 new TraitId(row.trait_id),
                 row.id
             ),
-            row.default_value == null ? new NullPropertyValue() : new PropertyValue(row.default_value)
+            row.value == null ? new NullPropertyValue() : new PropertyValue(row.value)
         );
     }
     
@@ -72,6 +113,6 @@ public class TraitRepository(IServiceProvider provider) : ITraitRepository
         public Guid trait_id { get; set; }
         public string name { get; set; }
         public string type { get; set; }
-        public string? default_value { get; set; }
+        public string? value { get; set; }
     }
 }

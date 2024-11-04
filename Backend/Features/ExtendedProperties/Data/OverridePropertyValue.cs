@@ -7,9 +7,9 @@ public class OverridePropertyValue(
     IPropertyValue propVal
 ) : IPropertyValue
 {
-    public object? Value => propVal.As<object>() ?? traitPropVal.As<object>();
+    public object? Value => propVal.ValueAs<object>() ?? traitPropVal.ValueAs<object>();
 
-    public T? As<T>()
+    public T? ValueAs<T>()
     {
         return (T?)Value;
     }

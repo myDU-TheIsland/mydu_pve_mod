@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
+using Mod.DynamicEncounters.Features.ExtendedProperties.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using NQ;
@@ -27,12 +28,23 @@ public class WarpController : Controller
         var provider = ModBase.ServiceProvider;
         var spawner = provider.GetRequiredService<IBlueprintSpawnerService>();
         var taskQueueService = provider.GetRequiredService<ITaskQueueService>();
+        var traitRepository = provider.GetRequiredService<ITraitRepository>();
+        var elementTraitMap = (await traitRepository.GetElementTraits(request.ElementTypeName)).Map();
+
+        var blueprintFileName = "Warp_Signature.json";
+        if (elementTraitMap.TryGetValue("supercruise", out var trait))
+        {
+            if (trait.Properties.TryGetValue("blueprintFileName", out var prop))
+            {
+                blueprintFileName = prop.Prop.ValueAs<string>();
+            }
+        }
 
         var constructId = await spawner.SpawnAsync(
             new SpawnArgs
             {
                 Folder = "pve",
-                File = "Warp_Signature.json",
+                File = blueprintFileName,
                 Position = request.Position,
                 IsUntargetable = true,
                 OwnerEntityId = new EntityId{playerId = request.PlayerId},
@@ -70,6 +82,6 @@ public class WarpController : Controller
     {
         public ulong PlayerId { get; set; }
         public Vec3 Position { get; set; }
-        public string BeaconElement { get; set; } = "SupercruiseBeacon";
+        public string ElementTypeName { get; set; } = "WarpDrive";
     }
 }

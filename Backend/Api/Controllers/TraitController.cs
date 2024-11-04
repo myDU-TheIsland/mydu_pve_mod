@@ -1,29 +1,36 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.ExtendedProperties.Interfaces;
+using Mod.DynamicEncounters.Features.ExtendedProperties.Repository;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
 
 [Route("trait")]
-public class TraitController(IServiceProvider provider) : Controller
+public class TraitController : Controller
 {
+    private readonly ITraitRepository _traitRepository = ModBase.ServiceProvider.GetRequiredService<ITraitRepository>();
+    
     [Route("")]
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        var traitRepository = provider.GetRequiredService<ITraitRepository>();
-
-        return Ok((await traitRepository.Get()).Map());
+        return Ok((await _traitRepository.Get()).Map());
     }
     
     [Route("element-type/{elementTypeName}")]
     [HttpGet]
     public async Task<IActionResult> GetTraitOfElementType(string elementTypeName)
     {
-        var traitRepository = provider.GetRequiredService<ITraitRepository>();
+        return Ok((await _traitRepository.GetElementTraits(elementTypeName)).Map());
+    }
 
-        return Ok((await traitRepository.Get()).Map());
+    [Route("")]
+    [HttpDelete]
+    public IActionResult ClearCache()
+    {
+        CachedTraitRepository.Clear();
+
+        return Ok();
     }
 }
