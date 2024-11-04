@@ -18,7 +18,7 @@ public static class ConstructBehaviorContextCache
         {
             var now = DateTime.UtcNow;
             
-            if (LastTimeBotDisconnected != null && now - LastTimeBotDisconnected > TimeSpan.FromSeconds(5))
+            if (LastTimeBotDisconnected == null || now - LastTimeBotDisconnected > TimeSpan.FromSeconds(5))
             {
                 IsBotDisconnected = true;
                 LastTimeBotDisconnected = DateTime.UtcNow;
