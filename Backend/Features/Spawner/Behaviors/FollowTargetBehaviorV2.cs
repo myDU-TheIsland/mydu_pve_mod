@@ -206,6 +206,12 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                 time = _timePoint,
                 grounded = false,
             };
+
+            if (ConstructBehaviorContextCache.IsBotDisconnected)
+            {
+                await ModBase.Bot.Reconnect();
+                ConstructBehaviorContextCache.RaiseBotReconnected();
+            }
             
             _ = Task.Run(async () =>
             {
