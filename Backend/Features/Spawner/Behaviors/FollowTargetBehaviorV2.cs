@@ -38,11 +38,6 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
     public async Task TickAsync(BehaviorContext context)
     {
-        if (!context.IsAlive)
-        {
-            return;
-        }
-
         // first time initialize position
         if (!context.Position.HasValue)
         {
@@ -110,11 +105,6 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
             acceleration *= 1 + Math.Abs(velToTargetDot);
         }
         
-        // var brakingDistance = VelocityHelper.CalculateBrakingDistance(
-        //     context.Velocity.Size(), 
-        //     acceleration
-        // );
-
         var accelForward = forward * acceleration * context.RealismFactor;
         var accelMove = moveDirection * acceleration * (1 - context.RealismFactor);
 
@@ -149,7 +139,8 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
             ref velocity,
             accelV,
             prefab.DefinitionItem.MaxSpeedKph / 3.6d,
-            context.DeltaTime
+            context.DeltaTime,
+            handleOvershoot: false
         );
 
         context.TryGetProperty(BehaviorContext.V0Property, out var v0, velocity);

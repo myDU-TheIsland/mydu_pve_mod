@@ -10,9 +10,11 @@ public abstract class HighTickModLoop : ThreadHandle
     private StopWatch _stopWatch = new();
     private DateTime _lastTickTime;
     private readonly int _framesPerSecond;
+    private const double FixedDeltaTime = 1 / 20d;
+    private TimeSpan _accumulatedTime = TimeSpan.Zero;
 
     protected HighTickModLoop(
-        int framesPerSecond, 
+        int framesPerSecond,
         ThreadId threadId,
         IThreadManager threadManager,
         CancellationToken token
@@ -40,8 +42,15 @@ public abstract class HighTickModLoop : ThreadHandle
             var waitSeconds = Math.Max(0, fpsSeconds - deltaTime.TotalSeconds);
             Thread.Sleep(TimeSpan.FromSeconds(waitSeconds));
         }
-            
-        await Tick(deltaTime);
+
+        _accumulatedTime += deltaTime;
+        var fixedDeltaSpan = TimeSpan.FromSeconds(FixedDeltaTime);
+        
+        while (_accumulatedTime >= fixedDeltaSpan)
+        {
+            await Tick(fixedDeltaSpan);
+            _accumulatedTime -= fixedDeltaSpan;
+        }
 
         _stopWatch = new StopWatch();
         _stopWatch.Start();

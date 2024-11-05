@@ -31,7 +31,7 @@ public class BehaviorContext(
     public double DeltaTime
     {
         get => _deltaTime;
-        set => _deltaTime = Math.Clamp(value, 1 / 60f, 1 / 20f);
+        set => _deltaTime = Math.Clamp(value, 1 / 60f, 1);
     }
 
     public const string AutoTargetMovePositionEnabledProperty = "AutoTargetMovePositionEnabled";
