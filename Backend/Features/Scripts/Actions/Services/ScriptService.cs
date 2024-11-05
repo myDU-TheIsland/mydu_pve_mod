@@ -15,9 +15,6 @@ namespace Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 
 public class ScriptService(IServiceProvider serviceProvider) : IScriptService
 {
-    private readonly IScriptLoaderService _scriptLoaderService = 
-        serviceProvider.GetRequiredService<IScriptLoaderService>();
-
     private readonly ILogger<ScriptService> _logger = serviceProvider.CreateLogger<ScriptService>();
 
     public async Task<ScriptActionResult> ExecuteScriptAsync(string name, ScriptContext context)
@@ -41,6 +38,11 @@ public class ScriptService(IServiceProvider serviceProvider) : IScriptService
 
         var scriptActionFactory = serviceProvider.GetRequiredService<IScriptActionFactory>();
         var action = scriptActionFactory.Create(scriptAction);
+
+        foreach (var kvp in scriptAction.Properties)
+        {
+            context.Properties.TryAdd(kvp.Key, kvp.Value);
+        }
 
         return await action.ExecuteAsync(context);
     }
