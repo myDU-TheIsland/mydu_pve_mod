@@ -218,7 +218,8 @@ public class ThreadManager : IThreadManager
                         this,
                         cts.Token,
                         20,
-                        BehaviorTaskCategory.MovementPriority
+                        BehaviorTaskCategory.MovementPriority,
+                        true
                     ).Tick
                 );
             case ThreadId.CommandHandler:

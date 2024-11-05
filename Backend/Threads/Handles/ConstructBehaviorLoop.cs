@@ -33,8 +33,9 @@ public class ConstructBehaviorLoop : HighTickModLoop
         IThreadManager threadManager,
         CancellationToken token,
         int framesPerSecond,
-        BehaviorTaskCategory category
-    ) : base(framesPerSecond, threadId, threadManager, token)
+        BehaviorTaskCategory category,
+        bool fixedStep = false
+    ) : base(framesPerSecond, threadId, threadManager, token, fixedStep)
     {
         _category = category;
         _provider = ModBase.ServiceProvider;
