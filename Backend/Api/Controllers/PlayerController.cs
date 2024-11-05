@@ -84,6 +84,7 @@ public class PlayerController : Controller
     {
         var provider = ModBase.ServiceProvider;
 
+        var bank = provider.GetGameplayBank();
         var playerService = provider.GetRequiredService<IPlayerService>();
 
         var map = await playerService.GetAllElementSkins(playerId);
@@ -95,7 +96,7 @@ public class PlayerController : Controller
             playerId,
             filteredSkins.Select(x => new IPlayerService.ElementSkinItem
             {
-                ElementTypeId = x.ElementTypeId,
+                ElementTypeId = bank.GetDefinition(x.ElementTypeName)!.Id,
                 Skin = x.Skin
             })
         );
