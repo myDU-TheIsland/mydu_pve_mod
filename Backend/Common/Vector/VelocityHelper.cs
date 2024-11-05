@@ -29,7 +29,9 @@ public static class VelocityHelper
         ref Vec3 velocity,
         Vec3 acceleration,
         double clampSize,
-        double deltaTime)
+        double deltaTime,
+        bool handleOvershoot = false
+        )
     {
         // Calculate direction and distance to the end
         var direction = new Vec3
@@ -81,11 +83,14 @@ public static class VelocityHelper
             newPosition = new Vec3 { x = end.x, y = end.y, z = end.z };
         }
 
-        // Ensure we do not overshoot the end position
-        if ((newPosition - start).Size() > distance)
+        if (handleOvershoot)
         {
-            newPosition = end;
-            velocity = new Vec3 { x = 0, y = 0, z = 0 }; // Stop the velocity at the end
+            // Ensure we do not overshoot the end position
+            if ((newPosition - start).Size() > distance)
+            {
+                newPosition = end;
+                velocity = new Vec3 { x = 0, y = 0, z = 0 }; // Stop the velocity at the end
+            }
         }
 
         return newPosition;
