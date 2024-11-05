@@ -143,7 +143,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
         var velocity = context.Velocity;
         
-        var position = VelocityHelper.LinearInterpolateWithVelocity(
+        var position = VelocityHelper.LinearInterpolateWithAcceleration(
             npcPos,
             targetMovePos,
             ref velocity,
