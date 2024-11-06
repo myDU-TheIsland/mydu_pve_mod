@@ -61,7 +61,7 @@ public class TraitRepository(IServiceProvider provider) : ITraitRepository
             FROM public.mod_trait_properties TP
             INNER JOIN public.mod_trait T ON (T.id = TP.trait_id)
             INNER JOIN public.mod_element_trait ET ON ET.trait_id = T.id
-            LEFT JOIN public.mod_element_trait_properties ETP ON ETP.trait_property_id = TP.id
+            LEFT JOIN public.mod_element_trait_properties ETP ON ETP.trait_property_id = TP.id AND ET.id = ETP.element_trait_id
             WHERE ET.element_name = @elementName
             ORDER BY trait_name, TP.name
             """,
