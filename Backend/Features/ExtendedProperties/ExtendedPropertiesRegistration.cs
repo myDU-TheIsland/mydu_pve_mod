@@ -8,6 +8,6 @@ public static class ExtendedPropertiesRegistration
 {
     public static void RegisterExtendedProperties(this IServiceCollection services)
     {
-        services.AddSingleton<ITraitRepository>(p => new CachedTraitRepository(new TraitRepository(p)));
+        services.AddSingleton<ITraitRepository, TraitRepository>();
     }
 }

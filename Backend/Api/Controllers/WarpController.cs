@@ -100,7 +100,7 @@ public class WarpController : Controller
 
         if (!elementTraitMap.TryGetValue("supercruise", out var trait))
         {
-            return BadRequest("Supercruise trait not found");
+            return BadRequest($"{request.ElementTypeName} does not have Supercruise");
         }
 
         trait.TryGetPropertyValue("blueprintFileName", out var blueprintFileName, "Warp_Signature.json");
