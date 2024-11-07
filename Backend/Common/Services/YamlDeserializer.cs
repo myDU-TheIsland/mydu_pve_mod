@@ -1,7 +1,8 @@
+using Mod.DynamicEncounters.Common.Interfaces;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
-namespace Mod.DynamicEncounters.Common;
+namespace Mod.DynamicEncounters.Common.Services;
 
 public class YamlDeserializer : IYamlDeserializer
 {

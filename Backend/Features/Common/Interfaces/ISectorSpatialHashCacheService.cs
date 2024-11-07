@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using Mod.DynamicEncounters.Common.Vector;
+using Mod.DynamicEncounters.Vector.Data;
 
 namespace Mod.DynamicEncounters.Features.Common.Interfaces;
 

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 
-namespace Mod.DynamicEncounters.Common.Vector;
+namespace Mod.DynamicEncounters.Vector.Helpers;
 
 public static class VelocityHelper
 {

@@ -1,6 +1,6 @@
 ﻿using NQ;
 
-namespace Mod.DynamicEncounters.Common.Vector;
+namespace Mod.DynamicEncounters.Vector.Data;
 
 public struct LongVector3(long x, long y, long z)
 {

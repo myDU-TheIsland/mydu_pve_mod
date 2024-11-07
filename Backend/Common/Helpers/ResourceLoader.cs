@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 
-namespace Mod.DynamicEncounters.Common;
+namespace Mod.DynamicEncounters.Common.Helpers;
 
 public static class ResourceLoader
 {

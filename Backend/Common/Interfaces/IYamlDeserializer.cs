@@ -1,4 +1,4 @@
-﻿namespace Mod.DynamicEncounters.Common;
+﻿namespace Mod.DynamicEncounters.Common.Interfaces;
 
 public interface IYamlDeserializer
 {

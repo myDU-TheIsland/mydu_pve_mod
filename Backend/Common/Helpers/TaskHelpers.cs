@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace Mod.DynamicEncounters.Common;
+namespace Mod.DynamicEncounters.Common.Helpers;
 
 public static class TaskHelpers
 {

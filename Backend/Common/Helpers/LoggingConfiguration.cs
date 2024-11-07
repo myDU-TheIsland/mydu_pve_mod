@@ -7,7 +7,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Mod.DynamicEncounters.Common;
+namespace Mod.DynamicEncounters.Common.Helpers;
 
 public static class LoggingConfiguration
 {

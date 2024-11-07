@@ -1,6 +1,7 @@
-﻿using NQ;
+﻿using Mod.DynamicEncounters.Vector.Data;
+using NQ;
 
-namespace Mod.DynamicEncounters.Common.Vector;
+namespace Mod.DynamicEncounters.Vector.Helpers;
 
 public static class LongVectorExtensions
 {

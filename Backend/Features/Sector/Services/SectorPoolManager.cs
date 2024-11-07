@@ -6,7 +6,8 @@ using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common;
-using Mod.DynamicEncounters.Common.Vector;
+using Mod.DynamicEncounters.Common.Helpers;
+using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Events.Data;
@@ -17,6 +18,7 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Data;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using Mod.DynamicEncounters.Vector.Helpers;
 using NQ;
 using NQ.Interfaces;
 

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using BotLib.Generated;
 using Microsoft.AspNetCore.Mvc;
 using Mod.DynamicEncounters.Common;
+using Mod.DynamicEncounters.Common.Data;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQ.Interfaces;

@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Data;
 
-namespace Mod.DynamicEncounters.Common;
+namespace Mod.DynamicEncounters.Common.Helpers;
 
 public static class TaskExtensions
 {

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Mod.DynamicEncounters.Api.Config;
 using Mod.DynamicEncounters.Common;
+using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features;
 using Newtonsoft.Json;
 using NQutils.Logging;

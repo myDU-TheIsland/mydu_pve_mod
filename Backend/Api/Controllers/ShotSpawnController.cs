@@ -5,6 +5,7 @@ using Backend;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Common;
+using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Helpers;

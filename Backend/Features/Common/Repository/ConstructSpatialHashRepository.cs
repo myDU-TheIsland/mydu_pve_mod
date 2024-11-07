@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Common;
-using Mod.DynamicEncounters.Common.Vector;
+using Mod.DynamicEncounters.Common.Data;
 using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Services;
 using Mod.DynamicEncounters.Helpers;
+using Mod.DynamicEncounters.Vector.Data;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Common.Repository;

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Mod.DynamicEncounters.Common.Vector;
 using Mod.DynamicEncounters.Features.Sector.Services;
+using Mod.DynamicEncounters.Vector.Data;
 
 namespace Mod.DynamicEncounters.Features.Common.Services;
 

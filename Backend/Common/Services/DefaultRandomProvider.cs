@@ -1,6 +1,7 @@
 using System;
+using Mod.DynamicEncounters.Common.Interfaces;
 
-namespace Mod.DynamicEncounters.Common;
+namespace Mod.DynamicEncounters.Common.Services;
 
 public class DefaultRandomProvider : IRandomProvider
 {

@@ -3,6 +3,7 @@ using Backend;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common;
+using Mod.DynamicEncounters.Common.Interfaces;
 using Orleans;
 
 namespace Mod.DynamicEncounters.Helpers;

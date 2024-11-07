@@ -4,7 +4,7 @@ using System.Numerics;
 using System.Text;
 using NQ;
 
-namespace Mod.DynamicEncounters.Common.Vector;
+namespace Mod.DynamicEncounters.Vector.Helpers;
 
 public static class PositionExtensions
 {

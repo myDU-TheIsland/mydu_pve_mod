@@ -7,6 +7,7 @@ using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Features.Sector.Data;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
+using NameSanitationHelper = Mod.DynamicEncounters.Common.Helpers.NameSanitationHelper;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
 

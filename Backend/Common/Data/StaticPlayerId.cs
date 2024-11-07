@@ -1,4 +1,4 @@
-﻿namespace Mod.DynamicEncounters.Common;
+﻿namespace Mod.DynamicEncounters.Common.Data;
 
 public static class StaticPlayerId
 {

@@ -1,8 +1,8 @@
-﻿namespace Mod.DynamicEncounters.Common;
-
-using System;
+﻿using System;
 using System.Security.Cryptography;
 using System.Text;
+
+namespace Mod.DynamicEncounters.Common.Helpers;
 
 /// <summary>
 /// Helper methods for working with <see cref="Guid"/>.
