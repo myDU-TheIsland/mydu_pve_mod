@@ -63,41 +63,6 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
         context.TryGetProperty(BehaviorContext.EnginePowerProperty, out double enginePower, 1);
         
-        if (enginePower <= 0)
-        {
-            var cUpdate = new ConstructUpdate
-            {
-                pilotId = ModBase.Bot.PlayerId,
-                constructId = constructId,
-                rotation = context.Rotation,
-                position = npcPos,
-                worldAbsoluteVelocity = new Vec3(),
-                worldRelativeVelocity = new Vec3(),
-                time = TimePoint.Now(),
-                grounded = false,
-            };
-
-            _ = Task.Run(async () =>
-            {
-                var sw = new Stopwatch();
-                sw.Start();
-                
-                try
-                {
-                    await ModBase.Bot.Req.ConstructUpdate(cUpdate);
-                }
-                catch (Exception e)
-                {
-                    ModBase.ServiceProvider.CreateLogger<FollowTargetBehaviorV2>()
-                        .LogError(e, "Failed to send Construct Update Fire-And-Forget");
-                }
-                
-                StatsRecorder.Record("ConstructUpdate", sw.ElapsedMilliseconds);
-            });
-            
-            return;
-        }
-        
         var acceleration = prefab.DefinitionItem.AccelerationG * 9.81f * enginePower;
         
         if (velToTargetDot < 0)
@@ -125,7 +90,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
             }
         }
 
-        if (context.IsBraking())
+        if (enginePower <= 0 || context.IsBraking())
         {
             // reverse accel to brake
             accelV = (context.Velocity.NormalizeSafe() * acceleration).Reverse();
