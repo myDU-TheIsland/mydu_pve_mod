@@ -16,8 +16,6 @@ public class CommandHandlerLoop(IThreadManager threadManager, CancellationToken 
     private readonly ILogger<CommandHandlerLoop> _logger = ModBase.ServiceProvider.CreateLogger<CommandHandlerLoop>();
     private readonly IPendingCommandRepository _pendingCommandRepository =
         ModBase.ServiceProvider.GetRequiredService<IPendingCommandRepository>();
-    private readonly IPlayerPartyCommandHandler _commandHandler =
-        ModBase.ServiceProvider.GetRequiredService<IPlayerPartyCommandHandler>();
 
     private DateTime _refDate = DateTime.UtcNow;
     
@@ -37,7 +35,19 @@ public class CommandHandlerLoop(IThreadManager threadManager, CancellationToken 
             
             try
             {
-                await _commandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                if (commandItem.Message.StartsWith("@g"))
+                {
+                    var playerPartyCommandHandler =
+                        ModBase.ServiceProvider.GetRequiredService<IPlayerPartyCommandHandler>();
+                    await playerPartyCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                }
+
+                if (commandItem.Message.StartsWith("@kills npc"))
+                {
+                    var npcKillsCommandHandler =
+                        ModBase.ServiceProvider.GetRequiredService<INpcKillsCommandHandler>();
+                    await npcKillsCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                }
             }
             catch (Exception e)
             {

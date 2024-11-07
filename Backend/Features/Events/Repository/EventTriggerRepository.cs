@@ -74,6 +74,24 @@ public class EventTriggerRepository(IServiceProvider provider) : IEventTriggerRe
         );
     }
 
+    public async Task<long> GetCountOfEventsByPlayerId(ulong playerId, string eventName)
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        return await db.ExecuteScalarAsync<long>(
+            """
+            SELECT COUNT(0)
+            FROM public.mod_event WHERE player_id = @playerId AND event_name = @eventName;
+            """,
+            new
+            {
+                playerId = (long)playerId,
+                eventName
+            }
+        );
+    }
+
     private EventTriggerItem MapToItem(DbRow row)
     {
         return new EventTriggerItem(row.event_name, row.on_trigger_script)

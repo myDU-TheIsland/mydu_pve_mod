@@ -11,4 +11,5 @@ public interface IEventTriggerRepository
     Task<HashSet<Guid>> GetTrackedEventTriggers(IEnumerable<Guid> eventTriggerIds, ulong playerId);
 
     Task AddTriggerTrackingAsync(ulong playerId, Guid eventTriggerId);
+    Task<long> GetCountOfEventsByPlayerId(ulong playerId, string eventName);
 }
