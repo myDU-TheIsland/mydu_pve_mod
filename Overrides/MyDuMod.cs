@@ -29,6 +29,7 @@ public class MyDuMod : IMod
     private WeaponGrainOverrides _weaponGrainOverrides;
     private readonly PlayerRateLimiter _playerRateLimiter = new(8);
     private IMyDuInjectionService _injection;
+    private ICachedConstructDataService _cachedConstructDataService;
 
     public string GetName()
     {
@@ -42,7 +43,8 @@ public class MyDuMod : IMod
 
         _logger = provider.GetRequiredService<ILogger<MyDuMod>>();
         _injection = new MyDuInjectionService();
-        _weaponGrainOverrides = new WeaponGrainOverrides(_provider);
+        _cachedConstructDataService = new CachedConstructDataService();
+        _weaponGrainOverrides = new WeaponGrainOverrides(_provider, _cachedConstructDataService);
 
         var hookCallManager = provider.GetRequiredService<IHookCallManager>();
         hookCallManager.Register(
@@ -136,6 +138,13 @@ public class MyDuMod : IMod
 
     private async Task TriggerActionInternal(ulong playerId, ModAction action)
     {
+        if (action.actionId == (ulong)ActionType.PushConstructData)
+        {
+            var pushConstructData = new PushConstructDataAction(_cachedConstructDataService);
+            await pushConstructData.HandleAction(playerId, action);
+            return;
+        }
+        
         _playerRateLimiter.TrackRequest(playerId);
         if (_playerRateLimiter.ExceededRateLimit(playerId))
         {

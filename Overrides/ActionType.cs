@@ -28,5 +28,6 @@ public enum ActionType
     InviteToParty = 111,
     CreateParty = 112,
     AcceptInvite = 113,
+    PushConstructData = 114,
     Callback = 1999999
 }

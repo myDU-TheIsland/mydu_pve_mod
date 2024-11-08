@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Backend;
@@ -11,6 +12,7 @@ using MathNet.Spatial.Units;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mod.DynamicEncounters.Overrides.Common.Interfaces;
 using NQ;
 using NQ.Interfaces;
 using NQutils.Def;
@@ -22,7 +24,7 @@ using ErrorCode = NQ.ErrorCode;
 
 namespace Mod.DynamicEncounters.Overrides.Overrides.WeaponGrain;
 
-public class WeaponGrainOverrides(IServiceProvider provider)
+public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDataService cachedConstructDataService)
 {
     private static readonly MemoryCache TimerCache = new(
         new MemoryCacheOptions
@@ -37,8 +39,13 @@ public class WeaponGrainOverrides(IServiceProvider provider)
         WeaponFire weaponFire
     )
     {
+        var sw = new Stopwatch();
+        sw.Start();
+
         var bank = provider.GetRequiredService<IGameplayBank>();
         var sql = provider.GetRequiredService<ISql>();
+        var logger = provider.GetRequiredService<ILoggerFactory>()
+            .CreateLogger<WeaponGrainOverrides>();
 
         var weaponInfo = await sql.GetElement(weaponFire.weaponId, fetchLinks: false);
         var weaponUnit = bank.GetBaseObject<WeaponUnit>(weaponInfo.elementType);
@@ -52,7 +59,11 @@ public class WeaponGrainOverrides(IServiceProvider provider)
             return await WeaponFireStasis(context, playerId, weaponFire);
         }
 
-        return await WeaponFireDamaging(context, playerId, weaponFire);
+        var result = await WeaponFireDamaging(context, playerId, weaponFire);
+
+        logger.LogInformation("WeaponFireOnce Time: {Time}ms", sw.ElapsedMilliseconds);
+
+        return result;
     }
 
     private async Task<WeaponFireResult> WeaponFireStasis(
@@ -72,8 +83,6 @@ public class WeaponGrainOverrides(IServiceProvider provider)
         var bank = provider.GetRequiredService<IGameplayBank>();
         var sceneGraph = provider.GetRequiredService<IScenegraph>();
         var weaponAim = provider.GetRequiredService<IElementWeaponAim>();
-
-        var playerGrain = orleans.GetPlayerGrain(playerId);
 
         var constructGrain = orleans.GetConstructGrain(weaponFire.constructId);
         var constructFightGrain = orleans.GetConstructFightGrain(weaponFire.constructId);
@@ -144,14 +153,12 @@ public class WeaponGrainOverrides(IServiceProvider provider)
             position = weaponInfo.position,
             rotation = weaponInfo.rotation
         });
-        var constructOwner = await constructGrain.GetOwner();
 
         var bboxCenterWorld = await sceneGraph.ResolveWorldLocation(new RelativeLocation()
         {
             constructId = weaponFire.targetId,
             position = weaponFire.bboxCenterLocal
         });
-        var playerName = (await playerGrain.GetPlayerInfo()).name;
         var result = new WeaponFireResult
         {
             constructId = weaponFire.constructId
@@ -347,7 +354,6 @@ public class WeaponGrainOverrides(IServiceProvider provider)
         });
 
         var hitRatio = await CalculateHitRatio(
-            provider,
             playerId,
             orleans,
             weaponRay,
@@ -552,13 +558,13 @@ public class WeaponGrainOverrides(IServiceProvider provider)
         };
     }
 
-    private static Line3D ComputeWeaponDirection(Ray weaponRay, ElementInfo weaponInfo)
+    private Line3D ComputeWeaponDirection(Ray weaponRay, ElementInfo weaponInfo)
     {
         return new Line3D((Point3D)weaponInfo.position + ((Quaternion)weaponInfo.rotation).Rotate(weaponRay.start),
             (Point3D)weaponInfo.position + ((Quaternion)weaponInfo.rotation).Rotate(weaponRay.end));
     }
 
-    private static async Task<(double, Angle)> CalculateDistance(
+    private async Task<(double, Angle)> CalculateDistance(
         IScenegraph sceneGraph,
         Ray weaponRay,
         WeaponFire weaponFire,
@@ -580,8 +586,7 @@ public class WeaponGrainOverrides(IServiceProvider provider)
         return (weaponRayLocal.StartPoint.DistanceTo(relativeLocation.position), angle);
     }
 
-    private static async Task<double> CalculateHitRatio(
-        IServiceProvider provider,
+    private async Task<double> CalculateHitRatio(
         PlayerId playerId,
         IClusterClient orleans,
         Ray weaponRay,
@@ -633,8 +638,22 @@ public class WeaponGrainOverrides(IServiceProvider provider)
         var targetConstructGrain = orleans.GetConstructGrain(weaponFire.targetId);
 
         var (vec3, v) = await constructGrain.GetConstructVelocity();
-        var degrees = ComputeAngularVelocity(localTargetPosition, toLocalWeaponRotation.Rotate(
-                (await targetConstructGrain.GetConstructVelocity()).Item1 - vec3),
+        var targetConstructData = cachedConstructDataService.Get(weaponFire.targetId);
+        
+        Vec3 targetVelocity;
+        if (targetConstructData != null)
+        {
+            targetVelocity = targetConstructData.Velocity;
+        }
+        else
+        {
+            targetVelocity = (await targetConstructGrain.GetConstructVelocity()).Item1;
+        }
+
+        var velocityDelta = targetVelocity - vec3;
+        var degrees = ComputeAngularVelocity(
+            localTargetPosition,
+            toLocalWeaponRotation.Rotate(velocityDelta),
             toLocalWeaponRotation.Rotate(v)
         ).Degrees;
 
@@ -661,7 +680,7 @@ public class WeaponGrainOverrides(IServiceProvider provider)
         // logger.LogInformation("falloffValue = {V}", falloffValue);
         // logger.LogInformation("optimalValue = {V}", optimalValue);
         // logger.LogInformation("valueOrDefault3 = {V}", valueOrDefault3);
-        
+
         var hitRatio = accuracy * num3 * angleFactor * distanceFactor * factor;
 
         return hitRatio;

@@ -17,6 +17,7 @@ public static class ModServiceProvider
         var serviceCollection = new ServiceCollection();
 
         serviceCollection.AddSingleton<IMyDuInjectionService, MyDuInjectionService>();
+        serviceCollection.AddSingleton<ICachedConstructDataService, CachedConstructDataService>();
 
         Internal = serviceCollection.BuildServiceProvider();
     }

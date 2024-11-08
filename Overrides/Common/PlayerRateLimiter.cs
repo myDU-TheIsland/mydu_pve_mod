@@ -13,7 +13,7 @@ public class PlayerRateLimiter(int requestsPerSecond)
         }
     );
 
-    private readonly int _requestsPerSecond = Math.Clamp(requestsPerSecond, 1, 10);
+    private readonly int _requestsPerSecond = Math.Clamp(requestsPerSecond, 1, 40);
 
     public void TrackRequest(PlayerId playerId)
     {
