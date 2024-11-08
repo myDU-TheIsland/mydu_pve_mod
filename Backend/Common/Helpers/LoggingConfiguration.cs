@@ -33,10 +33,11 @@ public static class LoggingConfiguration
     {
         var log = Config.Instance.log;
 
-#if !DEBUG
-        log.level = LogEventLevel.Warning;
-        log.console_level = LogEventLevel.Warning;
-#endif
+        if (EnvironmentVariableHelper.IsProduction())
+        {
+            log.level = LogEventLevel.Warning;
+            log.console_level = LogEventLevel.Warning;
+        }
 
         var interpolatedStringHandler = new DefaultInterpolatedStringHandler(38, 2);
         interpolatedStringHandler.AppendLiteral("configuring log system from ");

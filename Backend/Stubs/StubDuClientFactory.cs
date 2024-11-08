@@ -10,6 +10,8 @@ using BotLib.Protocols;
 using BotLib.Protocols.GrpcClient;
 using BotLib.Protocols.Queuing;
 using BotLib.Utils;
+using Mod.DynamicEncounters.Common.Data;
+using Mod.DynamicEncounters.Common.Helpers;
 using NQ;
 using Serilog;
 
@@ -40,18 +42,19 @@ public class StubDuClientFactory : IDuClientFactory
         
         QueueingStreamedData queueingResponse = await Queuing.WaitInQueue(li);
         
-#if !DEBUG
-        queueingResponse.info.frontUri =
-            EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
-                EnvironmentVariableNames.OverrideQueueingUrl,
-                "queueing:9630"
-            );
-        queueingResponse.info.grpcInfo.address =
-            EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
-                EnvironmentVariableNames.OverrideGrpcUrl,
-                "10.5.0.5:9210"
-            );
-#endif
+        if (EnvironmentVariableHelper.IsProduction())
+        {
+            queueingResponse.info.frontUri =
+                EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
+                    EnvironmentVariableNames.OverrideQueueingUrl,
+                    "queueing:9630"
+                );
+            queueingResponse.info.grpcInfo.address =
+                EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
+                    EnvironmentVariableNames.OverrideGrpcUrl,
+                    "10.5.0.5:9210"
+                );
+        }
         
         Console.WriteLine($"Connection: {queueingResponse.info.grpcInfo.address}");
         
@@ -85,9 +88,12 @@ public class StubDuClientFactory : IDuClientFactory
             CancellationToken ct2 = new CancellationToken();
             lr = await c2.PlayerCreationData(req2, ct2);
 
-#if !DEBUG
-            lr.itemBankUrl = lr.itemBankUrl.Replace("http://localhost:9630", Environment.GetEnvironmentVariable("QUEUEING"));
-#endif
+            if (EnvironmentVariableHelper.IsProduction())
+            {
+                lr.itemBankUrl = lr.itemBankUrl.Replace("http://localhost:9630",
+                    Environment.GetEnvironmentVariable("QUEUEING"));
+            }
+
             Console.WriteLine($"Item Bank URL CREATION NEEDED: {lr.itemBankUrl}");
             
             await ItemBankGetter.InitOrUpdate(lr);
@@ -108,10 +114,13 @@ public class StubDuClientFactory : IDuClientFactory
             }
             
             Console.WriteLine($"OLD Item Bank URL NOT CREATION: {lr.itemBankUrl}");
-            
-#if !DEBUG
-            lr.itemBankUrl = lr.itemBankUrl.Replace("http://localhost:9630", Environment.GetEnvironmentVariable("QUEUEING"));
-#endif
+
+            if (EnvironmentVariableHelper.IsProduction())
+            {
+                lr.itemBankUrl = lr.itemBankUrl.Replace("http://localhost:9630",
+                    Environment.GetEnvironmentVariable("QUEUEING"));
+            }
+
             Console.WriteLine($"OVERRIDE Item Bank URL NOT CREATION: {lr.itemBankUrl}");
 
             await ItemBankGetter.InitOrUpdate(loginresponse.optState);

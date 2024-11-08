@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BotLib.Protocols.Queuing;
+using Mod.DynamicEncounters.Common.Data;
+using Mod.DynamicEncounters.Common.Helpers;
 using Newtonsoft.Json;
 using NQ;
 using NQutils.Exceptions;
@@ -123,19 +125,19 @@ public class StubRealQueuing : IQueuing
 
                 Console.WriteLine($"GRPC Info 1: {data.info.grpcInfo.address}");
 
-
-#if !DEBUG
-                data.info.frontUri =
-                    EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
-                        EnvironmentVariableNames.OverrideQueueingUrl,
-                        "queueing:9630"
-                    );
-                data.info.grpcInfo.address =
-                    EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
-                        EnvironmentVariableNames.OverrideGrpcUrl,
-                        "10.5.0.5:9210"
-                    );
-#endif
+                if (EnvironmentVariableHelper.IsProduction())
+                {
+                    data.info.frontUri =
+                        EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
+                            EnvironmentVariableNames.OverrideQueueingUrl,
+                            "queueing:9630"
+                        );
+                    data.info.grpcInfo.address =
+                        EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
+                            EnvironmentVariableNames.OverrideGrpcUrl,
+                            "10.5.0.5:9210"
+                        );
+                }
 
                 return data;
             case "text/event-stream":
@@ -143,18 +145,19 @@ public class StubRealQueuing : IQueuing
 
                 Console.WriteLine($"GRPC Info 2: {eventStreamData.info.grpcInfo.address}");
 
-#if !DEBUG
-                eventStreamData.info.frontUri =
-                    EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
-                        EnvironmentVariableNames.OverrideQueueingUrl,
-                        "queueing:9630"
-                    );
-                eventStreamData.info.grpcInfo.address =
-                    EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
-                        EnvironmentVariableNames.OverrideGrpcUrl,
-                        "10.5.0.5:9210"
-                    );
-#endif
+                if (EnvironmentVariableHelper.IsProduction())
+                {
+                    eventStreamData.info.frontUri =
+                        EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
+                            EnvironmentVariableNames.OverrideQueueingUrl,
+                            "queueing:9630"
+                        );
+                    eventStreamData.info.grpcInfo.address =
+                        EnvironmentVariableHelper.GetEnvironmentVarOrDefault(
+                            EnvironmentVariableNames.OverrideGrpcUrl,
+                            "10.5.0.5:9210"
+                        );
+                }
 
                 return eventStreamData;
             default:
