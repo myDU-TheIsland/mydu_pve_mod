@@ -63,6 +63,7 @@ public class NotifierBehavior(ulong constructId, IPrefab prefab) : IConstructBeh
         
         // TODO consider a better place for this in the future
         context.ClearExpiredTimerProperties();
+        context.Effects.CleanupExpired();
 
         try
         {

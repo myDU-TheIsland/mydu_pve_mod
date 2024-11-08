@@ -19,10 +19,10 @@ public class PrefabItem
     public List<string> InitialBehaviors { get; set; } = [];
     public List<string> AmmoItems { get; set; } = [];
     public List<string> WeaponItems { get; set; } = [];
-    public float AccelerationG { get; set; } = 15;
+    public double AccelerationG { get; set; } = 15;
     public float RotationSpeed { get; set; } = 0.5f;
-    public float MaxSpeedKph { get; set; } = 20000;
-    public float TargetDistance { get; set; } = 20000;
+    public double MaxSpeedKph { get; set; } = 20000;
+    public double TargetDistance { get; set; } = 20000;
     public long FactionId { get; set; }
     public double RealismFactor { get; set; } = 0.25d;
     public int MaxWeaponCount { get; set; } = 2;

@@ -63,7 +63,8 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
         context.TryGetProperty(BehaviorContext.EnginePowerProperty, out double enginePower, 1);
         
-        var acceleration = prefab.DefinitionItem.AccelerationG * 9.81f * enginePower;
+        var accelerationRaw = prefab.DefinitionItem.AccelerationG * 9.81f;
+        var acceleration = accelerationRaw * enginePower;
         
         if (velToTargetDot < 0)
         {
@@ -90,37 +91,44 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
             }
         }
 
+        var velocity = context.Velocity;
+        Vec3 position;
+        
         if (enginePower <= 0 || context.IsBraking())
         {
-            // reverse accel to brake
-            accelV = (context.Velocity.NormalizeSafe() * acceleration).Reverse();
+            position = VelocityHelper.ApplyBraking(
+                npcPos,
+                ref velocity,   
+                accelerationRaw,
+                context.DeltaTime
+            );
         }
-
-        var velocity = context.Velocity;
-        
-        var position = VelocityHelper.LinearInterpolateWithAcceleration(
-            npcPos,
-            targetMovePos,
-            ref velocity,
-            accelV,
-            prefab.DefinitionItem.MaxSpeedKph / 3.6d,
-            context.DeltaTime,
-            handleOvershoot: false
-        );
-
-        context.TryGetProperty(BehaviorContext.V0Property, out var v0, velocity);
-
-        var deltaV = velocity - v0;
-        var maxDeltaV = acceleration * context.DeltaTime;
-
-        if (deltaV.Size() > maxDeltaV)
+        else
         {
-            deltaV = deltaV.NormalizeSafe() * maxDeltaV;
-            velocity = v0 + deltaV;
-            position = npcPos + velocity * context.DeltaTime;
-        }
+            position = VelocityHelper.LinearInterpolateWithAcceleration(
+                npcPos,
+                targetMovePos,
+                ref velocity,
+                accelV,
+                prefab.DefinitionItem.MaxSpeedKph / 3.6d,
+                context.DeltaTime,
+                handleOvershoot: false
+            );
+            
+            context.TryGetProperty(BehaviorContext.V0Property, out var v0, velocity);
+
+            var deltaV = velocity - v0;
+            var maxDeltaV = acceleration * context.DeltaTime;
+
+            if (deltaV.Size() > maxDeltaV)
+            {
+                deltaV = deltaV.NormalizeSafe() * maxDeltaV;
+                velocity = v0 + deltaV;
+                position = npcPos + velocity * context.DeltaTime;
+            }
         
-        context.SetProperty(BehaviorContext.V0Property, velocity);
+            context.SetProperty(BehaviorContext.V0Property, velocity);
+        }
         
         context.Velocity = velocity;
         

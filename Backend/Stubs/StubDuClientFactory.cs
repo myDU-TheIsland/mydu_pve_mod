@@ -10,7 +10,6 @@ using BotLib.Protocols;
 using BotLib.Protocols.GrpcClient;
 using BotLib.Protocols.Queuing;
 using BotLib.Utils;
-using Mod.DynamicEncounters.Common;
 using NQ;
 using Serilog;
 

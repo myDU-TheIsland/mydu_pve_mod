@@ -6,6 +6,8 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
@@ -46,16 +48,15 @@ public class BehaviorContext(
     public Vec3 Velocity { get; set; }
     public Vec3? Position { get; set; }
     public Quat Rotation { get; set; }
-    public HashSet<ulong> PlayerIds { get; set; } = new();
+    public HashSet<ulong> PlayerIds { get; set; } = [];
     public ulong ConstructId { get; } = constructId;
     public long FactionId { get; } = factionId;
     public Guid? TerritoryId { get; } = territoryId;
     public Vec3 Sector { get; } = sector;
     public IServiceProvider ServiceProvider { get; init; } = serviceProvider;
-
-    public ConcurrentDictionary<string, bool> PublishedEvents = [];
-
+    public readonly ConcurrentDictionary<string, bool> PublishedEvents = [];
     public ConcurrentDictionary<string, TimerPropertyValue> PropertyOverrides { get; } = [];
+    public IEffectHandler Effects { get; set; } = new EffectHandler(serviceProvider);
 
     [Newtonsoft.Json.JsonIgnore]
     [JsonIgnore]

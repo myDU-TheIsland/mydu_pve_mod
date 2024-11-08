@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BotLib.Protocols.Queuing;
-using Mod.DynamicEncounters.Common;
 using Newtonsoft.Json;
 using NQ;
 using NQutils.Exceptions;

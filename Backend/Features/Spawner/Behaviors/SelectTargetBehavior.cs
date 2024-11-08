@@ -10,6 +10,7 @@ using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Services;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
@@ -46,7 +47,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         _constructService = provider.GetRequiredService<IConstructService>();
         _sectorPoolManager = provider.GetRequiredService<ISectorPoolManager>();
         _npcRadarService = provider.GetRequiredService<INpcRadarService>();
-
+        
         return Task.CompletedTask;
     }
 
@@ -63,7 +64,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var targetSpan = DateTime.UtcNow - context.TargetSelectedTime;
         if (context.IsMoveModeDefault() && targetSpan < TimeSpan.FromSeconds(10))
         {
-            context.SetAutoTargetMovePosition(await GetTargetMovePosition(targetConstructId));
+            context.SetAutoTargetMovePosition(await GetTargetMovePosition(context));
 
             return;
         }
@@ -219,7 +220,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             _logger.LogInformation("Construct {Construct} Returning to Sector", constructId);
         }
 
-        var targetMovePositionTask = GetTargetMovePosition(targetConstructId);
+        var targetMovePositionTask = GetTargetMovePosition(context);
         var cacheTargetElementPositionsTask = CacheTargetElementPositions(context, targetConstructId);
 
         await Task.WhenAll([targetMovePositionTask, cacheTargetElementPositionsTask]);
@@ -312,29 +313,19 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         }
     }
 
-    private async Task<Vec3> GetTargetMovePosition(ulong? targetConstructId)
+    private async Task<Vec3> GetTargetMovePosition(BehaviorContext context)
     {
-        if (!targetConstructId.HasValue)
+        var effect = context.Effects.GetOrNull<ICalculateTargetMovePositionEffect>();
+        if (effect == null)
         {
             return new Vec3();
         }
 
-        var targetConstructTransformOutcome =
-            await _constructService.GetConstructTransformAsync(targetConstructId.Value);
-        if (!targetConstructTransformOutcome.ConstructExists)
+        return await effect.GetTargetMovePosition(new ICalculateTargetMovePositionEffect.Params
         {
-            _logger.LogError(
-                "Construct {Construct} Target construct info {Target} is null", constructId,
-                targetConstructId.Value
-            );
-            return new Vec3();
-        }
-
-        var targetPos = targetConstructTransformOutcome.Position;
-
-        var distanceGoal = prefab.DefinitionItem.TargetDistance;
-        var offset = new Vec3 { y = distanceGoal };
-
-        return targetPos + offset;
+            InstigatorConstructId = constructId,
+            TargetDistance = prefab.DefinitionItem.TargetDistance,
+            TargetConstructId = context.GetTargetConstructId()
+        });
     }
 }

@@ -69,6 +69,7 @@
   <ItemGroup>
     <Folder Include="Database\Migrations\Orleans\" />
     <Folder Include="Features\Sector\Scripts\" />
+    <Folder Include="Features\Spawner\Behaviors\Effects\Data\" />
     <Folder Include="Resources\" />
   </ItemGroup>
   <ItemGroup>
