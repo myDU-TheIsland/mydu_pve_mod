@@ -9,7 +9,7 @@ using NQ;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 
-public class DefaultCalculateTargetMovePositionEffectEffect(IServiceProvider provider) : ICalculateTargetMovePositionEffect
+public class SetTargetPositionWithOffsetEffect(IServiceProvider provider) : ICalculateTargetMovePositionEffect
 {
     public async Task<Vec3> GetTargetMovePosition(ICalculateTargetMovePositionEffect.Params @params)
     {
@@ -19,7 +19,7 @@ public class DefaultCalculateTargetMovePositionEffectEffect(IServiceProvider pro
         }
 
         var constructService = provider.GetRequiredService<IConstructService>();
-        var logger = provider.CreateLogger<DefaultCalculateTargetMovePositionEffectEffect>();
+        var logger = provider.CreateLogger<SetTargetPositionWithOffsetEffect>();
 
         var targetConstructTransformOutcome =
             await constructService.GetConstructTransformAsync(@params.TargetConstructId.Value);

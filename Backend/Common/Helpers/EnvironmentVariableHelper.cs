@@ -10,7 +10,7 @@ public static class EnvironmentVariableHelper
     /// </summary>
     /// <returns></returns>
     public static bool IsProduction()
-        => GetEnvironmentVarOrDefault("ENVIRONMENT", "PROD") == "PROD";  
+        => GetEnvironmentVarOrDefault("ENVIRONMENT", "PROD") == "PROD";
     
     public static string GetEnvironmentVarOrDefault(string varName, string defaultValue)
     {

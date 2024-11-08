@@ -7,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
@@ -29,7 +31,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
     public Task InitializeAsync(BehaviorContext context)
     {
         var provider = context.ServiceProvider;
-        
+
         _logger = provider.CreateLogger<FollowTargetBehaviorV2>();
         _constructService = provider.GetRequiredService<IConstructService>();
 
@@ -46,7 +48,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
             {
                 return;
             }
-            
+
             context.Position = npcConstructTransformOutcome.Position;
         }
 
@@ -62,20 +64,19 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
         var velToTargetDot = velocityDirection.Dot(forward);
 
         context.TryGetProperty(BehaviorContext.EnginePowerProperty, out double enginePower, 1);
-        
-        var accelerationRaw = prefab.DefinitionItem.AccelerationG * 9.81f;
-        var acceleration = accelerationRaw * enginePower;
-        
+
+        var acceleration = prefab.DefinitionItem.AccelerationG * 9.81f;
+
         if (velToTargetDot < 0)
         {
             acceleration *= 1 + Math.Abs(velToTargetDot);
         }
-        
+
         var accelForward = forward * acceleration * context.RealismFactor;
         var accelMove = moveDirection * acceleration * (1 - context.RealismFactor);
 
         var accelV = accelForward + accelMove;
-        
+
         if (context.IsMoveModeWaypoint())
         {
             var shouldBrake = VelocityHelper.ShouldStartBraking(
@@ -92,46 +93,33 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
         }
 
         var velocity = context.Velocity;
-        Vec3 position;
-        
+
         if (enginePower <= 0 || context.IsBraking())
         {
-            position = VelocityHelper.ApplyBraking(
-                npcPos,
-                ref velocity,   
-                accelerationRaw,
-                context.DeltaTime
+            context.Effects.Activate<IMovementEffect>(
+                new ApplyBrakesMovementEffect(),
+                TimeSpan.FromSeconds(1)
             );
         }
-        else
-        {
-            position = VelocityHelper.LinearInterpolateWithAcceleration(
-                npcPos,
-                targetMovePos,
-                ref velocity,
-                accelV,
-                prefab.DefinitionItem.MaxSpeedKph / 3.6d,
-                context.DeltaTime,
-                handleOvershoot: false
+
+        var moveOutcome = context.Effects.GetOrNull<IMovementEffect>()
+            .Move(new IMovementEffect.Params
+                {
+                    Acceleration = accelV,
+                    Velocity = velocity,
+                    Position = npcPos,
+                    TargetPosition = targetMovePos,
+                    MaxVelocity = prefab.DefinitionItem.MaxSpeedKph / 3.6d,
+                    DeltaTime = context.DeltaTime
+                },
+                context
             );
-            
-            context.TryGetProperty(BehaviorContext.V0Property, out var v0, velocity);
 
-            var deltaV = velocity - v0;
-            var maxDeltaV = acceleration * context.DeltaTime;
+        velocity = moveOutcome.Velocity;
+        var position = moveOutcome.Position;
 
-            if (deltaV.Size() > maxDeltaV)
-            {
-                deltaV = deltaV.NormalizeSafe() * maxDeltaV;
-                velocity = v0 + deltaV;
-                position = npcPos + velocity * context.DeltaTime;
-            }
-        
-            context.SetProperty(BehaviorContext.V0Property, velocity);
-        }
-        
         context.Velocity = velocity;
-        
+
         // context.Velocity = velocity;
         // Make the ship point to where it's accelerating
         var accelerationFuturePos = npcPos + moveDirection * 200000;
@@ -153,7 +141,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
         _timePoint = TimePoint.Now();
 
         var velocityDisplay = (position - npcPos) / context.DeltaTime;
-        
+
         try
         {
             context.Position = position;
@@ -176,7 +164,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                 await ModBase.Bot.Reconnect();
                 ConstructBehaviorContextCache.RaiseBotReconnected();
             }
-            
+
             _ = Task.Run(async () =>
             {
                 var sw = new Stopwatch();
@@ -201,7 +189,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                     ModBase.ServiceProvider.CreateLogger<FollowTargetBehaviorV2>()
                         .LogError(e, "Failed to send Construct Update Fire-And-Forget");
                 }
-                
+
                 StatsRecorder.Record("ConstructUpdate", sw.ElapsedMilliseconds);
             });
         }
