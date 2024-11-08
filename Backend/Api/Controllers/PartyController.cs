@@ -22,6 +22,7 @@ public class PartyController : Controller
         return Ok(results);
     }
     
+    [HttpPost]
     [Route("create")]
     public async Task<IActionResult> CreateParty([FromBody] PartyRequest request)
     {
@@ -30,6 +31,7 @@ public class PartyController : Controller
         return Ok(result);
     }
     
+    [HttpPost]
     [Route("disband")]
     public async Task<IActionResult> DisbandParty([FromBody] PartyRequest request)
     {
@@ -38,6 +40,7 @@ public class PartyController : Controller
         return Ok(result);
     }
 
+    [HttpPost]
     [Route("invite")]
     public async Task<IActionResult> InviteToParty([FromBody] PartyRequest request)
     {
