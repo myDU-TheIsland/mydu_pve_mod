@@ -374,7 +374,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         // 0-1 <= 2.5
         if (num5 <= hitRatio)
         {
-            await Notifications.SimpleNotificationToPlayer(provider, playerId, $"!!!!!! HIT !!!!!! {num5} <= {hitRatio}");
+            // await Notifications.SimpleNotificationToPlayer(provider, playerId, $"!!!!!! HIT !!!!!! {num5} <= {hitRatio}");
             logger.LogInformation("Weapon Hit");
 
             result.hit = true;
@@ -478,7 +478,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         }
         else
         {
-            await Notifications.SimpleNotificationToPlayer(provider, playerId, $"??? MISS ??? {num5} <= {hitRatio}");
+            // await Notifications.SimpleNotificationToPlayer(provider, playerId, $"??? MISS ??? {num5} <= {hitRatio}");
             logger.LogInformation("Weapon Miss");
 
             result.hit = false;
@@ -689,7 +689,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         sb.Append($"optimalValue = {optimalValue}; ");
         sb.Append($"hitRatio = {hitRatio}; ");
         
-        await Notifications.SimpleNotificationToPlayer(provider, playerId, $"Values: {sb}");
+        // await Notifications.SimpleNotificationToPlayer(provider, playerId, $"Values: {sb}");
 
         return hitRatio;
     }
