@@ -478,6 +478,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         }
         else
         {
+            await Notifications.SimpleNotificationToPlayer(provider, playerId, $"??? MISS ??? {num5} <= {hitRatio}");
             logger.LogInformation("Weapon Miss");
 
             result.hit = false;
