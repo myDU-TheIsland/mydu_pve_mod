@@ -39,11 +39,11 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         WeaponFire weaponFire
     )
     {
-        if (playerId != 4)
-        {
-            await context.Invoke();
-            return (WeaponFireResult)context.Result;
-        }
+        // if (playerId != 4)
+        // {
+        //     await context.Invoke();
+        //     return (WeaponFireResult)context.Result;
+        // }
 
         var sw = new Stopwatch();
         sw.Start();
@@ -664,7 +664,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
                 ElementPropertiesHelper.GetPropertyOrDefault(weaponInfo.properties,
                     weaponUnit, WeaponUnit.d_baseOptimalTracking), valueOrDefault3) *
             ammoDef.TrackingModifier, ammoModifiers.GetValueOrDefault("trackingModifier"));
-        var falloffValue = weaponUnit.FalloffTracking * ammoDef.TrackingModifier;
+        var falloffValue = weaponUnit.FalloffTracking * ammoDef.TrackingModifier * 2;
         var factor = ComputeFactor(degrees, optimalValue, falloffValue);
         var num2 = weaponUnit.OptimalCrossSectionDiameter * 0.5;
         var num3 = Math.Min(1.0,
