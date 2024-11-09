@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Backend;
 using Backend.Business;
@@ -367,7 +368,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         var num5 = random.NextDouble();
 
         logger.LogInformation("Hit Ratio: {Num5} < {Hit}", num5, hitRatio);
-        await Notifications.SimpleNotificationToPlayer(provider, playerId, $"Hit: {num5} < {hitRatio}");   
+        // await Notifications.SimpleNotificationToPlayer(provider, playerId, $"Hit: {num5} < {hitRatio}");
 
         double range;
 
@@ -674,15 +675,19 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         // var logger = provider.GetRequiredService<ILoggerFactory>()
         //     .CreateLogger<WeaponGrainOverrides>();
         //
-        // logger.LogInformation("weaponFire.crossSection = {V}", weaponFire.crossSection);
-        // logger.LogInformation("num3 = {V}", num3);
-        // logger.LogInformation("num2 = {V}", num2);
-        // logger.LogInformation("factor = {V}", factor);
-        // logger.LogInformation("falloffValue = {V}", falloffValue);
-        // logger.LogInformation("optimalValue = {V}", optimalValue);
-        // logger.LogInformation("valueOrDefault3 = {V}", valueOrDefault3);
-
         var hitRatio = accuracy * num3 * angleFactor * distanceFactor * factor;
+        
+        var sb = new StringBuilder();
+        sb.Append($"weaponFire.crossSection = {weaponFire.crossSection}; ");
+        sb.Append($"num3 = {num3}; ");
+        sb.Append($"num2 = {num2}; ");
+        sb.Append($"factor = {factor}; ");
+        sb.Append($"falloffValue = {falloffValue}; ");
+        sb.Append($"optimalValue = {optimalValue}; ");
+        sb.Append($"valueOrDefault3 = {optimalValue}; ");
+        sb.Append($"hitRatio = {hitRatio}; ");
+        
+        await Notifications.SimpleNotificationToPlayer(provider, playerId, $"Values: {sb}");
 
         return hitRatio;
     }
