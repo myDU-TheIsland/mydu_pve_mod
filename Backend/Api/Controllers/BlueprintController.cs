@@ -124,7 +124,7 @@ public partial class BlueprintController : Controller
         }
         
         await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+        await stream.WriteAsync(result.BlueprintBytes);
         
         return Ok($"File {file.FileName} uploaded successfully");
     }
@@ -170,7 +170,7 @@ public partial class BlueprintController : Controller
         }
         
         await using var stream = new FileStream(filePath, FileMode.Create);
-        await file.CopyToAsync(stream);
+        await stream.WriteAsync(result.BlueprintBytes);
         
         return Ok($"File {file.FileName} uploaded successfully");
     }
