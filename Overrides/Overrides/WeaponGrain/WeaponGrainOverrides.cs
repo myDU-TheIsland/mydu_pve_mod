@@ -371,9 +371,10 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         // await Notifications.SimpleNotificationToPlayer(provider, playerId, $"Hit: {num5} < {hitRatio}");
 
         double range;
-
+        // 0-1 <= 2.5
         if (num5 <= hitRatio)
         {
+            await Notifications.SimpleNotificationToPlayer(provider, playerId, $"!!!!!! HIT !!!!!! {num5} <= {hitRatio}");
             logger.LogInformation("Weapon Hit");
 
             result.hit = true;
