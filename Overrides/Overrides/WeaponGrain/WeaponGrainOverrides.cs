@@ -39,6 +39,12 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         WeaponFire weaponFire
     )
     {
+        if (playerId != 4)
+        {
+            await context.Invoke();
+            return (WeaponFireResult)context.Result;
+        }
+
         var sw = new Stopwatch();
         sw.Start();
 
@@ -282,12 +288,6 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
             logger.LogError("Ammo Def Null");
             throw new BusinessException(ErrorCode.WeaponShotKillInvalid);
         }
-
-        // if (playerId != 4)
-        // {
-        //     await context.Invoke();
-        //     return (WeaponFireResult)context.Result;
-        // }
 
         if (!ConstructId.IsUserConstruct(weaponFire.targetId))
             throw new BusinessException(ErrorCode.InvalidConstructId, "Can only shoot between two User Construct");
@@ -639,7 +639,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
 
         var (vec3, v) = await constructGrain.GetConstructVelocity();
         var targetConstructData = cachedConstructDataService.Get(weaponFire.targetId);
-        
+
         Vec3 targetVelocity;
         if (targetConstructData != null)
         {
