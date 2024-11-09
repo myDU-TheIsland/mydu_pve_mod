@@ -668,7 +668,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
                 ElementPropertiesHelper.GetPropertyOrDefault(weaponInfo.properties,
                     weaponUnit, WeaponUnit.d_baseOptimalTracking), valueOrDefault3) *
             ammoDef.TrackingModifier, ammoModifiers.GetValueOrDefault("trackingModifier"));
-        var falloffValue = weaponUnit.FalloffTracking * ammoDef.TrackingModifier * 1;
+        var falloffValue = weaponUnit.FalloffTracking * ammoDef.TrackingModifier;
         var factor = ComputeFactor(degrees, optimalValue, falloffValue);
         var num2 = weaponUnit.OptimalCrossSectionDiameter * 0.5;
         var num3 = Math.Min(1.0,
@@ -683,10 +683,10 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         sb.Append($"weaponFire.crossSection = {weaponFire.crossSection}; ");
         sb.Append($"num3 = {num3}; ");
         sb.Append($"num2 = {num2}; ");
+        sb.Append($"degrees = {degrees}; ");
         sb.Append($"factor = {factor}; ");
         sb.Append($"falloffValue = {falloffValue}; ");
         sb.Append($"optimalValue = {optimalValue}; ");
-        sb.Append($"valueOrDefault3 = {optimalValue}; ");
         sb.Append($"hitRatio = {hitRatio}; ");
         
         await Notifications.SimpleNotificationToPlayer(provider, playerId, $"Values: {sb}");
