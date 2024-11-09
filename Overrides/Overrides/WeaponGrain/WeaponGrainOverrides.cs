@@ -664,7 +664,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
                 ElementPropertiesHelper.GetPropertyOrDefault(weaponInfo.properties,
                     weaponUnit, WeaponUnit.d_baseOptimalTracking), valueOrDefault3) *
             ammoDef.TrackingModifier, ammoModifiers.GetValueOrDefault("trackingModifier"));
-        var falloffValue = weaponUnit.FalloffTracking * ammoDef.TrackingModifier * 1.2d;
+        var falloffValue = weaponUnit.FalloffTracking * ammoDef.TrackingModifier * 1;
         var factor = ComputeFactor(degrees, optimalValue, falloffValue);
         var num2 = weaponUnit.OptimalCrossSectionDiameter * 0.5;
         var num3 = Math.Min(1.0,
