@@ -24,7 +24,7 @@ public class PrefabItem
     public double MaxSpeedKph { get; set; } = 20000;
     public double TargetDistance { get; set; } = 20000;
     public long FactionId { get; set; }
-    public double RealismFactor { get; set; } = 0.25d;
+    public double RealismFactor { get; set; } = 0.1d;
     public int MaxWeaponCount { get; set; } = 2;
 
     public PrefabEvents Events { get; set; } = new();
