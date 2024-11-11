@@ -322,7 +322,8 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         await SetDynamicProperty(provider, weaponFire, WeaponUnit.d_ammoCount, num1);
 
         await constructFightGrain.RefreshPvpTimer();
-        if (weaponFire.targetId != 4)
+        var targetOwner = await targetConstructGrain.GetOwner();
+        if (targetOwner.playerId != 4)
         {
             await targetConstructFightGrain.RefreshPvpTimer();
         }
