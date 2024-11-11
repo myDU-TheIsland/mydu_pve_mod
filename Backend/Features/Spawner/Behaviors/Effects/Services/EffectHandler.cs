@@ -12,7 +12,7 @@ public class EffectHandler : IEffectHandler
 
     public EffectHandler(IServiceProvider provider)
     {
-        RegisterDefault<ICalculateTargetMovePositionEffect>(new SetTargetPositionWithOffsetEffect(provider));
+        RegisterDefault<ICalculateTargetMovePositionEffect>(new CalculateTargetPositionWithOffsetEffect(provider));
         RegisterDefault<IMovementEffect>(new BurnToTargetMovementEffect());
     }
 

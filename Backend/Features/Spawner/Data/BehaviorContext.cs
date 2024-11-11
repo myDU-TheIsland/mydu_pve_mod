@@ -47,6 +47,7 @@ public class BehaviorContext(
     public DateTime StartedAt { get; } = DateTime.UtcNow;
     public Vec3 Velocity { get; set; }
     public Vec3? Position { get; set; }
+    public Vec3? StartPosition { get; set; }
     public Quat Rotation { get; set; }
     public HashSet<ulong> PlayerIds { get; set; } = [];
     public ulong ConstructId { get; } = constructId;

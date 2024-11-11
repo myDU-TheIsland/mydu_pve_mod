@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Common;
+using Mod.DynamicEncounters.Common.Data;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
@@ -53,7 +53,11 @@ public class AliveCheckBehavior(ulong constructId, IPrefab prefab) : IConstructB
             
             var notAliveCoreUnit = await _constructElementsService
                 .NoCache()
-                .GetElement(constructId, _coreUnitElementId);
+                .GetElement(constructId, _coreUnitElementId)
+                .WithRetry(new RetryOptions<ElementInfo>(3, _logger)
+                {
+                    OnRetryAttempt = async _ => await Task.Delay(500)
+                });
             if (notAliveCoreUnit.IsCoreDestroyed())
             {
                 await context.NotifyConstructDestroyedAsync(new BehaviorEventArgs(constructId, prefab, context));
@@ -82,7 +86,11 @@ public class AliveCheckBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
         var coreUnit = await _constructElementsService
             .NoCache()
-            .GetElement(constructId, _coreUnitElementId);
+            .GetElement(constructId, _coreUnitElementId)
+            .WithRetry(new RetryOptions<ElementInfo>(3, _logger)
+            {
+                OnRetryAttempt = async _ => await Task.Delay(500)
+            });;
         var constructInfoOutcome = await _constructService.GetConstructInfoAsync(constructId);
         var constructInfo = constructInfoOutcome.Info;
 

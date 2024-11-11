@@ -9,31 +9,40 @@ using NQ;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 
-public class SetTargetPositionWithOffsetEffect(IServiceProvider provider) : ICalculateTargetMovePositionEffect
+public class CalculateTargetPositionWithOffsetEffect(IServiceProvider provider) : ICalculateTargetMovePositionEffect
 {
-    public async Task<Vec3> GetTargetMovePosition(ICalculateTargetMovePositionEffect.Params @params)
+    public async Task<Vec3?> GetTargetMovePosition(ICalculateTargetMovePositionEffect.Params @params)
     {
-        if (!@params.TargetConstructId.HasValue)
+        if (!@params.TargetConstructId.HasValue ||
+            !@params.InstigatorPosition.HasValue ||
+            !@params.InstigatorStartPosition.HasValue)
         {
-            return new Vec3();
+            return null;
         }
 
         var constructService = provider.GetRequiredService<IConstructService>();
-        var logger = provider.CreateLogger<SetTargetPositionWithOffsetEffect>();
+        var logger = provider.CreateLogger<CalculateTargetPositionWithOffsetEffect>();
 
         var targetConstructTransformOutcome =
             await constructService.GetConstructTransformAsync(@params.TargetConstructId.Value);
         if (!targetConstructTransformOutcome.ConstructExists)
         {
             logger.LogError(
-                "Construct {Construct} Target construct info {Target} is null", 
+                "Construct {Construct} Target construct info {Target} is null",
                 @params.InstigatorConstructId,
                 @params.TargetConstructId.Value
             );
-            return new Vec3();
+
+            return @params.InstigatorStartPosition.Value;
         }
 
         var targetPos = targetConstructTransformOutcome.Position;
+
+        var distanceFromTarget = (targetPos - @params.InstigatorPosition.Value).Size();
+        if (distanceFromTarget > @params.MaxDistanceVisibility)
+        {
+            return @params.InstigatorStartPosition.Value;
+        }
 
         var distanceGoal = @params.TargetDistance;
         var offset = new Vec3 { y = distanceGoal };

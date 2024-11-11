@@ -64,7 +64,10 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var targetSpan = DateTime.UtcNow - context.TargetSelectedTime;
         if (context.IsMoveModeDefault() && targetSpan < TimeSpan.FromSeconds(10))
         {
-            context.SetAutoTargetMovePosition(await GetTargetMovePosition(context));
+            var position = await GetTargetMovePosition(context);
+            if (!position.HasValue) return;
+            
+            context.SetAutoTargetMovePosition(position.Value);
 
             return;
         }
@@ -231,7 +234,10 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         }
         else
         {
-            context.SetAutoTargetMovePosition(await targetMovePositionTask);
+            var position = await targetMovePositionTask;
+            if (!position.HasValue) return;
+            
+            context.SetAutoTargetMovePosition(position.Value);
 
             await _sectorPoolManager.SetExpirationFromNow(context.Sector, TimeSpan.FromHours(1));
         }
@@ -313,7 +319,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         }
     }
 
-    private async Task<Vec3> GetTargetMovePosition(BehaviorContext context)
+    private async Task<Vec3?> GetTargetMovePosition(BehaviorContext context)
     {
         var effect = context.Effects.GetOrNull<ICalculateTargetMovePositionEffect>();
         if (effect == null)
@@ -324,6 +330,8 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         return await effect.GetTargetMovePosition(new ICalculateTargetMovePositionEffect.Params
         {
             InstigatorConstructId = constructId,
+            InstigatorStartPosition = context.StartPosition,
+            InstigatorPosition = context.Position,
             TargetDistance = prefab.DefinitionItem.TargetDistance,
             TargetConstructId = context.GetTargetConstructId()
         });

@@ -52,6 +52,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
             }
 
             context.Position = npcConstructTransformOutcome.Position;
+            context.StartPosition = npcConstructTransformOutcome.Position;
         }
 
         var npcPos = context.Position.Value;
