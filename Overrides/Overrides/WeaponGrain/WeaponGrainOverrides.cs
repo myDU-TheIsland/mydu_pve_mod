@@ -322,7 +322,10 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         await SetDynamicProperty(provider, weaponFire, WeaponUnit.d_ammoCount, num1);
 
         await constructFightGrain.RefreshPvpTimer();
-        await targetConstructFightGrain.RefreshPvpTimer();
+        if (weaponFire.targetId != 4)
+        {
+            await targetConstructFightGrain.RefreshPvpTimer();
+        }
 
         var weaponWorldLocation = await sceneGraph.ResolveWorldLocation(new RelativeLocation()
         {
