@@ -10,6 +10,7 @@ public interface ISelectRadarTargetEffect : IEffect
     
     public class Params
     {
+        public double TargetDistance { get; set; }
         public IEnumerable<NpcRadarContact> Contacts { get; set; } 
         public BehaviorContext Context { get; set; }
     }

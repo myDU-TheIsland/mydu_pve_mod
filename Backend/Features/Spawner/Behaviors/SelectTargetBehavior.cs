@@ -118,6 +118,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var selectedTarget = selectTargetEffect?.GetTarget(
             new ISelectRadarTargetEffect.Params
             {
+                TargetDistance = prefab.DefinitionItem.TargetDistance,
                 Contacts = radarContacts,
                 Context = context
             }

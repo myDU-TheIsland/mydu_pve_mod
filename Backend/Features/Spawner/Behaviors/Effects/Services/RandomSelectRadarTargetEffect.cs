@@ -5,9 +5,9 @@ using Mod.DynamicEncounters.Helpers;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 
-public class DefaultSelectRadarTargetEffect : ISelectRadarTargetEffect
+public class RandomSelectRadarTargetEffect : ISelectRadarTargetEffect
 {
-    private Random Random { get; set; } = new();
+    private Random Random { get; } = new();
     private double AccumulatedDeltaTime { get; set; }
     private NpcRadarContact? LastSelectedTarget { get; set; }
     
@@ -18,7 +18,7 @@ public class DefaultSelectRadarTargetEffect : ISelectRadarTargetEffect
         if (LastSelectedTarget == null || AccumulatedDeltaTime > 5)
         {
             LastSelectedTarget = Random.PickOneAtRandom(@params.Contacts);
-            AccumulatedDeltaTime -= 5;
+            AccumulatedDeltaTime = 0;
         }
         
         return LastSelectedTarget;
