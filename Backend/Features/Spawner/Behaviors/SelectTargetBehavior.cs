@@ -113,7 +113,20 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             return;
         }
 
-        var selectedTarget = radarContacts.First();
+        var selectTargetEffect = context.Effects.GetOrNull<ISelectRadarTargetEffect>();
+
+        var selectedTarget = selectTargetEffect?.GetTarget(
+            new ISelectRadarTargetEffect.Params
+            {
+                Contacts = radarContacts,
+                Context = context
+            }
+        );
+
+        if (selectedTarget == null)
+        {
+            return;
+        }
 
         var targetId = selectedTarget.ConstructId;
 
