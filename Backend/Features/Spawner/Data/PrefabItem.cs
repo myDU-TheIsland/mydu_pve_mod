@@ -22,6 +22,7 @@ public class PrefabItem
     public double AccelerationG { get; set; } = 15;
     public float RotationSpeed { get; set; } = 0.5f;
     public double MaxSpeedKph { get; set; } = 20000;
+    public double TargetDecisionTimeSeconds { get; set; } = 30;
     public double TargetDistance { get; set; } = 20000;
     public long FactionId { get; set; }
     public double RealismFactor { get; set; } = 0.2d;

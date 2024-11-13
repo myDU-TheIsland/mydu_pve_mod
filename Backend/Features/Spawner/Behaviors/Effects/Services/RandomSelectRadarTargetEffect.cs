@@ -15,7 +15,7 @@ public class RandomSelectRadarTargetEffect : ISelectRadarTargetEffect
     {
         AccumulatedDeltaTime += @params.Context.DeltaTime;
 
-        if (LastSelectedTarget == null || AccumulatedDeltaTime > 5)
+        if (LastSelectedTarget == null || AccumulatedDeltaTime > @params.DecisionTimeSeconds)
         {
             LastSelectedTarget = Random.PickOneAtRandom(@params.Contacts);
             AccumulatedDeltaTime = 0;
