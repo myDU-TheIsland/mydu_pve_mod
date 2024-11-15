@@ -41,7 +41,7 @@ public class AreaScanService(IServiceProvider provider) : INpcRadarService
                  AND (C.json_properties->>'isUntargetable' = 'false' OR C.json_properties->>'isUntargetable' IS NULL)
                  AND (C.json_properties->>'kind' IN ('4', '5'))
                  AND (C.owner_entity_id IS NOT NULL)
-                 AND (O.player_id != 4)
+                 AND (O.player_id IS NULL OR O.player_id != 4)
                  AND C.id != @constructId
              ORDER BY distance ASC
              LIMIT {limit}
