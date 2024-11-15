@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Helpers;
@@ -45,7 +46,9 @@ public class CalculateTargetPositionWithOffsetEffect(IServiceProvider provider) 
         }
 
         var distanceGoal = @params.TargetDistance;
-        var offset = new Vec3 { y = distanceGoal };
+
+        var random = provider.GetRequiredService<IRandomProvider>().GetRandom();
+        var offset = random.RandomDirectionVec3() * distanceGoal;
 
         return targetPos + offset;
     }
