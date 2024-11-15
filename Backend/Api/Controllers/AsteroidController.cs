@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
@@ -40,8 +39,7 @@ public class AsteroidController : Controller
             
             request.Position = pos;
         }
-
-        if (!request.Position.HasValue)
+        else if (!request.Position.HasValue)
         {
             return BadRequest();
         }

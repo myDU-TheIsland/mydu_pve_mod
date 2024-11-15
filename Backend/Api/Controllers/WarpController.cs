@@ -147,10 +147,19 @@ public class WarpController : Controller
         await taskQueueService.EnqueueScript(
             new ScriptActionItem
             {
+                Type = "reload-construct",
+                ConstructId = constructId
+            },
+            DateTime.UtcNow + TimeSpan.FromSeconds(60 + 50)
+        );
+        
+        await taskQueueService.EnqueueScript(
+            new ScriptActionItem
+            {
                 Type = "delete",
                 ConstructId = constructId
             },
-            DateTime.UtcNow + TimeSpan.FromMinutes(1)
+            DateTime.UtcNow + TimeSpan.FromMinutes(2)
         );
 
         await sql.UpdatePlayerProperty_Generic(
