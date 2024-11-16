@@ -46,6 +46,7 @@ public class BehaviorContext(
     public Vec3? Position { get; set; }
     public Vec3? StartPosition { get; set; }
     public Quat Rotation { get; set; }
+    public float TargetRotationPositionMultiplier { get; set; } = 1;
     public HashSet<ulong> PlayerIds { get; set; } = [];
     public ulong ConstructId { get; } = constructId;
     public long FactionId { get; } = factionId;
@@ -121,12 +122,59 @@ public class BehaviorContext(
     {
         Properties.Set(nameof(DynamicProperties.TargetMovePosition), position);
     }
+    
+    public void SetIsApproachingTarget(bool approaching)
+    {
+        Properties.Set(nameof(DynamicProperties.IsApproaching), approaching);
+    }
+    
+    public bool IsApproachingTarget()
+    {
+        return this.GetOverrideOrDefault(
+            nameof(DynamicProperties.IsApproaching),
+            false
+        );
+    }
+    
+    public void SetTargetPosition(Vec3 targetPosition)
+    {
+        if (Position.HasValue)
+        {
+            var d0 = GetTargetPosition().Dist(Position.Value);
+            var d1 = targetPosition.Dist(Position.Value);
+            
+            SetIsApproachingTarget(d0 > d1);
+        }
+
+        Properties.Set(nameof(DynamicProperties.TargetPosition), targetPosition);
+    }
+    
+    public void SetTargetDistance(double distance)
+    {
+        Properties.Set(nameof(DynamicProperties.TargetDistance), distance);
+    }
 
     public Vec3 GetTargetMovePosition()
     {
         return this.GetOverrideOrDefault(
             nameof(DynamicProperties.TargetMovePosition),
             new Vec3()
+        );
+    }
+    
+    public Vec3 GetTargetPosition()
+    {
+        return this.GetOverrideOrDefault(
+            nameof(DynamicProperties.TargetPosition),
+            new Vec3()
+        );
+    }
+    
+    public double GetTargetDistance()
+    {
+        return this.GetOverrideOrDefault(
+            nameof(DynamicProperties.TargetDistance),
+            0
         );
     }
 
@@ -246,6 +294,9 @@ public class BehaviorContext(
         public const byte TargetSelectedTime = 3;
         public const byte WaypointList = 4;
         public const byte WaypointListInitialized = 5;
+        public const byte TargetDistance = 6;
+        public const byte TargetPosition = 7;
+        public const byte IsApproaching = 8;
     }
 
     public class TimerPropertyValue(DateTime expiresAt, object? value)

@@ -64,7 +64,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var targetSpan = DateTime.UtcNow - context.TargetSelectedTime;
         if (context.IsMoveModeDefault() && targetSpan < TimeSpan.FromSeconds(5))
         {
-            var position = await GetTargetMovePosition(context);
+            var position = await CalculateTargetMovePosition(context);
             if (!position.HasValue) return;
 
             context.SetAutoTargetMovePosition(position.Value);
@@ -129,7 +129,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var targetDamage = await _constructDamageService.GetConstructDamage(targetId);
         context.SetTargetDamageData(targetId, targetDamage);
 
-        var movePos = await GetTargetMovePosition(context);
+        var movePos = await CalculateTargetMovePosition(context);
         if (!movePos.HasValue) return;
 
         context.SetAutoTargetMovePosition(movePos.Value);
@@ -191,7 +191,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         }
     }
 
-    private async Task<Vec3?> GetTargetMovePosition(BehaviorContext context)
+    private async Task<Vec3?> CalculateTargetMovePosition(BehaviorContext context)
     {
         var effect = context.Effects.GetOrNull<ICalculateTargetMovePositionEffect>();
         if (effect == null)
@@ -203,7 +203,16 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         if (context.DamageData.Weapons.Any())
         {
             targetDistance = context.DamageData.GetBestDamagingWeapon()!.BaseOptimalDistance *
-                             prefab.DefinitionItem.Mods.Weapon.OptimalDistance;
+                             prefab.DefinitionItem.Mods.Weapon.OptimalDistance / 2;
+        }
+        
+        context.SetTargetDistance(targetDistance);
+        
+        var targetConstructTransformOutcome =
+            await _constructService.GetConstructTransformAsync(constructId);
+        if (targetConstructTransformOutcome.ConstructExists)
+        {
+            context.SetTargetPosition(targetConstructTransformOutcome.Position);
         }
 
         return await effect.GetTargetMovePosition(new ICalculateTargetMovePositionEffect.Params

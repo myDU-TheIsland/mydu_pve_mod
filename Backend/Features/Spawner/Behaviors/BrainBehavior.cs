@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
@@ -23,8 +24,23 @@ public class BrainBehavior(ulong constructId, IPrefab prefab) : IConstructBehavi
     {
         await Task.Yield();
         
-        _logger.LogInformation("Construct {Construct}-{Prefab} Brain", constructId, prefab.DefinitionItem.Name);
-        
-        
+        _logger.LogDebug("Construct {Construct}-{Prefab} Brain", constructId, prefab.DefinitionItem.Name);
+
+        var targetMovePosition = context.GetTargetMovePosition();
+        var position = context.Position;
+
+        var bestWeapon = context.DamageData.GetBestDamagingWeapon();
+        if (position.HasValue && bestWeapon != null)
+        {
+            var targetDistance = context.GetTargetDistance() * 2;
+            if (context.IsApproachingTarget() && Math.Abs(targetMovePosition.Dist(position.Value)) < targetDistance)
+            {
+                context.TargetRotationPositionMultiplier = -1;
+            }
+            else
+            {
+                context.TargetRotationPositionMultiplier = 1;
+            }
+        }
     }
 }

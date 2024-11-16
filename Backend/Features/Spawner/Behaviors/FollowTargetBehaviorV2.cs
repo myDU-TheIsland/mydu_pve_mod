@@ -125,7 +125,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
         // context.Velocity = velocity;
         // Make the ship point to where it's accelerating
-        var accelerationFuturePos = npcPos + moveDirection * 200000;
+        var accelerationFuturePos = npcPos + moveDirection * 200000 * context.TargetRotationPositionMultiplier;
 
         var currentRotation = context.Rotation;
         var targetRotation = VectorMathUtils.SetRotationToMatchDirection(
