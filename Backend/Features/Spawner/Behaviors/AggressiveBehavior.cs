@@ -250,7 +250,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             {
                 aoe = true,
                 damage = w.BaseDamage * mod.Weapon.Damage * context.QuantityModifier,
-                range = 400000,
+                range = w.BaseOptimalDistance * mod.Weapon.OptimalDistance + w.FalloffDistance * mod.Weapon.FalloffDistance,
                 aoeRange = 100000,
                 baseAccuracy = w.BaseAccuracy * mod.Weapon.Accuracy,
                 effectDuration = 10,
