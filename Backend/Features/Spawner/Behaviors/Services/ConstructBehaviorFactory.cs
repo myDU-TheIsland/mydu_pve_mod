@@ -15,6 +15,8 @@ public class ConstructBehaviorFactory : IConstructBehaviorFactory
                 return new AliveCheckBehavior(constructId, prefab).WithErrorHandler();
             case "select-target":
                 return new SelectTargetBehavior(constructId, prefab).WithErrorHandler();
+            case "brain":
+                return new BrainBehavior(constructId, prefab).WithErrorHandler();
             case "aggressive":
                 return new AggressiveBehavior(constructId, prefab).WithErrorHandler();
             case "follow-target":
@@ -54,6 +56,8 @@ public class ConstructBehaviorFactory : IConstructBehaviorFactory
         }
         
         finalBehaviors.AddRange(behaviorList);
+        
+        finalBehaviors.Add("brain");
         
         return finalBehaviors.Select(x => Create(constructId, prefab, x));
     }

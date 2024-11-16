@@ -7,5 +7,5 @@ namespace Mod.DynamicEncounters.Features.Common.Interfaces;
 public interface IConstructDamageService
 {
     Dictionary<WeaponTypeScale, IList<AmmoItem>> GetAllAmmoTypesByWeapon();
-    Task<ConstructDamageOutcome> GetConstructDamage(ulong constructId);
+    Task<ConstructDamageData> GetConstructDamage(ulong constructId);
 }

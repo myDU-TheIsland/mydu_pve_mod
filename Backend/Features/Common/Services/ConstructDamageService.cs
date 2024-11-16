@@ -64,10 +64,15 @@ public class ConstructDamageService(IServiceProvider provider) : IConstructDamag
         return AmmoMap;
     }
 
-    public async Task<ConstructDamageOutcome> GetConstructDamage(ulong constructId)
+    public async Task<ConstructDamageData> GetConstructDamage(ulong constructId)
     {
-        var weaponUnits = await _constructElementsService.GetWeaponUnits(constructId);
+        var weaponUnits = (await _constructElementsService.GetWeaponUnits(constructId)).ToList();
 
+        if (weaponUnits.Count == 0)
+        {
+            return new ConstructDamageData([]);
+        }
+        
         var allAmmo = GetAllAmmoTypesByWeapon();
         var items = new List<WeaponItem>();
 
@@ -99,6 +104,6 @@ public class ConstructDamageService(IServiceProvider provider) : IConstructDamag
             }
         }
 
-        return new ConstructDamageOutcome(items);
+        return new ConstructDamageData(items);
     }
 }

@@ -74,34 +74,14 @@ public class RetreatBehavior(ulong constructId, IPrefab prefab) : IConstructBeha
         {
             return;
         }
+
+        context.UpdateShieldState(npcInfo);
         
-        if (npcInfo.IsShieldLowerThan25() || npcInfo.IsShieldDown())
-        {
-            var retreatDirection = (npcPos - targetPos).NormalizeSafe();
-            var npcVel = await _constructService.GetConstructVelocities(constructId);
-            var targetVel = await _constructService.GetConstructVelocities(targetConstructId.Value);
-
-            var npcVelDir = npcVel.Linear.NormalizeSafe();
-            var targetVelDir = targetVel.Linear.NormalizeSafe();
-            
-            var alreadySomewhatFast = npcVel.Linear.Size() > 10000;
-            var oppositeVelocities = npcVelDir.Dot(targetVelDir) < -0.4;
-
-            // _logger.LogInformation("Dot {Dot} | {VelLen}", npcVelDir.Dot(targetVelDir), npcVel.Linear.Size());
-            
-            // if (oppositeVelocities)
-            // {   
-            //     retreatDirection *= -1; // reverse
-            // }
-            
-            // context.TargetMovePosition = npcPos + retreatDirection * 1.8 * DistanceHelpers.OneSuInMeters;
-        }
-
         var isPrettyFar = Math.Abs(targetPos.Dist(npcPos)) > 1.7 * DistanceHelpers.OneSuInMeters;
         
-        var shouldVentShields = npcInfo.IsShieldDown() || 
-                                (npcInfo.IsShieldLowerThan25() && isPrettyFar) ||
-                                (npcInfo.IsShieldLowerThanHalf() && isPrettyFar);
+        var shouldVentShields = context.IsShieldDown() || 
+                                (context.IsShieldLowerThan25() && isPrettyFar) ||
+                                (context.IsShieldLowerThanHalf() && isPrettyFar);
 
         context.TryGetProperty("ShieldVentTimer", out var shieldVentTimer, 0d);
         shieldVentTimer += context.DeltaTime;

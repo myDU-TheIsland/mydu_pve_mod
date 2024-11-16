@@ -104,7 +104,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         var constructSize = (ulong)constructInfo.rData.geometry.size;
         var targetPos = targetInfo.rData.position;
 
-        var damageTrait = context.Damage;
+        var damageTrait = context.DamageData;
         if (!damageTrait.Weapons.Any())
         {
             return;

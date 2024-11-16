@@ -71,7 +71,7 @@ public class AliveCheckBehavior(ulong constructId, IPrefab prefab) : IConstructB
             return;
         }
 
-        context.Damage = await _constructDamageService.GetConstructDamage(constructId);
+        context.DamageData = await _constructDamageService.GetConstructDamage(constructId);
 
         // just to cache it
         await Task.WhenAll([

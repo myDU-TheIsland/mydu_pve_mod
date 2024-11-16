@@ -87,12 +87,14 @@ public class NotifierBehavior(ulong constructId, IPrefab prefab) : IConstructBeh
         var constructInfoGrain = _orleans.GetConstructInfoGrain(constructId);
         var constructInfo = await constructInfoGrain.Get();
 
-        if (constructInfo.IsShieldLowerThanHalf())
+        context.UpdateShieldState(constructInfo);
+        
+        if (context.IsShieldLowerThanHalf())
         {
             await context.NotifyShieldHpHalfAsync(new BehaviorEventArgs(constructId, prefab, context));
         }
         
-        if (constructInfo.IsShieldLowerThan25())
+        if (context.IsShieldLowerThan25())
         {
             await context.NotifyShieldHpLowAsync(new BehaviorEventArgs(constructId, prefab, context));
         }
@@ -101,7 +103,7 @@ public class NotifierBehavior(ulong constructId, IPrefab prefab) : IConstructBeh
         context.TryGetProperty("ShieldVentTimer", out var shieldVentTimer, 0d);
         shieldVentTimer += context.DeltaTime;
 
-        if (constructInfo.IsShieldDown())
+        if (context.IsShieldDown())
         {
             if (shieldVentTimer > 5)
             {

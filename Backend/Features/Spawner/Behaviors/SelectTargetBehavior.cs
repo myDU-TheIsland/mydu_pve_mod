@@ -31,6 +31,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
     private ISectorPoolManager _sectorPoolManager;
     private INpcRadarService _npcRadarService;
     private Random _random;
+    private IConstructDamageService _constructDamageService;
 
     public bool IsActive() => _active;
 
@@ -44,6 +45,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         _logger = provider.CreateLogger<SelectTargetBehavior>();
         _constructGrain = _orleans.GetConstructGrain(constructId);
         _constructService = provider.GetRequiredService<IConstructService>();
+        _constructDamageService = provider.GetRequiredService<IConstructDamageService>();
         _sectorPoolManager = provider.GetRequiredService<ISectorPoolManager>();
         _npcRadarService = provider.GetRequiredService<INpcRadarService>();
         _random = provider.GetRandomProvider().GetRandom();
@@ -124,6 +126,9 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
 
         context.SetAutoTargetConstructId(targetId);
 
+        var targetDamage = await _constructDamageService.GetConstructDamage(targetId);
+        context.SetTargetDamageData(targetId, targetDamage);
+
         var movePos = await GetTargetMovePosition(context);
         if (!movePos.HasValue) return;
 
@@ -195,10 +200,10 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         }
         
         var targetDistance = prefab.DefinitionItem.TargetDistance;
-        if (context.Damage.Weapons.Any())
+        if (context.DamageData.Weapons.Any())
         {
-            targetDistance = _random.PickOneAtRandom(context.Damage.Weapons)
-                .BaseOptimalDistance * prefab.DefinitionItem.Mods.Weapon.OptimalDistance;
+            targetDistance = context.DamageData.GetBestDamagingWeapon()!.BaseOptimalDistance *
+                             prefab.DefinitionItem.Mods.Weapon.OptimalDistance;
         }
 
         return await effect.GetTargetMovePosition(new ICalculateTargetMovePositionEffect.Params

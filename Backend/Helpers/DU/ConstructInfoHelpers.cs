@@ -1,3 +1,4 @@
+using Mod.DynamicEncounters.Features.Spawner.Data;
 using NQ;
 
 namespace Mod.DynamicEncounters.Helpers.DU;
@@ -14,19 +15,19 @@ public static class ConstructInfoHelpers
         return info.mutableData.shieldState.hasShield;
     }
 
-    public static bool IsShieldDown(this ConstructInfo info)
+    public static bool IsShieldDown(this BehaviorContext context)
     {
-        if (!info.mutableData.shieldState.hasShield)
+        if (!context.HasShield)
         {
             return true;
         }
 
-        if (!info.mutableData.shieldState.isActive)
+        if (!context.IsShieldActive)
         {
             return true;
         }
 
-        if (info.mutableData.shieldState.shieldHpRatio <= 0)
+        if (context.ShieldPercent <= 0)
         {
             return true;
         }
@@ -34,23 +35,23 @@ public static class ConstructInfoHelpers
         return false;
     }
     
-    public static bool IsShieldLowerThanHalf(this ConstructInfo info)
+    public static bool IsShieldLowerThanHalf(this BehaviorContext context)
     {
-        if (info.IsShieldDown())
+        if (context.IsShieldDown())
         {
             return true;
         }
 
-        return info.mutableData.shieldState.shieldHpRatio < 0.5;
+        return context.ShieldPercent < 0.5;
     }
     
-    public static bool IsShieldLowerThan25(this ConstructInfo info)
+    public static bool IsShieldLowerThan25(this BehaviorContext context)
     {
-        if (info.IsShieldDown())
+        if (context.IsShieldDown())
         {
             return true;
         }
 
-        return info.mutableData.shieldState.shieldHpRatio < 0.25;
+        return context.ShieldPercent < 0.25;
     }
 }

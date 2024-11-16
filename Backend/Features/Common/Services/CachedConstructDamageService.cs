@@ -8,14 +8,14 @@ namespace Mod.DynamicEncounters.Features.Common.Services;
 
 public class CachedConstructDamageService(IConstructDamageService service) : IConstructDamageService
 {
-    private readonly TemporaryMemoryCache<ulong, ConstructDamageOutcome> _constructDamage = new(nameof(_constructDamage), TimeSpan.FromHours(1));
+    private readonly TemporaryMemoryCache<ulong, ConstructDamageData> _constructDamage = new(nameof(_constructDamage), TimeSpan.FromHours(1));
 
     public Dictionary<WeaponTypeScale, IList<AmmoItem>> GetAllAmmoTypesByWeapon()
     {
         return service.GetAllAmmoTypesByWeapon();
     }
 
-    public Task<ConstructDamageOutcome> GetConstructDamage(ulong constructId)
+    public Task<ConstructDamageData> GetConstructDamage(ulong constructId)
     {
         return _constructDamage.TryGetOrSetValue(
             constructId,

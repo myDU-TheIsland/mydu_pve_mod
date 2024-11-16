@@ -51,7 +51,8 @@ public class BehaviorContext(
     public long FactionId { get; } = factionId;
     public Guid? TerritoryId { get; } = territoryId;
     public Vec3 Sector { get; } = sector;
-    public ConstructDamageOutcome Damage { get; set; } = new([]);
+    public ConstructDamageData DamageData { get; set; } = new([]);
+    public ConcurrentDictionary<ulong, ConstructDamageData> TargetDamageData { get; set; } = new();
     public IServiceProvider ServiceProvider { get; init; } = serviceProvider;
     public readonly ConcurrentDictionary<string, bool> PublishedEvents = [];
     public ConcurrentDictionary<string, TimerPropertyValue> PropertyOverrides { get; } = [];
@@ -68,7 +69,19 @@ public class BehaviorContext(
     public bool IsActiveWreck { get; set; }
 
     public double RealismFactor { get; set; } = prefab.DefinitionItem.RealismFactor;
+    public bool HasShield { get; set; }
+    public double ShieldPercent { get; set; } = 0;
+    public bool IsShieldActive { get; set; }
+    public bool IsShieldVenting { get; set; }
 
+    public void UpdateShieldState(ConstructInfo constructInfo)
+    {
+        HasShield = constructInfo.mutableData.shieldState.hasShield;
+        ShieldPercent = constructInfo.mutableData.shieldState.shieldHpRatio;
+        IsShieldActive = constructInfo.mutableData.shieldState.isActive;
+        IsShieldVenting = constructInfo.mutableData.shieldState.isVenting;
+    }
+    
     public Task NotifyEvent(string @event, BehaviorEventArgs eventArgs)
     {
         // TODO for custom events
@@ -172,6 +185,11 @@ public class BehaviorContext(
     public void RefreshIdleSince()
     {
         SetProperty(IdleSinceProperty, DateTime.UtcNow);
+    }
+
+    public void SetTargetDamageData(ulong constructId, ConstructDamageData data)
+    {
+        TargetDamageData.TryAdd(constructId, data);
     }
 
     public double CalculateBrakingDistance()
