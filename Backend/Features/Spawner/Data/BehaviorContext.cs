@@ -174,7 +174,7 @@ public class BehaviorContext(
     {
         return this.GetOverrideOrDefault(
             nameof(DynamicProperties.TargetDistance),
-            0
+            0d
         );
     }
 
