@@ -11,6 +11,11 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 
 public class CalculateTargetPositionWithOffsetEffect(IServiceProvider provider) : ICalculateTargetMovePositionEffect
 {
+    private readonly Random _random = provider.GetRandomProvider().GetRandom();
+    
+    private DateTime? LastTimeOffsetUpdated { get; set; }
+    private Vec3 Offset { get; set; }
+    
     public async Task<Vec3?> GetTargetMovePosition(ICalculateTargetMovePositionEffect.Params @params)
     {
         if (!@params.TargetConstructId.HasValue ||
@@ -45,8 +50,14 @@ public class CalculateTargetPositionWithOffsetEffect(IServiceProvider provider) 
         }
 
         var distanceGoal = @params.TargetDistance;
-        var offset = new Vec3 { y = distanceGoal };
 
-        return targetPos + offset;
+        var timeDiff = DateTime.UtcNow - (LastTimeOffsetUpdated ?? DateTime.UtcNow);
+        if (LastTimeOffsetUpdated == null || timeDiff > TimeSpan.FromSeconds(30))
+        {
+            Offset = _random.RandomDirectionVec3() * distanceGoal;
+            LastTimeOffsetUpdated = DateTime.UtcNow;
+        }
+
+        return targetPos + Offset;
     }
 }

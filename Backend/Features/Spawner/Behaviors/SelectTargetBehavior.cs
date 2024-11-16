@@ -106,18 +106,10 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
 
         var selectTargetEffect = context.Effects.GetOrNull<ISelectRadarTargetEffect>();
 
-        var targetDistance = prefab.DefinitionItem.TargetDistance;
-        if (context.Damage.Weapons.Any())
-        {
-            targetDistance = _random.PickOneAtRandom(context.Damage.Weapons)
-                .BaseOptimalDistance * prefab.DefinitionItem.Mods.Weapon.OptimalDistance;
-        }
-        
         var selectedTarget = selectTargetEffect?.GetTarget(
             new ISelectRadarTargetEffect.Params
             {
                 DecisionTimeSeconds = prefab.DefinitionItem.TargetDecisionTimeSeconds, 
-                TargetDistance = targetDistance,
                 Contacts = radarContacts,
                 Context = context
             }
@@ -201,14 +193,21 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         {
             return new Vec3();
         }
+        
+        var targetDistance = prefab.DefinitionItem.TargetDistance;
+        if (context.Damage.Weapons.Any())
+        {
+            targetDistance = _random.PickOneAtRandom(context.Damage.Weapons)
+                .BaseOptimalDistance * prefab.DefinitionItem.Mods.Weapon.OptimalDistance;
+        }
 
         return await effect.GetTargetMovePosition(new ICalculateTargetMovePositionEffect.Params
         {
             InstigatorConstructId = constructId,
             InstigatorStartPosition = context.StartPosition,
             InstigatorPosition = context.Position,
-            TargetDistance = prefab.DefinitionItem.TargetDistance,
-            TargetConstructId = context.GetTargetConstructId()
+            TargetDistance = targetDistance,
+            TargetConstructId = context.GetTargetConstructId(),
         });
     }
 }
