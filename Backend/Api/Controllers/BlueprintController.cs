@@ -72,7 +72,7 @@ public partial class BlueprintController : Controller
         var blueprintContents = await sr.ReadToEndAsync();
         var blueprintJToken = JObject.Parse(blueprintContents);
 
-        if (blueprintJToken["fixtureheader"] == null)
+        if (folder != "asteroids" && blueprintJToken["fixtureheader"] == null)
         {
             return BadRequest("Not a correct blueprint type");
         }
