@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Helpers;
@@ -17,6 +18,13 @@ public class RandomSelectRadarTargetEffect : ISelectRadarTargetEffect
 
         if (LastSelectedTarget == null || AccumulatedDeltaTime > @params.DecisionTimeSeconds)
         {
+            if (!@params.Contacts.Any())
+            {
+                LastSelectedTarget = null;
+                AccumulatedDeltaTime = 0;
+                return LastSelectedTarget;
+            }
+            
             LastSelectedTarget = Random.PickOneAtRandom(@params.Contacts);
             AccumulatedDeltaTime = 0;
         }
