@@ -17,7 +17,6 @@ using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQ.Interfaces;
-using NQutils.Def;
 using Orleans;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors;
@@ -31,6 +30,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
     private IConstructService _constructService;
     private ISectorPoolManager _sectorPoolManager;
     private INpcRadarService _npcRadarService;
+    private Random _random;
 
     public bool IsActive() => _active;
 
@@ -46,6 +46,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         _constructService = provider.GetRequiredService<IConstructService>();
         _sectorPoolManager = provider.GetRequiredService<ISectorPoolManager>();
         _npcRadarService = provider.GetRequiredService<INpcRadarService>();
+        _random = provider.GetRandomProvider().GetRandom();
 
         return Task.CompletedTask;
     }
@@ -59,7 +60,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         }
 
         var targetSpan = DateTime.UtcNow - context.TargetSelectedTime;
-        if (context.IsMoveModeDefault() && targetSpan < TimeSpan.FromSeconds(10))
+        if (context.IsMoveModeDefault() && targetSpan < TimeSpan.FromSeconds(5))
         {
             var position = await GetTargetMovePosition(context);
             if (!position.HasValue) return;
@@ -96,30 +97,27 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             StatsRecorder.Record("NPC_Radar", sw.ElapsedMilliseconds);
         }
 
-        context.SetProperty(
-            BehaviorContext.ContactListProperty,
-            radarContacts.ToList()
-        );
+        context.UpdateRadarContacts(radarContacts);
 
-        if (radarContacts.Count > 0)
+        if (context.HasAnyRadarContact())
         {
-            context.SetProperty(BehaviorContext.IdleSinceProperty, DateTime.UtcNow);
-        }
-        else
-        {
-            context.TryGetProperty(BehaviorContext.IdleSinceProperty, out var idleSince, DateTime.UtcNow);
-            _logger.LogInformation("Idle since: {Date} | {Span}", idleSince, DateTime.UtcNow - idleSince);
-
-            return;
+            context.RefreshIdleSince();
         }
 
         var selectTargetEffect = context.Effects.GetOrNull<ISelectRadarTargetEffect>();
 
+        var targetDistance = prefab.DefinitionItem.TargetDistance;
+        if (context.Damage.Weapons.Any())
+        {
+            targetDistance = _random.PickOneAtRandom(context.Damage.Weapons)
+                .BaseOptimalDistance * prefab.DefinitionItem.Mods.Weapon.OptimalDistance;
+        }
+        
         var selectedTarget = selectTargetEffect?.GetTarget(
             new ISelectRadarTargetEffect.Params
             {
                 DecisionTimeSeconds = prefab.DefinitionItem.TargetDecisionTimeSeconds, 
-                TargetDistance = prefab.DefinitionItem.TargetDistance,
+                TargetDistance = targetDistance,
                 Contacts = radarContacts,
                 Context = context
             }
@@ -134,12 +132,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
 
         context.SetAutoTargetConstructId(targetId);
 
-        var targetMovePositionTask = GetTargetMovePosition(context);
-        var cacheTargetElementPositionsTask = CacheTargetElementPositions(context, targetId);
-
-        await Task.WhenAll([targetMovePositionTask, cacheTargetElementPositionsTask]);
-
-        var movePos = await targetMovePositionTask;
+        var movePos = await GetTargetMovePosition(context);
         if (!movePos.HasValue) return;
 
         context.SetAutoTargetMovePosition(movePos.Value);
@@ -191,23 +184,6 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         {
             _logger.LogError(e, "Failed to Takeover Ship");
         }
-    }
-
-    private async Task CacheTargetElementPositions(BehaviorContext context, ulong? targetConstructId)
-    {
-        if (!targetConstructId.HasValue)
-        {
-            return;
-        }
-
-        var constructElementsGrain = _orleans.GetConstructElementsGrain(targetConstructId.Value);
-        var elements = (await constructElementsGrain.GetElementsOfType<ConstructElement>()).ToList();
-
-        var elementInfoListTasks = elements
-            .Select(constructElementsGrain.GetElement);
-
-        var elementInfoList = await Task.WhenAll(elementInfoListTasks);
-        context.TargetElementPositions = elementInfoList.Select(x => x.position);
     }
 
     private async Task PilotingTakeOverAsync()

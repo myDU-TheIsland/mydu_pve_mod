@@ -24,10 +24,6 @@ public class BehaviorContext(
     IPrefab prefab
 ) : BaseContext
 {
-    [Newtonsoft.Json.JsonIgnore]
-    [JsonIgnore]
-    public IEnumerable<Vec3> TargetElementPositions { get; set; } = [];
-
     private double _deltaTime;
 
     public double DeltaTime
@@ -55,6 +51,7 @@ public class BehaviorContext(
     public long FactionId { get; } = factionId;
     public Guid? TerritoryId { get; } = territoryId;
     public Vec3 Sector { get; } = sector;
+    public ConstructDamageOutcome Damage { get; set; } = new([]);
     public IServiceProvider ServiceProvider { get; init; } = serviceProvider;
     public readonly ConcurrentDictionary<string, bool> PublishedEvents = [];
     public ConcurrentDictionary<string, TimerPropertyValue> PropertyOverrides { get; } = [];
@@ -118,8 +115,6 @@ public class BehaviorContext(
             nameof(DynamicProperties.TargetMovePosition),
             new Vec3()
         );
-        
-        // return (Vec3)Properties.GetOrDefault(nameof(DynamicProperties.TargetMovePosition), new Vec3());
     }
 
     public ulong? GetTargetConstructId()
@@ -163,11 +158,27 @@ public class BehaviorContext(
         return waypointList;
     }
 
+    public void UpdateRadarContacts(IList<NpcRadarContact> contacts)
+    {
+        SetProperty(
+            ContactListProperty,
+            contacts.ToList()
+        );
+    }
+
+    public bool HasAnyRadarContact() =>
+        TryGetProperty<IEnumerable<NpcRadarContact>>(ContactListProperty, out var contacts, []) && contacts.Any();
+
+    public void RefreshIdleSince()
+    {
+        SetProperty(IdleSinceProperty, DateTime.UtcNow);
+    }
+
     public double CalculateBrakingDistance()
     {
         var velSize = Velocity.Size();
         var brakingAcceleration = Prefab.DefinitionItem.AccelerationG * 9.81f;
-        
+
         return velSize * velSize / (2 * brakingAcceleration);
     }
 

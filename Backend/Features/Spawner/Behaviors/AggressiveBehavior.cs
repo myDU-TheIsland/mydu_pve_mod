@@ -1,49 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Backend;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Interfaces;
+using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
-using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Helpers;
-using Newtonsoft.Json;
 using NQ;
 using NQ.Interfaces;
-using NQutils.Def;
 using Orleans;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors;
 
 public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructBehavior
 {
-    private IEnumerable<ElementId> _weaponsElements;
-    private List<WeaponHandle> _weaponUnits;
     private IClusterClient _orleans;
-    private IGameplayBank _bank;
     private ILogger<AggressiveBehavior> _logger;
     private IConstructService _constructService;
 
     private ElementId _coreUnitElementId;
 
     private bool _active = true;
-    private bool _pveVoxelDamageEnabled;
     private IConstructElementsService _constructElementsService;
 
     public bool IsActive() => _active;
-
-    public class WeaponHandle(ElementInfo elementInfo, WeaponUnit unit)
-    {
-        public ElementInfo ElementInfo { get; } = elementInfo;
-        public WeaponUnit Unit { get; } = unit;
-    }
 
     public BehaviorTaskCategory Category => BehaviorTaskCategory.HighPriority;
 
@@ -54,26 +39,11 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
         _constructElementsService = provider.GetRequiredService<IConstructElementsService>();
 
-        _bank = provider.GetGameplayBank();
-
-        _weaponsElements = await _constructElementsService.GetWeaponUnits(constructId);
-        var elementInfos = await Task.WhenAll(
-            _weaponsElements.Select(id => _constructElementsService.GetElement(constructId, id))
-        );
-        _weaponUnits = elementInfos
-            .Select(ei => new WeaponHandle(ei, _bank.GetBaseObject<WeaponUnit>(ei)!))
-            .Where(w => w.Unit is not StasisWeaponUnit) // TODO Implement Stasis later
-            .ToList();
-
         _coreUnitElementId = await _constructElementsService.GetCoreUnit(constructId);
 
         _constructService = provider.GetRequiredService<IConstructService>();
 
         context.Properties.TryAdd("CORE_ID", _coreUnitElementId);
-
-        _pveVoxelDamageEnabled = await context.ServiceProvider
-            .GetRequiredService<IFeatureReaderService>()
-            .GetBoolValueAsync("PVEVoxelDamage", false);
 
         _logger = provider.CreateLogger<AggressiveBehavior>();
     }
@@ -104,7 +74,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         {
             return;
         }
-        
+
         var constructPos = constructInfo.rData.position;
 
         if (targetConstructId is null or 0)
@@ -118,7 +88,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         {
             return;
         }
-        
+
         var targetSize = targetInfo.rData.geometry.size;
 
         if (targetInfo.mutableData.pilot.HasValue)
@@ -134,12 +104,13 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         var constructSize = (ulong)constructInfo.rData.geometry.size;
         var targetPos = targetInfo.rData.position;
 
-        if (_weaponUnits.Count == 0)
+        var damageTrait = context.Damage;
+        if (!damageTrait.Weapons.Any())
         {
             return;
         }
-        
-        var weapon = random.PickOneAtRandom(_weaponUnits);
+
+        var weapon = random.PickOneAtRandom(damageTrait.Weapons);
 
         await ShootAndCycleAsync(
             new ShotContext(
@@ -151,7 +122,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
                 targetConstructId.Value,
                 targetPos,
                 hitPos,
-                _weaponUnits.Count // One shot equivalent of all weapons for performance reasons
+                damageTrait.Weapons.Count() // One shot equivalent of all weapons for performance reasons
             )
         );
     }
@@ -159,7 +130,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
     public class ShotContext(
         BehaviorContext behaviorContext,
         INpcShotGrain npcShotGrain,
-        WeaponHandle weaponHandle,
+        WeaponItem weaponHandle,
         Vec3 constructPosition,
         ulong constructSize,
         ulong targetConstructId,
@@ -170,7 +141,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
     {
         public BehaviorContext BehaviorContext { get; set; } = behaviorContext;
         public INpcShotGrain NpcShotGrain { get; set; } = npcShotGrain;
-        public WeaponHandle WeaponHandle { get; set; } = weaponHandle;
+        public WeaponItem WeaponItem { get; set; } = weaponHandle;
         public Vec3 ConstructPosition { get; set; } = constructPosition;
         public ulong ConstructSize { get; set; } = constructSize;
         public ulong TargetConstructId { get; set; } = targetConstructId;
@@ -199,28 +170,6 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         }
     }
 
-    private async Task SendShootModAction(ShotContext context)
-    {
-        var modManagerGrain = _orleans.GetModManagerGrain();
-
-        await modManagerGrain.TriggerModAction(
-            ModBase.Bot.PlayerId,
-            new ModAction
-            {
-                constructId = constructId,
-                modName = "Mod.DynamicEncounters",
-                actionId = 1,
-                payload = JsonConvert.SerializeObject(
-                    new
-                    {
-                        context.TargetConstructId,
-                        WeaponElementId = context.WeaponHandle.ElementInfo.elementId,
-                    }
-                )
-            }
-        );
-    }
-
     private async Task ShootAndCycleAsync(ShotContext context)
     {
         var distance = (context.TargetPosition - context.ConstructPosition).Size();
@@ -229,7 +178,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         {
             return;
         }
-        
+
         var functionalWeaponCount = await _constructElementsService.GetFunctionalDamageWeaponCount(constructId);
         if (functionalWeaponCount <= 0)
         {
@@ -249,11 +198,21 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
         SetShootTotalDeltaTime(context.BehaviorContext, totalDeltaTime);
 
-        var handle = context.WeaponHandle;
+        var w = context.WeaponItem;
+        var ammoType = w.AmmoItems
+            .Where(x => x.Level == prefab.DefinitionItem.AmmoTier && x.ItemTypeName.Contains(prefab.DefinitionItem.AmmoVariant, StringComparison.CurrentCultureIgnoreCase))
+            .Select(x => x.ItemTypeName)
+            .ToList();
+        
+        if (ammoType.Count == 0)
+        {
+            ammoType = ["AmmoMissileLarge4"];
+        }
 
-        var w = handle.Unit;
+        var ammoItem = random.PickOneAtRandom(ammoType);
+        
         var mod = prefab.DefinitionItem.Mods;
-        var cycleTime = w.baseCycleTime * mod.Weapon.CycleTime;
+        var cycleTime = w.BaseCycleTime * mod.Weapon.CycleTime;
 
         if (totalDeltaTime < cycleTime)
         {
@@ -277,28 +236,11 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
         SetShootTotalDeltaTime(context.BehaviorContext, 0);
 
-        if (prefab.DefinitionItem.AmmoItems.Count == 0)
-        {
-            prefab.DefinitionItem.AmmoItems = ["AmmoMissileLarge4"];
-        }
-
-        if (prefab.DefinitionItem.WeaponItems.Count == 0)
-        {
-            prefab.DefinitionItem.WeaponItems = ["WeaponMissileLargeAgile5"];
-        }
-
-        var ammoItem = random.PickOneAtRandom(prefab.DefinitionItem.AmmoItems);
-        var weaponItem = random.PickOneAtRandom(prefab.DefinitionItem.WeaponItems);
-
-        context.HitPosition = _pveVoxelDamageEnabled
-            ? random.PickOneAtRandom(context.BehaviorContext.TargetElementPositions)
-            : context.HitPosition;
-
         var sw = new Stopwatch();
         sw.Start();
 
         await context.NpcShotGrain.Fire(
-            w.displayName,
+            w.DisplayName,
             context.ConstructPosition,
             constructId,
             context.ConstructSize,
@@ -307,22 +249,22 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             new SentinelWeapon
             {
                 aoe = true,
-                damage = w.baseDamage * mod.Weapon.Damage * context.QuantityModifier,
+                damage = w.BaseDamage * mod.Weapon.Damage * context.QuantityModifier,
                 range = 400000,
                 aoeRange = 100000,
-                baseAccuracy = w.baseAccuracy * mod.Weapon.Accuracy,
+                baseAccuracy = w.BaseAccuracy * mod.Weapon.Accuracy,
                 effectDuration = 10,
                 effectStrength = 10,
-                falloffDistance = w.falloffDistance * mod.Weapon.FalloffDistance,
-                falloffTracking = w.falloffTracking * mod.Weapon.FalloffTracking,
+                falloffDistance = w.FalloffDistance * mod.Weapon.FalloffDistance,
+                falloffTracking = w.FalloffTracking * mod.Weapon.FalloffTracking,
                 fireCooldown = cycleTime,
-                baseOptimalDistance = w.baseOptimalDistance * mod.Weapon.OptimalDistance,
-                falloffAimingCone = w.falloffAimingCone * mod.Weapon.FalloffAimingCone,
-                baseOptimalTracking = w.baseOptimalTracking * mod.Weapon.OptimalTracking,
-                baseOptimalAimingCone = w.baseOptimalAimingCone * mod.Weapon.OptimalAimingCone,
-                optimalCrossSectionDiameter = w.optimalCrossSectionDiameter,
+                baseOptimalDistance = w.BaseOptimalDistance * mod.Weapon.OptimalDistance,
+                falloffAimingCone = w.FalloffAimingCone * mod.Weapon.FalloffAimingCone,
+                baseOptimalTracking = w.BaseOptimalTracking * mod.Weapon.OptimalTracking,
+                baseOptimalAimingCone = w.BaseOptimalAimingCone * mod.Weapon.OptimalAimingCone,
+                optimalCrossSectionDiameter = w.OptimalCrossSectionDiameter,
                 ammoItem = ammoItem,
-                weaponItem = weaponItem
+                weaponItem = w.ItemTypeName
             },
             5,
             context.HitPosition
@@ -331,7 +273,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         _logger.LogInformation("Construct {Construct} Shot Weapon. Took: {Time}ms {Weapon} / {Ammo}",
             constructId,
             sw.Elapsed.TotalMilliseconds,
-            weaponItem,
+            w.ItemTypeName,
             ammoItem
         );
     }

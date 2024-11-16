@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
-using Backend;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Interfaces;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors;
+using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
@@ -23,35 +20,25 @@ public class ShotSpawnController : Controller
     [HttpPut]
     [Route("shooter/{shooterConstructId:long}/target/{targetConstructId:long}")]
     public async Task<IActionResult> Shoot(
-        long shooterConstructId,
-        long targetConstructId,
+        ulong shooterConstructId,
+        ulong targetConstructId,
         [FromBody] ShotRequest request
     )
     {
         var provider = ModBase.ServiceProvider;
         var orleans = provider.GetOrleans();
         var npcShotGrain = orleans.GetNpcShotGrain();
-        var targetConstructInfoGrain = orleans.GetConstructInfoGrain((ulong)targetConstructId);
+        var targetConstructInfoGrain = orleans.GetConstructInfoGrain(targetConstructId);
         var targetConstructInfo = await targetConstructInfoGrain.Get();
-        var bank = provider.GetGameplayBank();
+        var constructDamageService = provider.GetRequiredService<IConstructDamageService>();
 
-        var targetConstructElementsGrain = orleans.GetConstructElementsGrain((ulong)targetConstructId);
+        var targetConstructElementsGrain = orleans.GetConstructElementsGrain(targetConstructId);
         var elements = await targetConstructElementsGrain.GetElementsOfType<ConstructElement>();
 
         var targetPos = targetConstructInfo.rData.position;
 
-        var constructElementsGrain = orleans.GetConstructElementsGrain((ulong)shooterConstructId);
-
-        var weaponsElements = await constructElementsGrain.GetElementsOfType<WeaponUnit>();
-        var elementInfos = await Task.WhenAll(
-            weaponsElements.Select(constructElementsGrain.GetElement)
-        );
-
-        var weaponUnits = elementInfos
-            .Select(ei => new AggressiveBehavior.WeaponHandle(ei, bank.GetBaseObject<WeaponUnit>(ei)!))
-            .Where(w => w.Unit is not StasisWeaponUnit) // TODO Implement Stasis later
-            .ToList();
-
+        var damageTrait = await constructDamageService.GetConstructDamage(shooterConstructId);
+        
         for (var i = 0; i < request.Iterations; i++)
         {
             var random = provider.GetRequiredService<IRandomProvider>().GetRandom();
@@ -59,8 +46,7 @@ public class ShotSpawnController : Controller
 
             var shootPos = randomDirection + targetPos;
             
-            var weapon = random.PickOneAtRandom(weaponUnits);
-            var w = weapon.Unit;
+            var w = random.PickOneAtRandom(damageTrait.Weapons);
 
             var weaponMod = request.WeaponModifiers;
             var targetElement = random.PickOneAtRandom(elements);
@@ -69,27 +55,27 @@ public class ShotSpawnController : Controller
             await npcShotGrain.Fire(
                 "Random",
                 shootPos,
-                (ulong)shooterConstructId,
+                shooterConstructId,
                 (ulong)targetConstructInfo.rData.geometry.size,
-                (ulong)targetConstructId,
+                targetConstructId,
                 targetPos,
                 new SentinelWeapon
                 {
                     aoe = true,
-                    damage = w.baseDamage * weaponMod.Damage,
+                    damage = w.BaseDamage * weaponMod.Damage,
                     range = 400000,
                     aoeRange = 100000,
-                    baseAccuracy = w.baseAccuracy * weaponMod.Accuracy,
+                    baseAccuracy = w.BaseAccuracy * weaponMod.Accuracy,
                     effectDuration = 1,
                     effectStrength = 1,
-                    falloffDistance = w.falloffDistance * weaponMod.FalloffDistance,
-                    falloffTracking = w.falloffTracking * weaponMod.FalloffTracking,
+                    falloffDistance = w.FalloffDistance * weaponMod.FalloffDistance,
+                    falloffTracking = w.FalloffTracking * weaponMod.FalloffTracking,
                     fireCooldown = 1,
-                    baseOptimalDistance = w.baseOptimalDistance * weaponMod.OptimalDistance,
-                    falloffAimingCone = w.falloffAimingCone * weaponMod.FalloffAimingCone,
-                    baseOptimalTracking = w.baseOptimalTracking * weaponMod.OptimalTracking,
-                    baseOptimalAimingCone = w.baseOptimalAimingCone * weaponMod.OptimalAimingCone,
-                    optimalCrossSectionDiameter = w.optimalCrossSectionDiameter,
+                    baseOptimalDistance = w.BaseOptimalDistance * weaponMod.OptimalDistance,
+                    falloffAimingCone = w.FalloffAimingCone * weaponMod.FalloffAimingCone,
+                    baseOptimalTracking = w.BaseOptimalTracking * weaponMod.OptimalTracking,
+                    baseOptimalAimingCone = w.BaseOptimalAimingCone * weaponMod.OptimalAimingCone,
+                    optimalCrossSectionDiameter = w.OptimalCrossSectionDiameter,
                     ammoItem = request.AmmoItem,
                     weaponItem = request.WeaponItem
                 },

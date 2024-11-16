@@ -18,6 +18,8 @@ public class PrefabItem
     public BehaviorModifiers Mods { get; set; } = new();
     public List<string> InitialBehaviors { get; set; } = [];
     public List<string> AmmoItems { get; set; } = [];
+    public int AmmoTier { get; set; } = 3;
+    public string AmmoVariant { get; set; } = "Agile";
     public List<string> WeaponItems { get; set; } = [];
     public double AccelerationG { get; set; } = 15;
     public float RotationSpeed { get; set; } = 0.5f;

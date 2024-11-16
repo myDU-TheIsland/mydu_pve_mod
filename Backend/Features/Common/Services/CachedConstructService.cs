@@ -16,8 +16,8 @@ public class CachedConstructService(
     private readonly TemporaryMemoryCache<ulong, Velocities> _velocities = new(nameof(_velocities), constructInfoCacheSpan);
     private readonly TemporaryMemoryCache<ulong, bool> _beingControlled = new(nameof(_beingControlled), controlCheckCacheSpan);
     private readonly TemporaryMemoryCache<ulong, bool> _inSafeZone = new(nameof(_inSafeZone), controlCheckCacheSpan);
-    private readonly TemporaryMemoryCache<ulong, bool> _identifyNotification = new(nameof(_identifyNotification), TimeSpan.FromSeconds(5));
-    private readonly TemporaryMemoryCache<ulong, bool> _attackingNotification = new(nameof(_attackingNotification), TimeSpan.FromSeconds(5));
+    private readonly TemporaryMemoryCache<ulong, bool> _identifyNotification = new(nameof(_identifyNotification), TimeSpan.FromSeconds(30));
+    private readonly TemporaryMemoryCache<ulong, bool> _attackingNotification = new(nameof(_attackingNotification), TimeSpan.FromSeconds(30));
 
     public async Task<ConstructInfoOutcome> GetConstructInfoAsync(ulong constructId)
     {

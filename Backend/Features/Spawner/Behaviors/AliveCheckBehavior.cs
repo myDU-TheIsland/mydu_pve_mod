@@ -24,6 +24,7 @@ public class AliveCheckBehavior(ulong constructId, IPrefab prefab) : IConstructB
     private IConstructService _constructService;
     private IConstructElementsService _constructElementsService;
     private ILogger<AliveCheckBehavior> _logger;
+    private IConstructDamageService _constructDamageService;
 
     public BehaviorTaskCategory Category => BehaviorTaskCategory.HighPriority;
 
@@ -34,6 +35,7 @@ public class AliveCheckBehavior(ulong constructId, IPrefab prefab) : IConstructB
         _handleRepository = provider.GetRequiredService<IConstructHandleRepository>();
         _constructService = provider.GetRequiredService<IConstructService>();
         _constructElementsService = provider.GetRequiredService<IConstructElementsService>();
+        _constructDamageService = provider.GetRequiredService<IConstructDamageService>();
         _coreUnitElementId = await _constructElementsService.GetCoreUnit(constructId);
         _logger = provider.CreateLogger<AliveCheckBehavior>();
     }
@@ -68,6 +70,8 @@ public class AliveCheckBehavior(ulong constructId, IPrefab prefab) : IConstructB
             
             return;
         }
+
+        context.Damage = await _constructDamageService.GetConstructDamage(constructId);
 
         // just to cache it
         await Task.WhenAll([

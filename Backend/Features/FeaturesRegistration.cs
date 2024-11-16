@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Common.Services;
 using Mod.DynamicEncounters.Database.Interfaces;
@@ -52,6 +51,9 @@ public static class FeaturesRegistration
                 TimeSpan.FromSeconds(1),
                 TimeSpan.FromSeconds(5)
             )
+        );
+        services.AddSingleton<IConstructDamageService>(p =>
+            new CachedConstructDamageService(new ConstructDamageService(p))
         );
         services.AddSingleton<INpcRadarService>(p => new CachedAreaScanService(new AreaScanService(p)));
         services.AddSingleton<IErrorRepository, ErrorRepository>();
