@@ -1,4 +1,5 @@
 using FluentMigrator;
+using Mod.DynamicEncounters.Common.Helpers;
 
 namespace Mod.DynamicEncounters.Database.Migrations;
 
@@ -7,6 +8,12 @@ public class AddAllPetsEmotesAndSkinsToPlayers : Migration
 {
     public override void Up()
     {
+        var enabled = EnvironmentVariableHelper.GetEnvironmentVarOrDefault("ENABLE_GIVE_DEFAULT_MIGRATION", "");
+        if (string.IsNullOrEmpty(enabled))
+        {
+            return;
+        }
+        
         const string petsJson = "[11,12,13,1,2,3,4,5]";
         const string emotesJson = """["emote_approve","emote_cry","emote_dance","emote_disapprove","emote_doit","emote_palm","emote_salute","emote_silly","emote_throat","emote_victory"]""";
         const string skinsJson = """[{"skin":"alpha","variation":""},{"skin":"arkship","variation":""},{"skin":"arkship","variation":"black"},{"skin":"arkship","variation":"bronze"},{"skin":"arkship","variation":"silver"},{"skin":"default","variation":""},{"skin":"earth","variation":""},{"skin":"earth","variation":"black"},{"skin":"earth","variation":"silver"},{"skin":"military","variation":""}]""";

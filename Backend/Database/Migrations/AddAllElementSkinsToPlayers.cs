@@ -1,4 +1,6 @@
+using System;
 using FluentMigrator;
+using Mod.DynamicEncounters.Common.Helpers;
 
 namespace Mod.DynamicEncounters.Database.Migrations;
 
@@ -12,6 +14,12 @@ public class AddAllElementSkinsToPlayers : Migration
 
     public override void Up()
     {
+        var enabled = EnvironmentVariableHelper.GetEnvironmentVarOrDefault("ENABLE_GIVE_DEFAULT_MIGRATION", "");
+        if (string.IsNullOrEmpty(enabled))
+        {
+            return;
+        }
+        
         Execute.Sql($"""
                     CREATE OR REPLACE FUNCTION fn_add_player_skins()
                     RETURNS TRIGGER AS $$
