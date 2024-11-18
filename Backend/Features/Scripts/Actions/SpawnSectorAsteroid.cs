@@ -2,12 +2,14 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using NQ;
 using NQ.Interfaces;
 
 namespace Mod.DynamicEncounters.Features.Scripts.Actions;
@@ -15,7 +17,6 @@ namespace Mod.DynamicEncounters.Features.Scripts.Actions;
 [ScriptActionName(ActionName)]
 public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
 {
-    private readonly ScriptActionItem _actionItem = actionItem;
     public const string ActionName = "spawn-sector-asteroid";
     public string Name => ActionName;
     public string GetKey() => Name;
@@ -25,6 +26,7 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
         var logger = context.ServiceProvider.CreateLogger<SpawnSectorAsteroid>();
         var areaScanService = context.ServiceProvider.GetRequiredService<IAreaScanService>();
         var taskQueueService = context.ServiceProvider.GetRequiredService<ITaskQueueService>();
+        var random = context.ServiceProvider.GetRequiredService<IRandomProvider>().GetRandom();
         var orleans = context.ServiceProvider.GetOrleans();
         var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
 
@@ -47,11 +49,20 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
                 DateTime.UtcNow
             );
         }
+
+        var offset = random.NextDouble() * actionItem.Area.Radius;
+        var direction = random.RandomDirectionVec3();
+        var position = context.Sector + new Vec3
+        {
+            x = offset * direction.x,
+            y = offset * direction.y,
+            z = offset * direction.z
+        };
         
         var asteroidId = await asteroidManagerGrain.SpawnAsteroid(
             5,
             $"{file}",
-            context.Sector,
+            position,
             2
         );
 
