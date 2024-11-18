@@ -10,9 +10,9 @@ using NQ.Interfaces;
 namespace Mod.DynamicEncounters.Features.Scripts.Actions;
 
 [ScriptActionName(ActionName)]
-public class DeleteConstructAction(ScriptActionItem actionItem) : IScriptAction
+public class DeleteAsteroidAction(ScriptActionItem actionItem) : IScriptAction
 {
-    public const string ActionName = "delete";
+    public const string ActionName = "delete-asteroid";
     
     public string GetKey() => Name;
 
@@ -31,7 +31,7 @@ public class DeleteConstructAction(ScriptActionItem actionItem) : IScriptAction
         
         if (!context.ConstructId.HasValue)
         {
-            logger.LogError("No construct id on context to execute this action");
+            logger.LogError("No asteroid id on context to execute this action");
             return ScriptActionResult.Failed();
         }
         
@@ -39,14 +39,14 @@ public class DeleteConstructAction(ScriptActionItem actionItem) : IScriptAction
 
         try
         {
-            var parentingGrain = orleans.GetConstructParentingGrain();
-            await parentingGrain.DeleteConstruct(context.ConstructId.Value, hardDelete: true);
-        
-            logger.LogInformation("Deleted construct {ConstructId}", context.ConstructId.Value);
+            var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
+            await asteroidManagerGrain.Despawn(context.ConstructId.Value);
+            
+            logger.LogInformation("Deleted asteroid {ConstructId}", context.ConstructId.Value);
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Failed to delete construct {Construct}", context.ConstructId.Value);
+            logger.LogInformation(e, "Failed to delete asteroid {Construct}", context.ConstructId.Value);
             return ScriptActionResult.Failed();
         }
         

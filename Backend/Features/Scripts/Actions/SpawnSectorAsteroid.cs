@@ -43,7 +43,7 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
             await taskQueueService.EnqueueScript(
                 new ScriptActionItem
                 {
-                    Type = "delete",
+                    Type = "delete-asteroid",
                     ConstructId = contact.ConstructId
                 },
                 DateTime.UtcNow
