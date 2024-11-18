@@ -11,11 +11,11 @@ using NQ;
 
 namespace Mod.DynamicEncounters.Features.Common.Services;
 
-public class AreaScanService(IServiceProvider provider) : INpcRadarService
+public class AreaScanService(IServiceProvider provider) : IAreaScanService
 {
     private readonly IPostgresConnectionFactory _factory = provider.GetRequiredService<IPostgresConnectionFactory>();
 
-    public async Task<IEnumerable<NpcRadarContact>> ScanForPlayerContacts(
+    public async Task<IEnumerable<ScanContact>> ScanForPlayerContacts(
         ulong constructId, 
         Vec3 position,
         double radius,
@@ -55,9 +55,32 @@ public class AreaScanService(IServiceProvider provider) : INpcRadarService
         return rows.Select(MapToModel);
     }
 
-    private static NpcRadarContact MapToModel(DbRow row)
+    public async Task<IEnumerable<ScanContact>> ScanForAsteroids(Vec3 position, double radius)
     {
-        return new NpcRadarContact(
+        using var db = _factory.Create();
+        db.Open();
+
+        var rows = (await db.QueryAsync<DbRow>(
+            $"""
+              SELECT 
+              	 C.id, 
+              	 C.name,
+              	 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance 
+               FROM public.construct C
+               WHERE ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
+              	 AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
+              	 AND C.deleted_at IS NULL
+              	 AND (C.json_properties->>'kind' = '2')
+               ORDER BY distance
+              """
+        )).ToList();
+
+        return rows.Select(MapToModel);
+    }
+
+    private static ScanContact MapToModel(DbRow row)
+    {
+        return new ScanContact(
             row.name,
             (ulong)row.id,
             row.distance

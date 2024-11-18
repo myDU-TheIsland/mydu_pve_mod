@@ -6,11 +6,11 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 
 public interface ISelectRadarTargetEffect : IEffect
 {
-    NpcRadarContact? GetTarget(Params @params);
+    ScanContact? GetTarget(Params @params);
     
     public class Params
     {
-        public IEnumerable<NpcRadarContact> Contacts { get; set; } 
+        public IEnumerable<ScanContact> Contacts { get; set; } 
         public BehaviorContext Context { get; set; }
         public double DecisionTimeSeconds { get; set; } = 30;
     }

@@ -5,12 +5,14 @@ using NQ;
 
 namespace Mod.DynamicEncounters.Features.Common.Interfaces;
 
-public interface INpcRadarService
+public interface IAreaScanService
 {
-    Task<IEnumerable<NpcRadarContact>> ScanForPlayerContacts(
+    Task<IEnumerable<ScanContact>> ScanForPlayerContacts(
         ulong constructId,
         Vec3 position,
         double radius,
         int limit = 5
     );
+
+    Task<IEnumerable<ScanContact>> ScanForAsteroids(Vec3 position, double radius);
 }

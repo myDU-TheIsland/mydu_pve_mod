@@ -29,7 +29,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
     private IConstructGrain _constructGrain;
     private IConstructService _constructService;
     private ISectorPoolManager _sectorPoolManager;
-    private INpcRadarService _npcRadarService;
+    private IAreaScanService _areaScanService;
     private Random _random;
     private IConstructDamageService _constructDamageService;
 
@@ -47,7 +47,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         _constructService = provider.GetRequiredService<IConstructService>();
         _constructDamageService = provider.GetRequiredService<IConstructDamageService>();
         _sectorPoolManager = provider.GetRequiredService<ISectorPoolManager>();
-        _npcRadarService = provider.GetRequiredService<INpcRadarService>();
+        _areaScanService = provider.GetRequiredService<IAreaScanService>();
         _random = provider.GetRandomProvider().GetRandom();
 
         return Task.CompletedTask;
@@ -82,14 +82,14 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             return;
         }
 
-        IList<NpcRadarContact> radarContacts = [];
+        IList<ScanContact> radarContacts = [];
 
         if (context.Position.HasValue)
         {
             var spatialQuerySw = new StopWatch();
             spatialQuerySw.Start();
 
-            radarContacts = (await _npcRadarService.ScanForPlayerContacts(
+            radarContacts = (await _areaScanService.ScanForPlayerContacts(
                     constructId,
                     context.Position.Value,
                     DistanceHelpers.OneSuInMeters * 5

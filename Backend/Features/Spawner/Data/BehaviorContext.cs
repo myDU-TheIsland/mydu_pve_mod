@@ -219,7 +219,7 @@ public class BehaviorContext(
         return waypointList;
     }
 
-    public void UpdateRadarContacts(IList<NpcRadarContact> contacts)
+    public void UpdateRadarContacts(IList<ScanContact> contacts)
     {
         SetProperty(
             ContactListProperty,
@@ -228,7 +228,7 @@ public class BehaviorContext(
     }
 
     public bool HasAnyRadarContact() =>
-        TryGetProperty<IEnumerable<NpcRadarContact>>(ContactListProperty, out var contacts, []) && contacts.Any();
+        TryGetProperty<IEnumerable<ScanContact>>(ContactListProperty, out var contacts, []) && contacts.Any();
 
     public void RefreshIdleSince()
     {

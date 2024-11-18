@@ -55,7 +55,7 @@ public static class FeaturesRegistration
         services.AddSingleton<IConstructDamageService>(p =>
             new CachedConstructDamageService(new ConstructDamageService(p))
         );
-        services.AddSingleton<INpcRadarService>(p => new CachedAreaScanService(new AreaScanService(p)));
+        services.AddSingleton<IAreaScanService>(p => new CachedAreaScanService(new AreaScanService(p)));
         services.AddSingleton<IErrorRepository, ErrorRepository>();
         services.AddSingleton<IErrorService, ErrorService>();
         services.AddSingleton<IErrorService, ErrorService>();

@@ -10,9 +10,9 @@ public class RandomSelectRadarTargetEffect : ISelectRadarTargetEffect
 {
     private Random Random { get; } = new();
     private double AccumulatedDeltaTime { get; set; }
-    private NpcRadarContact? LastSelectedTarget { get; set; }
+    private ScanContact? LastSelectedTarget { get; set; }
     
-    public NpcRadarContact? GetTarget(ISelectRadarTargetEffect.Params @params)
+    public ScanContact? GetTarget(ISelectRadarTargetEffect.Params @params)
     {
         AccumulatedDeltaTime += @params.Context.DeltaTime;
 

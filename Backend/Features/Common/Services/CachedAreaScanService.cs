@@ -7,18 +7,23 @@ using NQ;
 
 namespace Mod.DynamicEncounters.Features.Common.Services;
 
-public class CachedAreaScanService(INpcRadarService npcRadarService) : INpcRadarService
+public class CachedAreaScanService(IAreaScanService areaScanService) : IAreaScanService
 {
-    private readonly TemporaryMemoryCache<ulong, IEnumerable<NpcRadarContact>> _npcRadar =
+    private readonly TemporaryMemoryCache<ulong, IEnumerable<ScanContact>> _npcRadar =
         new(nameof(_npcRadar), TimeSpan.FromSeconds(3));
 
-    public Task<IEnumerable<NpcRadarContact>> ScanForPlayerContacts(ulong constructId, Vec3 position,
+    public Task<IEnumerable<ScanContact>> ScanForPlayerContacts(ulong constructId, Vec3 position,
         double radius,
         int limit)
     {
         return _npcRadar.TryGetOrSetValue(
             constructId,
-            () => npcRadarService.ScanForPlayerContacts(constructId, position, radius)
+            () => areaScanService.ScanForPlayerContacts(constructId, position, radius)
         );
+    }
+
+    public Task<IEnumerable<ScanContact>> ScanForAsteroids(Vec3 position, double radius)
+    {
+        return areaScanService.ScanForAsteroids(position, radius);
     }
 }
