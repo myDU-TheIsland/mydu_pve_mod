@@ -30,7 +30,7 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
         var orleans = context.ServiceProvider.GetOrleans();
         var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
 
-        if (!context.Properties.TryGetValue("File", out var file) || file == null)
+        if (!actionItem.Properties.TryGetValue("File", out var file) || file == null)
         {
             logger.LogError("File not found on script properties");
             
