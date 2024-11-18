@@ -15,6 +15,7 @@ namespace Mod.DynamicEncounters.Features.Scripts.Actions;
 [ScriptActionName(ActionName)]
 public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
 {
+    private readonly ScriptActionItem _actionItem = actionItem;
     public const string ActionName = "spawn-sector-asteroid";
     public string Name => ActionName;
     public string GetKey() => Name;
@@ -30,13 +31,6 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
         if (!context.Properties.TryGetValue("File", out var file) || file == null)
         {
             logger.LogError("File not found on script properties");
-            
-            return ScriptActionResult.Failed();
-        }
-
-        if (!actionItem.Position.HasValue)
-        {
-            logger.LogError("Position not found on script");
             
             return ScriptActionResult.Failed();
         }
@@ -57,7 +51,7 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
         var asteroidId = await asteroidManagerGrain.SpawnAsteroid(
             5,
             $"{file}",
-            actionItem.Position.Value,
+            context.Sector,
             2
         );
 
