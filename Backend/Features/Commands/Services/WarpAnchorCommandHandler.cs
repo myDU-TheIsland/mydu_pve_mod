@@ -46,9 +46,9 @@ public class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
         var warpAnchorModName =
             await _featureReaderService.GetStringValueAsync("WarpAnchorModName", "Mod.DynamicEncounters");
 
-        var (_, world) = await _sceneGraph.GetPlayerWorldPosition(instigatorPlayerId);
+        var (local, world) = await _sceneGraph.GetPlayerWorldPosition(instigatorPlayerId);
 
-        if (world.constructId <= 0)
+        if (world.constructId <= 0 && local.constructId <= 0)
         {
             await _playerAlertService.SendErrorAlert(instigatorPlayerId, "You need to be on a construct");
             return;
