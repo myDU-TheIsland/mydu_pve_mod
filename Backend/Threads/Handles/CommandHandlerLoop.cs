@@ -48,6 +48,13 @@ public class CommandHandlerLoop(IThreadManager threadManager, CancellationToken 
                         ModBase.ServiceProvider.GetRequiredService<INpcKillsCommandHandler>();
                     await npcKillsCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
                 }
+
+                if (commandItem.Message.StartsWith("@wac"))
+                {
+                    var warpAnchorCommandHandler =
+                        ModBase.ServiceProvider.GetRequiredService<IWarpAnchorCommandHandler>();
+                    await warpAnchorCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                }
             }
             catch (Exception e)
             {
