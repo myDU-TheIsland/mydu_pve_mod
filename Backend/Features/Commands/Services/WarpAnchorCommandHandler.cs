@@ -46,15 +46,15 @@ public class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
         var warpAnchorModName =
             await _featureReaderService.GetStringValueAsync("WarpAnchorModName", "Mod.DynamicEncounters");
 
-        var (local, world) = await _sceneGraph.GetPlayerWorldPosition(instigatorPlayerId);
+        var (local, _) = await _sceneGraph.GetPlayerWorldPosition(instigatorPlayerId);
 
-        if (world.constructId <= 0 && local.constructId <= 0)
+        if (local.constructId <= 0)
         {
             await _playerAlertService.SendErrorAlert(instigatorPlayerId, "You need to be on a construct");
             return;
         }
 
-        var constructGrain = ModBase.ServiceProvider.GetOrleans().GetConstructGrain(world.constructId);
+        var constructGrain = ModBase.ServiceProvider.GetOrleans().GetConstructGrain(local.constructId);
         var pilot = await constructGrain.GetPilot();
 
         if (pilot != instigatorPlayerId)
@@ -69,7 +69,7 @@ public class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
             {
                 modName = warpAnchorModName,
                 actionId = (ulong)warpAnchorModActionId,
-                constructId = world.constructId
+                constructId = local.constructId
             }
         );
     }
