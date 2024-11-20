@@ -12,6 +12,7 @@ public abstract class HighTickModLoop : ThreadHandle
     private readonly int _framesPerSecond;
     private readonly bool _fixedStep;
     private const double FixedDeltaTime = 1 / 20d;
+    private const int MaxFixedStepLoops = 10;
     private TimeSpan _accumulatedTime = TimeSpan.Zero;
 
     protected HighTickModLoop(
@@ -77,11 +78,20 @@ public abstract class HighTickModLoop : ThreadHandle
 
         _accumulatedTime += deltaTime;
         var fixedDeltaSpan = TimeSpan.FromSeconds(FixedDeltaTime);
-        
+
+        var tickCount = 0;
         while (_accumulatedTime >= fixedDeltaSpan)
         {
             await Tick(fixedDeltaSpan);
             _accumulatedTime -= fixedDeltaSpan;
+
+            tickCount++;
+
+            if (tickCount > MaxFixedStepLoops)
+            {
+                _accumulatedTime = TimeSpan.Zero;
+                break;
+            }
         }
 
         _stopWatch = new StopWatch();
