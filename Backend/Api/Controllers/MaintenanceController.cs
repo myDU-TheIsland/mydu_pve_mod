@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BotLib.BotClient;
@@ -7,13 +8,14 @@ using BotLib.Protocols.Queuing;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Database.Interfaces;
+using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
+using Mod.DynamicEncounters.Helpers;
 using Serilog.Events;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
@@ -115,5 +117,38 @@ public class MaintenanceController : Controller
         }
 
         return Ok($"Enqueued {counter} Operations");
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> GetConstructsOnArea([FromBody] ClearConstructsRequest request)
+    {
+        var provider = ModBase.ServiceProvider;
+        var areaScanService = provider.GetRequiredService<IAreaScanService>();
+
+        var constructService = provider.GetRequiredService<IConstructService>();
+        var constructTransform = await constructService.GetConstructTransformAsync(request.ConstructId);
+
+        if (!constructTransform.ConstructExists)
+        {
+            return NotFound();
+        }
+
+        var npcConstructs = await areaScanService.ScanForNpcConstructs(constructTransform.Position, request.Radius, request.Limit);
+        var abandonedConstructs = await areaScanService.ScanForAbandonedConstructs(constructTransform.Position, request.Radius, request.Limit);
+
+        var list = new List<ScanContact>();
+        list.AddRange(npcConstructs);
+        list.AddRange(abandonedConstructs);
+        
+        return Ok(list.OrderBy(x => x.Distance));
+    }
+
+    public class ClearConstructsRequest
+    {
+        public bool SkipAbandoned { get; set; }
+        public bool SkipNpcs { get; set; }
+        public double Radius { get; set; } = 20 * DistanceHelpers.OneSuInMeters;
+        public int Limit { get; set; } = 10;
+        public ulong ConstructId { get; set; }
     }
 }

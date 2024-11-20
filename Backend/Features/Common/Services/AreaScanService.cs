@@ -55,6 +55,62 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
         return rows.Select(MapToModel);
     }
 
+    public async Task<IEnumerable<ScanContact>> ScanForNpcConstructs(Vec3 position, double radius, int limit = 5)
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        var rows = (await db.QueryAsync<DbRow>(
+            $"""
+             SELECT 
+                 C.id, 
+                 C.name, 
+                 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance 
+             FROM public.construct C
+             INNER JOIN public.ownership O ON O.id = C.owner_entity_id
+             INNER JOIN mod_npc_construct_handle CH ON (CH.construct_id = C.id)
+             WHERE ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
+                 AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
+                 AND C.deleted_at IS NULL
+                 AND CH.deleted_at IS NULL
+                 AND (C.json_properties->>'isUntargetable' = 'false' OR C.json_properties->>'isUntargetable' IS NULL)
+                 AND (C.json_properties->>'kind' IN ('4', '5'))
+                 AND (C.owner_entity_id IS NOT NULL)
+                 AND (O.player_id == 4)
+             ORDER BY distance ASC
+             LIMIT {limit}
+             """
+        )).ToList();
+
+        return rows.Select(MapToModel);
+    }
+
+    public async Task<IEnumerable<ScanContact>> ScanForAbandonedConstructs(Vec3 position, double radius, int limit = 10)
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        var rows = (await db.QueryAsync<DbRow>(
+            $"""
+             SELECT 
+                 C.id, 
+                 C.name, 
+                 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance 
+             FROM public.construct C
+             WHERE ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
+                 AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
+                 AND C.deleted_at IS NULL
+                 AND (C.json_properties->>'isUntargetable' = 'false' OR C.json_properties->>'isUntargetable' IS NULL)
+                 AND (C.json_properties->>'kind' IN ('4', '5'))
+                 AND (C.owner_entity_id IS NULL)
+             ORDER BY distance ASC
+             LIMIT {limit}
+             """
+        )).ToList();
+
+        return rows.Select(MapToModel);
+    }
+
     public async Task<IEnumerable<ScanContact>> ScanForAsteroids(Vec3 position, double radius)
     {
         using var db = _factory.Create();
