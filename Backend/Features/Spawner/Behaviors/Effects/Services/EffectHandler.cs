@@ -13,7 +13,7 @@ public class EffectHandler : IEffectHandler
     public EffectHandler(IServiceProvider provider)
     {
         RegisterDefault<ICalculateTargetMovePositionEffect>(new CalculateTargetPositionWithOffsetEffect(provider));
-        RegisterDefault<IMovementEffect>(new PIDMovementEffect());
+        RegisterDefault<IMovementEffect>(new BurnToTargetMovementEffect());
         RegisterDefault<ISelectRadarTargetEffect>(new ClosestSelectRadarTargetEffect());
     }
 
