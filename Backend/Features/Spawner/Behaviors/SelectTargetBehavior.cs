@@ -211,7 +211,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         if (context.DamageData.Weapons.Any())
         {
             targetMoveDistance = context.DamageData.GetHalfFalloffFiringDistance(context.DamageData.GetBestDamagingWeapon()!) *
-                             prefab.DefinitionItem.Mods.Weapon.OptimalDistance / 2;
+                             prefab.DefinitionItem.Mods.Weapon.OptimalDistance;
         }
         
         context.SetTargetMoveDistance(targetMoveDistance);
