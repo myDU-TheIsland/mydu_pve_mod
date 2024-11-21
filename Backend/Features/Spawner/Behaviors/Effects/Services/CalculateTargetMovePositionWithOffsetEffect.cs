@@ -50,7 +50,7 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
             return @params.InstigatorStartPosition.Value;
         }
 
-        var distanceGoal = @params.TargetDistance;
+        var distanceGoal = @params.TargetMoveDistance;
 
         var timeDiff = DateTime.UtcNow - (LastTimeOffsetUpdated ?? DateTime.UtcNow);
         if (LastTimeOffsetUpdated == null || timeDiff > TimeSpan.FromSeconds(120))

@@ -14,7 +14,7 @@ public interface ICalculateTargetMovePositionEffect : IEffect
         public Vec3? InstigatorStartPosition { get; set; }
         public Vec3? InstigatorPosition { get; set; }
         public ulong? TargetConstructId { get; set; }
-        public double TargetDistance { get; set; }
+        public double TargetMoveDistance { get; set; }
         public double MaxDistanceVisibility { get; set; } = 10 * DistanceHelpers.OneSuInMeters;
         public required double DeltaTime { get; set; }
     }

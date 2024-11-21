@@ -171,7 +171,7 @@ public class BehaviorContext(
         return TargetPosition;
     }
     
-    public double GetTargetDistance()
+    public double GetTargetMoveDistance()
     {
         return TargetMoveDistance;
     }

@@ -210,7 +210,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var targetMoveDistance = prefab.DefinitionItem.TargetDistance;
         if (context.DamageData.Weapons.Any())
         {
-            targetMoveDistance = context.DamageData.GetBestDamagingWeapon()!.BaseOptimalDistance *
+            targetMoveDistance = context.DamageData.GetHalfFalloffFiringDistance(context.DamageData.GetBestDamagingWeapon()!) *
                              prefab.DefinitionItem.Mods.Weapon.OptimalDistance / 2;
         }
         
@@ -234,7 +234,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             InstigatorConstructId = constructId,
             InstigatorStartPosition = context.StartPosition,
             InstigatorPosition = context.Position,
-            TargetDistance = targetMoveDistance,
+            TargetMoveDistance = targetMoveDistance,
             TargetConstructId = targetConstructId,
             DeltaTime = context.DeltaTime
         });
