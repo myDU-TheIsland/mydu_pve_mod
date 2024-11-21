@@ -53,6 +53,8 @@ public class BehaviorContext(
     public Guid? TerritoryId { get; } = territoryId;
     public Vec3 Sector { get; } = sector;
     public Vec3 TargetPosition { get; set; }
+    public bool IsApproaching { get; set; }
+    public DateTime? LastApproachingUpdate { get; set; }
     public double TargetDistance { get; set; }
     public ConstructDamageData DamageData { get; set; } = new([]);
     public ConcurrentDictionary<ulong, ConstructDamageData> TargetDamageData { get; set; } = new();
@@ -125,17 +127,17 @@ public class BehaviorContext(
         Properties.Set(nameof(DynamicProperties.TargetMovePosition), position);
     }
     
-    public void SetIsApproachingTarget(bool approaching)
+    public void SetIsApproachingTarget(double previousDistance, double currentDistance)
     {
-        Properties.Set(nameof(DynamicProperties.IsApproaching), approaching);
+        if (LastApproachingUpdate == null || (DateTime.UtcNow - LastApproachingUpdate.Value) > TimeSpan.FromSeconds(5))
+        {
+            IsApproaching = previousDistance > currentDistance;
+        }
     }
     
     public bool IsApproachingTarget()
     {
-        return this.GetOverrideOrDefault(
-            nameof(DynamicProperties.IsApproaching),
-            false
-        );
+        return IsApproaching;
     }
     
     public void SetTargetPosition(Vec3 targetPosition)
@@ -145,7 +147,7 @@ public class BehaviorContext(
     
     public void SetTargetDistance(double distance)
     {
-        SetIsApproachingTarget(TargetDistance > distance);
+        SetIsApproachingTarget(TargetDistance, distance);
         
         TargetDistance = distance;
     }
@@ -284,7 +286,6 @@ public class BehaviorContext(
         public const byte TargetSelectedTime = 3;
         public const byte WaypointList = 4;
         public const byte WaypointListInitialized = 5;
-        public const byte IsApproaching = 8;
     }
 
     public class TimerPropertyValue(DateTime expiresAt, object? value)
