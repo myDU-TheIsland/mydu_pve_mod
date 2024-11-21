@@ -10,17 +10,18 @@ public interface IMovementEffect : IEffect
 
     public class Params
     {
-        public Vec3 Position { get; init; }
-        public Vec3 TargetPosition { get; init; }
-        public Vec3 Velocity { get; init; }
-        public Vec3 Acceleration { get; init; }
-        public double MaxVelocity { get; init; }
-        public double DeltaTime { get; init; }
+        public required Vec3 Position { get; init; }
+        public required Vec3 TargetPosition { get; init; }
+        public required Vec3 Velocity { get; init; }
+        public required Vec3 Acceleration { get; init; }
+        public required double MaxVelocity { get; init; }
+        public required double MaxAcceleration { get; init; }
+        public required double DeltaTime { get; init; }
     }
     
     public class Outcome : IOutcome
     {
-        public Vec3 Position { get; init; }
-        public Vec3 Velocity { get; init; }
+        public required Vec3 Position { get; init; }
+        public required Vec3 Velocity { get; init; }
     }
 }

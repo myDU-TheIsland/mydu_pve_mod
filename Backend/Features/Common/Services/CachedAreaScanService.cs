@@ -22,6 +22,16 @@ public class CachedAreaScanService(IAreaScanService areaScanService) : IAreaScan
         );
     }
 
+    public Task<IEnumerable<ScanContact>> ScanForNpcConstructs(Vec3 position, double radius, int limit = 10)
+    {
+        return areaScanService.ScanForNpcConstructs(position, radius, limit);
+    }
+
+    public Task<IEnumerable<ScanContact>> ScanForAbandonedConstructs(Vec3 position, double radius, int limit = 10)
+    {
+        return areaScanService.ScanForAbandonedConstructs(position, radius, limit);
+    }
+
     public Task<IEnumerable<ScanContact>> ScanForAsteroids(Vec3 position, double radius)
     {
         return areaScanService.ScanForAsteroids(position, radius);

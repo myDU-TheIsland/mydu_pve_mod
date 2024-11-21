@@ -110,7 +110,12 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             return;
         }
 
-        var weapon = random.PickOneAtRandom(damageTrait.Weapons);
+        if (!context.Position.HasValue) return;
+
+        var targetDistance = context.GetTargetPosition().Distance(context.Position.Value);
+        var weapon = damageTrait.GetBestWeaponByTargetDistance(targetDistance);
+
+        if (weapon == null) return;
 
         await ShootAndCycleAsync(
             new ShotContext(
@@ -200,17 +205,19 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
         var w = context.WeaponItem;
         var ammoType = w.AmmoItems
-            .Where(x => x.Level == prefab.DefinitionItem.AmmoTier && x.ItemTypeName.Contains(prefab.DefinitionItem.AmmoVariant, StringComparison.CurrentCultureIgnoreCase))
+            .Where(x => x.Level == prefab.DefinitionItem.AmmoTier &&
+                        x.ItemTypeName.Contains(prefab.DefinitionItem.AmmoVariant,
+                            StringComparison.CurrentCultureIgnoreCase))
             .Select(x => x.ItemTypeName)
             .ToList();
-        
+
         if (ammoType.Count == 0)
         {
             ammoType = ["AmmoMissileLarge4"];
         }
 
         var ammoItem = random.PickOneAtRandom(ammoType);
-        
+
         var mod = prefab.DefinitionItem.Mods;
         var cycleTime = w.BaseCycleTime * mod.Weapon.CycleTime;
 
@@ -250,7 +257,8 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             {
                 aoe = true,
                 damage = w.BaseDamage * mod.Weapon.Damage * context.QuantityModifier,
-                range = w.BaseOptimalDistance * mod.Weapon.OptimalDistance + w.FalloffDistance * mod.Weapon.FalloffDistance,
+                range = w.BaseOptimalDistance * mod.Weapon.OptimalDistance +
+                        w.FalloffDistance * mod.Weapon.FalloffDistance,
                 aoeRange = 100000,
                 baseAccuracy = w.BaseAccuracy * mod.Weapon.Accuracy,
                 effectDuration = 10,
