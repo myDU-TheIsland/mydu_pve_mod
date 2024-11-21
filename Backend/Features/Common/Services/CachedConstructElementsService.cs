@@ -91,7 +91,7 @@ public class CachedConstructElementsService(
     public Task<ElementInfo> GetElement(ulong constructId, ElementId elementId)
     {
         return _elementInfos.TryGetOrSetValue(
-            constructId,
+            elementId,
             () => service.GetElement(constructId, elementId),
             info => info == null
         );
