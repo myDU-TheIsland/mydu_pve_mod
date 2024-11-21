@@ -53,7 +53,7 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
         var distanceGoal = @params.TargetMoveDistance;
 
         var timeDiff = DateTime.UtcNow - (LastTimeOffsetUpdated ?? DateTime.UtcNow);
-        if (LastTimeOffsetUpdated == null || timeDiff > TimeSpan.FromSeconds(120))
+        if (LastTimeOffsetUpdated == null || timeDiff > TimeSpan.FromSeconds(30))
         {
             Offset = _random.RandomDirectionVec3() * distanceGoal;
             LastTimeOffsetUpdated = DateTime.UtcNow;
