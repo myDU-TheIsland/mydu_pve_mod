@@ -8,16 +8,20 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 
 public class PIDMovementEffect : IMovementEffect
 {
-    private readonly PIDController _pid = new(0.5d, 0.01d, 0.1d);
-
+    public static double Kp { get; set; } = 0.2d; 
+    public static double Kd { get; set; } = 0.3d; 
+    public static double Ki { get; set; } = 0d; 
+    
     public IMovementEffect.Outcome Move(IMovementEffect.Params @params, BehaviorContext context)
     {
         var deltaTime = @params.DeltaTime;
         var npcVelocity = @params.Velocity;
         var npcPosition = @params.Position;
+        
+        var pid = new PIDController(Kp, Ki, Kd);
 
         // Compute desired acceleration using PID
-        var desiredAcceleration = _pid.Compute(@params.Position, @params.TargetPosition, deltaTime);
+        var desiredAcceleration = pid.Compute(@params.Position, @params.TargetPosition, deltaTime);
 
         // Clamp the acceleration to the max allowable value
         desiredAcceleration = desiredAcceleration.ClampToSize(@params.MaxAcceleration);
