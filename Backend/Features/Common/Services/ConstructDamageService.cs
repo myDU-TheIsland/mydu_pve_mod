@@ -97,6 +97,9 @@ public class ConstructDamageService(IServiceProvider provider) : IConstructDamag
             }
         }
 
-        return new ConstructDamageData(items.DistinctBy(x => x.ItemTypeName));
+        return new ConstructDamageData(
+            items.DistinctBy(x => x.ItemTypeName)
+                .Where(x => x.BaseDamage > 0)
+        );
     }
 }
