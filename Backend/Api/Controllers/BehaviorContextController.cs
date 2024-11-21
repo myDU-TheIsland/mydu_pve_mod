@@ -18,6 +18,15 @@ namespace Mod.DynamicEncounters.Api.Controllers;
 [Route("behavior/context/{constructId:long}")]
 public class BehaviorContextController : Controller
 {
+    [HttpGet]
+    [Route("damage")]
+    public async Task<IActionResult> GetDamage(ulong constructId)
+    {
+        var service = ModBase.ServiceProvider.GetRequiredService<IConstructDamageService>();
+
+        return Ok(await service.GetConstructDamage(constructId));
+    }
+
     [SwaggerOperation("Reads the behavior context data of an NPC construct")]
     [HttpGet]
     [Route("")]
@@ -38,7 +47,8 @@ public class BehaviorContextController : Controller
     [SwaggerOperation("Sets the target position of an NPC construct and sticks with that position until changed")]
     [HttpPost]
     [Route("target-move-position")]
-    public async Task<IActionResult> SetTargetMovePosition(ulong constructId, [FromBody] SetTargetPositionRequest request)
+    public async Task<IActionResult> SetTargetMovePosition(ulong constructId,
+        [FromBody] SetTargetPositionRequest request)
     {
         if (!request.Position.HasValue && !request.TargetConstructId.HasValue && !request.FromPlayerIdWaypoint.HasValue)
         {
@@ -85,7 +95,7 @@ public class BehaviorContextController : Controller
             if (!string.IsNullOrEmpty(playerWaypoint))
             {
                 context.DisableAutoTargetMovePosition();
-                
+
                 var position = playerWaypoint.PositionToVec3();
                 context.SetTargetMovePosition(position);
             }
@@ -145,7 +155,7 @@ public class BehaviorContextController : Controller
 
         context.EnableAutoSelectAttackTargetConstruct();
         context.EnableAutoTargetMovePosition();
-        
+
         return Ok();
     }
 
@@ -187,7 +197,7 @@ public class BehaviorContextController : Controller
         {
             return NotFound();
         }
-        
+
         context.SetWaypointList(waypoints);
 
         return Ok();
