@@ -222,26 +222,14 @@ public static class VelocityHelper
     public static Vec3 CalculateFuturePosition(
         Vec3 currentPosition,
         Vec3 velocity,
-        double deltaTime,
         double futureSeconds
     )
     {
-        // Number of steps to simulate
-        var steps = (int)(futureSeconds / deltaTime);
-
-        // Calculate future position iteratively
-        var futurePosition = currentPosition;
-
-        for (var i = 0; i < steps; i++)
+        return new Vec3
         {
-            futurePosition = new Vec3
-            {
-                x = futurePosition.x + velocity.x * deltaTime,
-                y = futurePosition.y + velocity.y * deltaTime,
-                z = futurePosition.z + velocity.z * deltaTime
-            };
-        }
-
-        return futurePosition;
+            x = currentPosition.x + velocity.x * futureSeconds,
+            y = currentPosition.y + velocity.y * futureSeconds,
+            z = currentPosition.z + velocity.z * futureSeconds
+        };
     }
 }

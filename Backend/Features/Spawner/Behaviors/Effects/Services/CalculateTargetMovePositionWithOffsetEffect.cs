@@ -10,7 +10,7 @@ using NQ;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 
-public class CalculateTargetPositionWithOffsetEffect(IServiceProvider provider) : ICalculateTargetMovePositionEffect
+public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provider) : ICalculateTargetMovePositionEffect
 {
     private readonly Random _random = provider.GetRandomProvider().GetRandom();
     
@@ -27,7 +27,7 @@ public class CalculateTargetPositionWithOffsetEffect(IServiceProvider provider) 
         }
 
         var constructService = provider.GetRequiredService<IConstructService>();
-        var logger = provider.CreateLogger<CalculateTargetPositionWithOffsetEffect>();
+        var logger = provider.CreateLogger<CalculateTargetMovePositionWithOffsetEffect>();
 
         var targetConstructTransformOutcome =
             await constructService.GetConstructTransformAsync(@params.TargetConstructId.Value);
@@ -64,8 +64,7 @@ public class CalculateTargetPositionWithOffsetEffect(IServiceProvider provider) 
         var futurePosition = VelocityHelper.CalculateFuturePosition(
             targetPos,
             velocities.Linear,
-            @params.DeltaTime,
-            10
+            5
         );
 
         return futurePosition + Offset;
