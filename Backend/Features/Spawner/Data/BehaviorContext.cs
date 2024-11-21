@@ -52,6 +52,8 @@ public class BehaviorContext(
     public long FactionId { get; } = factionId;
     public Guid? TerritoryId { get; } = territoryId;
     public Vec3 Sector { get; } = sector;
+    public Vec3 TargetPosition { get; set; }
+    public double TargetDistance { get; set; }
     public ConstructDamageData DamageData { get; set; } = new([]);
     public ConcurrentDictionary<ulong, ConstructDamageData> TargetDamageData { get; set; } = new();
     public IServiceProvider ServiceProvider { get; init; } = serviceProvider;
@@ -138,12 +140,14 @@ public class BehaviorContext(
     
     public void SetTargetPosition(Vec3 targetPosition)
     {
-        Properties.Set(nameof(DynamicProperties.TargetPosition), targetPosition);
+        TargetPosition = targetPosition;
     }
     
     public void SetTargetDistance(double distance)
     {
-        Properties.Set(nameof(DynamicProperties.TargetDistance), distance);
+        SetIsApproachingTarget(TargetDistance > distance);
+        
+        TargetDistance = distance;
     }
 
     public Vec3 GetTargetMovePosition()
@@ -156,18 +160,12 @@ public class BehaviorContext(
     
     public Vec3 GetTargetPosition()
     {
-        return this.GetOverrideOrDefault(
-            nameof(DynamicProperties.TargetPosition),
-            new Vec3()
-        );
+        return TargetPosition;
     }
     
     public double GetTargetDistance()
     {
-        return this.GetOverrideOrDefault(
-            nameof(DynamicProperties.TargetDistance),
-            0d
-        );
+        return TargetDistance;
     }
 
     public ulong? GetTargetConstructId()
@@ -286,8 +284,6 @@ public class BehaviorContext(
         public const byte TargetSelectedTime = 3;
         public const byte WaypointList = 4;
         public const byte WaypointListInitialized = 5;
-        public const byte TargetDistance = 6;
-        public const byte TargetPosition = 7;
         public const byte IsApproaching = 8;
     }
 
