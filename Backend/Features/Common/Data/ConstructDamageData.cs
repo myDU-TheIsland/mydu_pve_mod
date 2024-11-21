@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Mod.DynamicEncounters.Common.Interfaces;
 
@@ -16,7 +17,7 @@ public class ConstructDamageData(IEnumerable<WeaponItem> weapons) : IOutcome
         return Weapons.Select(w => new
         {
             Weapon = w,
-            Delta = GetHalfFalloffFiringDistance(w) - distance
+            Delta = Math.Abs(GetHalfFalloffFiringDistance(w) - distance)
         }).MinBy(x => x.Delta)?.Weapon;
     }
 
