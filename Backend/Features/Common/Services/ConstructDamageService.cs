@@ -76,21 +76,14 @@ public class ConstructDamageService(IServiceProvider provider) : IConstructDamag
         var allAmmo = GetAllAmmoTypesByWeapon();
         var items = new List<WeaponItem>();
 
-        var processedWeaponTypes = new HashSet<ulong>();
-        
         foreach (var weaponUnit in weaponUnits)
         {
             var element = await _constructElementsService.GetElement(constructId, weaponUnit.elementId);
 
-            var baseObject = _bank.GetBaseObject<WeaponUnit>(element);
+            var baseObject = _bank.GetBaseObject<WeaponUnit>(element.elementType);
             var def = _bank.GetDefinition(element);
 
             if (baseObject == null) continue;
-
-            if (!processedWeaponTypes.Add(def.Id))
-            {
-                continue;
-            }
 
             var ammoKey = new WeaponTypeScale(baseObject.WeaponType, baseObject.Scale);
             if (allAmmo.TryGetValue(ammoKey, out var ammoItems))
@@ -104,6 +97,6 @@ public class ConstructDamageService(IServiceProvider provider) : IConstructDamag
             }
         }
 
-        return new ConstructDamageData(items);
+        return new ConstructDamageData(items.DistinctBy(x => x.ItemTypeName));
     }
 }

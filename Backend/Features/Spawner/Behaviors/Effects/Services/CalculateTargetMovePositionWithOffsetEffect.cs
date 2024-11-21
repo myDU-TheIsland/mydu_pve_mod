@@ -53,20 +53,20 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
         var distanceGoal = @params.TargetDistance;
 
         var timeDiff = DateTime.UtcNow - (LastTimeOffsetUpdated ?? DateTime.UtcNow);
-        if (LastTimeOffsetUpdated == null || timeDiff > TimeSpan.FromSeconds(30))
+        if (LastTimeOffsetUpdated == null || timeDiff > TimeSpan.FromSeconds(120))
         {
             Offset = _random.RandomDirectionVec3() * distanceGoal;
             LastTimeOffsetUpdated = DateTime.UtcNow;
         }
 
-        var velocities = await constructService.GetConstructVelocities(@params.TargetConstructId.Value);
+        // var velocities = await constructService.GetConstructVelocities(@params.TargetConstructId.Value);
 
-        var futurePosition = VelocityHelper.CalculateFuturePosition(
-            targetPos,
-            velocities.Linear,
-            5
-        );
+        // var futurePosition = VelocityHelper.CalculateFuturePosition(
+        //     targetPos,
+        //     velocities.Linear,
+        //     5
+        // );
 
-        return futurePosition + Offset;
+        return targetPos + Offset;
     }
 }
