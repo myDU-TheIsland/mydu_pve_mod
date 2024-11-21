@@ -20,7 +20,7 @@ public class BurnToTargetMovementEffect : IMovementEffect
             acceleration,
             @params.MaxVelocity,
             context.DeltaTime,
-            handleOvershoot: false
+            handleOvershoot: true
         );
             
         context.TryGetProperty(BehaviorContext.V0Property, out var v0, velocity);
