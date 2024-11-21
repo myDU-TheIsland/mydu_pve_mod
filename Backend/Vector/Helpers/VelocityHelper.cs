@@ -48,7 +48,7 @@ public static class VelocityHelper
             return end;
         }
 
-        var accelFactor = 1;
+        var accelFactor = 0.5d;
         
         // Update velocity based on acceleration and apply half of acceleration for position calculation
         Vec3 displacement = new Vec3

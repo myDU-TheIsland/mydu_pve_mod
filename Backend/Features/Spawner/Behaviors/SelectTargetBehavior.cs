@@ -207,20 +207,26 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             return new Vec3();
         }
         
-        var targetDistance = prefab.DefinitionItem.TargetDistance;
+        var targetMoveDistance = prefab.DefinitionItem.TargetDistance;
         if (context.DamageData.Weapons.Any())
         {
-            targetDistance = context.DamageData.GetBestDamagingWeapon()!.BaseOptimalDistance *
+            targetMoveDistance = context.DamageData.GetBestDamagingWeapon()!.BaseOptimalDistance *
                              prefab.DefinitionItem.Mods.Weapon.OptimalDistance / 2;
         }
         
-        context.SetTargetDistance(targetDistance);
+        context.SetTargetMoveDistance(targetMoveDistance);
         
         var targetConstructTransformOutcome =
             await _constructService.GetConstructTransformAsync(targetConstructId.Value);
         if (targetConstructTransformOutcome.ConstructExists)
         {
             context.SetTargetPosition(targetConstructTransformOutcome.Position);
+            if (context.Position.HasValue)
+            {
+                context.SetTargetDistance(
+                    Math.Abs(targetConstructTransformOutcome.Position.Dist(context.Position.Value))
+                );
+            }
         }
 
         return await effect.GetTargetMovePosition(new ICalculateTargetMovePositionEffect.Params
@@ -228,7 +234,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             InstigatorConstructId = constructId,
             InstigatorStartPosition = context.StartPosition,
             InstigatorPosition = context.Position,
-            TargetDistance = targetDistance,
+            TargetDistance = targetMoveDistance,
             TargetConstructId = targetConstructId,
             DeltaTime = context.DeltaTime
         });

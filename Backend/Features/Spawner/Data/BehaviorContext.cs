@@ -53,9 +53,10 @@ public class BehaviorContext(
     public Guid? TerritoryId { get; } = territoryId;
     public Vec3 Sector { get; } = sector;
     public Vec3 TargetPosition { get; set; }
+    public double TargetDistance { get; set; }
     public bool IsApproaching { get; set; }
     public DateTime? LastApproachingUpdate { get; set; }
-    public double TargetDistance { get; set; }
+    public double TargetMoveDistance { get; set; }
     public ConstructDamageData DamageData { get; set; } = new([]);
     public ConcurrentDictionary<ulong, ConstructDamageData> TargetDamageData { get; set; } = new();
     public IServiceProvider ServiceProvider { get; init; } = serviceProvider;
@@ -129,10 +130,10 @@ public class BehaviorContext(
     
     public void SetIsApproachingTarget(double previousDistance, double currentDistance)
     {
-        if (LastApproachingUpdate == null || (DateTime.UtcNow - LastApproachingUpdate.Value) > TimeSpan.FromSeconds(5))
-        {
+        // if (LastApproachingUpdate == null || (DateTime.UtcNow - LastApproachingUpdate.Value) > TimeSpan.FromSeconds(5))
+        // {
             IsApproaching = previousDistance > currentDistance;
-        }
+        // }
     }
     
     public bool IsApproachingTarget()
@@ -151,6 +152,11 @@ public class BehaviorContext(
         
         TargetDistance = distance;
     }
+    
+    public void SetTargetMoveDistance(double distance)
+    {
+        TargetMoveDistance = distance;
+    }
 
     public Vec3 GetTargetMovePosition()
     {
@@ -167,7 +173,7 @@ public class BehaviorContext(
     
     public double GetTargetDistance()
     {
-        return TargetDistance;
+        return TargetMoveDistance;
     }
 
     public ulong? GetTargetConstructId()
