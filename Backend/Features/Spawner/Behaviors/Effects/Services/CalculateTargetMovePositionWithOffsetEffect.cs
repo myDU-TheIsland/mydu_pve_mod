@@ -68,6 +68,7 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
             10
         );
 
-        return futurePosition + Offset;
+        // return targetPos + Offset;
+        return futurePosition;
     }
 }

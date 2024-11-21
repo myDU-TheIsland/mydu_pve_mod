@@ -48,12 +48,14 @@ public static class VelocityHelper
             return end;
         }
 
+        var accelFactor = 1;
+        
         // Update velocity based on acceleration and apply half of acceleration for position calculation
         Vec3 displacement = new Vec3
         {
-            x = velocity.x * deltaTime + 0.5 * acceleration.x * deltaTime * deltaTime,
-            y = velocity.y * deltaTime + 0.5 * acceleration.y * deltaTime * deltaTime,
-            z = velocity.z * deltaTime + 0.5 * acceleration.z * deltaTime * deltaTime
+            x = velocity.x * deltaTime + accelFactor * acceleration.x * deltaTime * deltaTime,
+            y = velocity.y * deltaTime + accelFactor * acceleration.y * deltaTime * deltaTime,
+            z = velocity.z * deltaTime + accelFactor * acceleration.z * deltaTime * deltaTime
         };
 
         // Update velocity after position calculation (Euler integration)
