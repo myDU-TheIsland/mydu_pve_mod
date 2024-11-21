@@ -138,14 +138,6 @@ public class BehaviorContext(
     
     public void SetTargetPosition(Vec3 targetPosition)
     {
-        if (Position.HasValue)
-        {
-            var d0 = GetTargetPosition().Dist(Position.Value);
-            var d1 = targetPosition.Dist(Position.Value);
-            
-            SetIsApproachingTarget(d0 > d1);
-        }
-
         Properties.Set(nameof(DynamicProperties.TargetPosition), targetPosition);
     }
     
