@@ -229,7 +229,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             InstigatorStartPosition = context.StartPosition,
             InstigatorPosition = context.Position,
             TargetDistance = targetDistance,
-            TargetConstructId = context.GetTargetConstructId(),
+            TargetConstructId = targetConstructId,
         });
     }
 }
