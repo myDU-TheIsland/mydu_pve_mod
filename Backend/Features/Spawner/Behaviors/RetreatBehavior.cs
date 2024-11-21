@@ -56,8 +56,9 @@ public class RetreatBehavior(ulong constructId, IPrefab prefab) : IConstructBeha
         
         if (!targetConstructId.HasValue)
         {
+            // BUG TODO THE TARGET CONSTRUCT IS COMING NULL ALL THT TIME
             // _logger.LogError("Construct {Construct} Target Construct Id NULL", constructId);
-            context.SetAutoTargetMovePosition(context.Sector);
+            // context.SetAutoTargetMovePosition(context.Sector);
             return;
         }
         
@@ -66,7 +67,7 @@ public class RetreatBehavior(ulong constructId, IPrefab prefab) : IConstructBeha
         if (targetConstructInfo == null)
         {
             // _logger.LogError("Construct {Construct} Target Construct Info {Target} NULL", constructId, targetConstructId.Value);
-            context.SetAutoTargetMovePosition(context.Sector);
+            // context.SetAutoTargetMovePosition(context.Sector);
             return;
         }
         

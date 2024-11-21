@@ -124,7 +124,8 @@ public class ConstructBehaviorLoop : HighTickModLoop
                         constructDef
                     )
                     {
-                        Properties = new ConcurrentDictionary<string, object>(handleItem.JsonProperties.Context)
+                        Properties = new ConcurrentDictionary<string, object>(handleItem.JsonProperties.Context),
+                        RealismFactor = handleItem.ConstructDefinitionItem.RealismFactor
                     }
                 )
             );
