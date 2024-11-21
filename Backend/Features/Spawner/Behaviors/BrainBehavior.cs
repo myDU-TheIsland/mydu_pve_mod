@@ -32,7 +32,7 @@ public class BrainBehavior(ulong constructId, IPrefab prefab) : IConstructBehavi
         var bestWeapon = context.DamageData.GetBestDamagingWeapon();
         if (position.HasValue && bestWeapon != null)
         {
-            var targetDistance = context.GetTargetDistance() * 2;
+            var targetDistance = context.GetTargetDistance() / 2;
             if (context.IsApproachingTarget() && Math.Abs(targetMovePosition.Dist(position.Value)) < targetDistance)
             {
                 context.TargetRotationPositionMultiplier = -1;
