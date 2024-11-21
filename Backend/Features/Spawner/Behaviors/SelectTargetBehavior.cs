@@ -96,6 +96,12 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
                 ))
                 .ToList();
 
+            foreach (var contact in radarContacts)
+            {
+                var transformOutcome = await _constructService.GetConstructTransformAsync(contact.ConstructId);
+                contact.Distance = transformOutcome.Position.Distance(context.Position.Value);
+            }
+
             StatsRecorder.Record("NPC_Radar", sw.ElapsedMilliseconds);
         }
 
@@ -193,8 +199,10 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
 
     private async Task<Vec3?> CalculateTargetMovePosition(BehaviorContext context)
     {
+        var targetConstructId = context.GetTargetConstructId();
+        
         var effect = context.Effects.GetOrNull<ICalculateTargetMovePositionEffect>();
-        if (effect == null)
+        if (effect == null || !targetConstructId.HasValue)
         {
             return new Vec3();
         }
@@ -209,7 +217,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         context.SetTargetDistance(targetDistance);
         
         var targetConstructTransformOutcome =
-            await _constructService.GetConstructTransformAsync(constructId);
+            await _constructService.GetConstructTransformAsync(targetConstructId.Value);
         if (targetConstructTransformOutcome.ConstructExists)
         {
             context.SetTargetPosition(targetConstructTransformOutcome.Position);
