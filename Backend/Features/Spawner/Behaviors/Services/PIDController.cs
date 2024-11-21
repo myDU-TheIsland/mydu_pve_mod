@@ -1,4 +1,5 @@
-﻿using NQ;
+﻿using Mod.DynamicEncounters.Helpers;
+using NQ;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Services;
 
@@ -13,18 +14,23 @@ public class PIDController
 
     public PIDController(double kp, double ki, double kd)
     {
-        this._kp = kp;
-        this._ki = ki;
-        this._kd = kd;
-        
+        _kp = kp;
+        _ki = ki;
+        _kd = kd;
+
         _integral = new Vec3 { x = 0, y = 0, z = 0 };
         _previousError = new Vec3 { x = 0, y = 0, z = 0 };
     }
 
-    public Vec3 Compute(Vec3 currentPosition, Vec3 targetPosition, double deltaTime)
+    public Vec3 Compute(Vec3 currentPosition, Vec3 targetPosition, double deltaTime, double deadZone)
     {
         // Calculate error (distance vector to target)
         var error = targetPosition - currentPosition;
+        
+        if (error.Size() < deadZone)
+        {
+            return new Vec3 { x = 0, y = 0, z = 0 };
+        }
 
         // Proportional term
         var proportional = error * _kp;

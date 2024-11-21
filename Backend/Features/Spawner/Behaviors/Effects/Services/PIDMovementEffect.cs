@@ -17,14 +17,26 @@ public class PIDMovementEffect : IMovementEffect
         var deltaTime = @params.DeltaTime;
         var npcVelocity = @params.Velocity;
         var npcPosition = @params.Position;
+        var playerPosition = @params.TargetPosition;
+        var maxAcceleration = @params.MaxAcceleration;
+        var maxSpeed = @params.MaxVelocity;
+        var deadZone = 1.0;
+        var brakingThreshold = 100000;
         
         var pid = new PIDController(Kp, Ki, Kd);
 
         // Compute desired acceleration using PID
-        var desiredAcceleration = pid.Compute(@params.Position, @params.TargetPosition, deltaTime);
+        Vec3 desiredAcceleration = pid.Compute(npcPosition, playerPosition, deltaTime, deadZone);
 
         // Clamp the acceleration to the max allowable value
-        desiredAcceleration = desiredAcceleration.ClampToSize(@params.MaxAcceleration);
+        desiredAcceleration = desiredAcceleration.ClampToSize(maxAcceleration);
+
+        // Apply braking phase near the target
+        double distanceToTarget = (playerPosition - npcPosition).Size();
+        if (distanceToTarget < brakingThreshold)
+        {
+            desiredAcceleration = npcVelocity.NormalizeSafe().Reverse() * maxAcceleration;
+        }
 
         // Update NPC velocity based on acceleration
         npcVelocity = new Vec3
@@ -35,7 +47,7 @@ public class PIDMovementEffect : IMovementEffect
         };
 
         // Clamp velocity to the maximum speed
-        npcVelocity = npcVelocity.ClampToSize(@params.MaxVelocity);
+        npcVelocity = npcVelocity.ClampToSize(maxSpeed);
 
         // Update NPC position based on velocity
         npcPosition = new Vec3
