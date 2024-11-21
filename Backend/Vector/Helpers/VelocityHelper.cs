@@ -94,7 +94,7 @@ public static class VelocityHelper
 
         return newPosition;
     }
-    
+
     public static Vec3 LinearInterpolateWithVelocity(
         Vec3 start,
         Vec3 end,
@@ -166,7 +166,7 @@ public static class VelocityHelper
 
         return newPosition;
     }
-    
+
     public static Vec3 ApplyBraking(
         Vec3 start,
         ref Vec3 velocity,
@@ -217,5 +217,31 @@ public static class VelocityHelper
         };
 
         return newPosition;
+    }
+
+    public static Vec3 CalculateFuturePosition(
+        Vec3 currentPosition,
+        Vec3 velocity,
+        double deltaTime,
+        double futureSeconds
+    )
+    {
+        // Number of steps to simulate
+        var steps = (int)(futureSeconds / deltaTime);
+
+        // Calculate future position iteratively
+        var futurePosition = currentPosition;
+
+        for (var i = 0; i < steps; i++)
+        {
+            futurePosition = new Vec3
+            {
+                x = futurePosition.x + velocity.x * deltaTime,
+                y = futurePosition.y + velocity.y * deltaTime,
+                z = futurePosition.z + velocity.z * deltaTime
+            };
+        }
+
+        return futurePosition;
     }
 }

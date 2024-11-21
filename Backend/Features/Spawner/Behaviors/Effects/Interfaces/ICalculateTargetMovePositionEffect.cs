@@ -16,5 +16,6 @@ public interface ICalculateTargetMovePositionEffect : IEffect
         public ulong? TargetConstructId { get; set; }
         public double TargetDistance { get; set; }
         public double MaxDistanceVisibility { get; set; } = 10 * DistanceHelpers.OneSuInMeters;
+        public required double DeltaTime { get; set; }
     }
 }

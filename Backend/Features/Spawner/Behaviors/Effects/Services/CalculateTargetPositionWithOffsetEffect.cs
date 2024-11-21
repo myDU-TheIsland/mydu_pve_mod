@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using Mod.DynamicEncounters.Vector.Helpers;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
@@ -58,6 +59,15 @@ public class CalculateTargetPositionWithOffsetEffect(IServiceProvider provider) 
             LastTimeOffsetUpdated = DateTime.UtcNow;
         }
 
-        return targetPos + Offset;
+        var velocities = await constructService.GetConstructVelocities(@params.TargetConstructId.Value);
+
+        var futurePosition = VelocityHelper.CalculateFuturePosition(
+            targetPos,
+            velocities.Linear,
+            @params.DeltaTime,
+            10
+        );
+
+        return futurePosition + Offset;
     }
 }
