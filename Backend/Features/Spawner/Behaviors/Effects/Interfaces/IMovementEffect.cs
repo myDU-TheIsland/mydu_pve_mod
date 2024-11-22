@@ -15,6 +15,7 @@ public interface IMovementEffect : IEffect
         public required Vec3 Velocity { get; init; }
         public required Vec3 Acceleration { get; init; }
         public required double MaxVelocity { get; init; }
+        public required double MaxVelocityGoal { get; init; }
         public required double MaxAcceleration { get; init; }
         public required double DeltaTime { get; init; }
     }

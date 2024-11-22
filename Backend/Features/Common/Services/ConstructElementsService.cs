@@ -75,7 +75,7 @@ public class ConstructElementsService(IServiceProvider provider) : IConstructEle
 
     public async Task<int> GetFunctionalDamageWeaponCount(ulong constructId)
     {
-        var weaponUnits = await GetWeaponUnits(constructId);
+        var weaponUnits = await GetWeaponUnits(constructId); // TODO still counts stasis
         var weaponInfosTask = weaponUnits.Select(x => GetElement(constructId, x));
 
         var weaponInfos = await Task.WhenAll(weaponInfosTask);

@@ -61,13 +61,18 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         }
 
         var targetSpan = DateTime.UtcNow - context.TargetSelectedTime;
-        if (targetSpan < TimeSpan.FromSeconds(5))
+        if (targetSpan < TimeSpan.FromSeconds(1))
         {
             var sameTargetMoveOutcome = await CalculateTargetMovePosition(context);
             if (!sameTargetMoveOutcome.Valid) return;
 
-            context.SetAutoTargetMovePosition(sameTargetMoveOutcome.TargetMovePosition);
-            context.SetTargetLinearVelocity(sameTargetMoveOutcome.TargetLinearVelocity);
+            if (context.TargetConstructId.HasValue)
+            {
+                var velocities = await _constructService.GetConstructVelocities(context.TargetConstructId.Value);
+
+                context.SetAutoTargetMovePosition(sameTargetMoveOutcome.TargetMovePosition);
+                context.SetTargetLinearVelocity(velocities.Linear);
+            }
 
             return;
         }
@@ -107,7 +112,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             context.SetAutoTargetConstructId(null);
             return;
         }
-        
+
         context.RefreshIdleSince();
 
         var selectTargetEffect = context.Effects.GetOrNull<ISelectRadarTargetEffect>();
@@ -115,7 +120,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var selectedTarget = selectTargetEffect?.GetTarget(
             new ISelectRadarTargetEffect.Params
             {
-                DecisionTimeSeconds = prefab.DefinitionItem.TargetDecisionTimeSeconds, 
+                DecisionTimeSeconds = prefab.DefinitionItem.TargetDecisionTimeSeconds,
                 Contacts = radarContacts,
                 Context = context
             }
@@ -137,7 +142,9 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         if (!outcome.Valid) return;
 
         context.SetAutoTargetMovePosition(outcome.TargetMovePosition);
-        context.SetTargetLinearVelocity(outcome.TargetLinearVelocity);
+
+        var targetVel = await _constructService.GetConstructVelocities(targetId);
+        context.SetTargetLinearVelocity(targetVel.Linear);
 
         await _sectorPoolManager.SetExpirationFromNow(context.Sector, TimeSpan.FromHours(1));
 
@@ -199,22 +206,23 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
     private async Task<TargetMovePositionCalculationOutcome> CalculateTargetMovePosition(BehaviorContext context)
     {
         var targetConstructId = context.GetTargetConstructId();
-        
+
         var effect = context.Effects.GetOrNull<ICalculateTargetMovePositionEffect>();
         if (effect == null || !targetConstructId.HasValue)
         {
             return TargetMovePositionCalculationOutcome.Invalid();
         }
-        
+
         var targetMoveDistance = prefab.DefinitionItem.TargetDistance;
         if (context.DamageData.Weapons.Any())
         {
-            targetMoveDistance = context.DamageData.GetHalfFalloffFiringDistance(context.DamageData.GetBestDamagingWeapon()!) *
-                             prefab.DefinitionItem.Mods.Weapon.OptimalDistance;
+            targetMoveDistance =
+                context.DamageData.GetHalfFalloffFiringDistance(context.DamageData.GetBestDamagingWeapon()!) *
+                prefab.DefinitionItem.Mods.Weapon.OptimalDistance;
         }
-        
+
         context.SetTargetMoveDistance(targetMoveDistance);
-        
+
         var targetConstructTransformOutcome =
             await _constructService.GetConstructTransformAsync(targetConstructId.Value);
         if (targetConstructTransformOutcome.ConstructExists)
@@ -228,14 +236,18 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             }
         }
 
-        return await effect.GetTargetMovePosition(new ICalculateTargetMovePositionEffect.Params
-        {
-            InstigatorConstructId = constructId,
-            InstigatorStartPosition = context.StartPosition,
-            InstigatorPosition = context.Position,
-            TargetMoveDistance = targetMoveDistance,
-            TargetConstructId = targetConstructId,
-            DeltaTime = context.DeltaTime
-        });
+        return await effect.GetTargetMovePosition(
+            new ICalculateTargetMovePositionEffect.Params
+            {
+                InstigatorConstructId = constructId,
+                InstigatorStartPosition = context.StartPosition,
+                InstigatorPosition = context.Position,
+                TargetMoveDistance = targetMoveDistance,
+                TargetConstructId = targetConstructId,
+                TargetConstructAcceleration = context.TargetAcceleration,
+                TargetConstructLinearVelocity = context.TargetLinearVelocity,
+                PredictionSeconds = context.CalculateMovementPredictionSeconds(),
+                DeltaTime = context.DeltaTime
+            });
     }
 }

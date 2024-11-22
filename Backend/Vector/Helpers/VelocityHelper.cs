@@ -127,6 +127,98 @@ public static class VelocityHelper
         return newPosition;
     }
 
+    public static Vec3 LinearInterpolateWithAccelerationV2(
+        Vec3 start,
+        Vec3 end,
+        ref Vec3 velocity,
+        Vec3 acceleration,
+        double clampSize,
+        double velocitySizeGoal,
+        double deltaTime,
+        bool handleOvershoot = false
+    )
+    {
+        // Calculate direction and distance to the end
+        var direction = new Vec3
+        {
+            x = end.x - start.x,
+            y = end.y - start.y,
+            z = end.z - start.z
+        };
+
+        var distance = direction.Size();
+
+        // Check if distance is very small (to avoid division by zero)
+        if (distance < 0.001)
+        {
+            return end;
+        }
+
+        // Normalize the direction
+        direction = direction.Normalized();
+
+        // Adjust velocity size toward velocitySizeGoal
+        double currentVelocitySize = velocity.Size();
+        double newVelocitySize;
+
+        if (currentVelocitySize > velocitySizeGoal)
+        {
+            // Decelerate
+            double decelerationMagnitude = acceleration.Size();
+            newVelocitySize = Math.Max(currentVelocitySize - decelerationMagnitude * deltaTime, velocitySizeGoal);
+        }
+        else
+        {
+            // Accelerate, but only up to velocitySizeGoal
+            newVelocitySize = Math.Min(currentVelocitySize + acceleration.Size() * deltaTime, velocitySizeGoal);
+        }
+
+        // Update velocity to match the desired size while maintaining direction
+        velocity = direction * newVelocitySize;
+
+        // Apply half of acceleration for position calculation (displacement)
+        var accelFactor = 0.5d;
+        Vec3 displacement = new Vec3
+        {
+            x = velocity.x * deltaTime + accelFactor * acceleration.x * deltaTime * deltaTime,
+            y = velocity.y * deltaTime + accelFactor * acceleration.y * deltaTime * deltaTime,
+            z = velocity.z * deltaTime + accelFactor * acceleration.z * deltaTime * deltaTime
+        };
+
+        // Calculate the new position
+        var newPosition = new Vec3
+        {
+            x = start.x + displacement.x,
+            y = start.y + displacement.y,
+            z = start.z + displacement.z
+        };
+
+        // Clamp velocity to the maximum size
+        velocity = velocity.ClampToSize(clampSize);
+
+        // Check for NaN values and handle them
+        if (double.IsNaN(newPosition.x) || double.IsNaN(newPosition.y) || double.IsNaN(newPosition.z) ||
+            double.IsNaN(velocity.x) || double.IsNaN(velocity.y) || double.IsNaN(velocity.z))
+        {
+            // Handle NaN case by setting position to end and stopping velocity
+            newPosition = new Vec3 { x = end.x, y = end.y, z = end.z };
+            velocity = new Vec3 { x = 0, y = 0, z = 0 }; // Stop the velocity
+        }
+
+        if (handleOvershoot)
+        {
+            // Ensure we do not overshoot the end position
+            if ((newPosition - start).Size() > distance)
+            {
+                newPosition = end;
+                velocity = new Vec3 { x = 0, y = 0, z = 0 }; // Stop the velocity at the end
+            }
+        }
+
+        return newPosition;
+    }
+
+
     public static Vec3 LinearInterpolateWithVelocity(
         Vec3 start,
         Vec3 end,
@@ -254,14 +346,15 @@ public static class VelocityHelper
     public static Vec3 CalculateFuturePosition(
         Vec3 currentPosition,
         Vec3 velocity,
-        double futureSeconds
+        Vec3 acceleration,
+        double deltaTime
     )
     {
         return new Vec3
         {
-            x = currentPosition.x + velocity.x * futureSeconds,
-            y = currentPosition.y + velocity.y * futureSeconds,
-            z = currentPosition.z + velocity.z * futureSeconds
+            x = currentPosition.x + velocity.x * deltaTime + 0.5 * acceleration.x * deltaTime * deltaTime,
+            y = currentPosition.y + velocity.y * deltaTime + 0.5 * acceleration.y * deltaTime * deltaTime,
+            z = currentPosition.z + velocity.z * deltaTime + 0.5 * acceleration.z * deltaTime * deltaTime
         };
     }
 
@@ -274,7 +367,7 @@ public static class VelocityHelper
     {
         var relativePosition = position2 - position1;
         var relativeVelocity = velocity2 - velocity1;
-        
+
         // Current distance between the entities
         var currentDistance = relativePosition.Size();
 
@@ -292,5 +385,33 @@ public static class VelocityHelper
 
         // Return time only if it's positive (moving towards each other)
         return time >= 0 ? time : double.PositiveInfinity;
+    }
+    
+    public static Vec3 CalculateAcceleration(
+        Vec3 initialPosition,
+        Vec3 finalPosition,
+        Vec3 initialVelocity,
+        double deltaTime)
+    {
+        if (deltaTime <= 0)
+        {
+            return new Vec3();
+        }
+
+        // Calculate displacement
+        Vec3 displacement = new Vec3
+        {
+            x = finalPosition.x - initialPosition.x,
+            y = finalPosition.y - initialPosition.y,
+            z = finalPosition.z - initialPosition.z
+        };
+
+        // Calculate acceleration using the formula
+        return new Vec3
+        {
+            x = 2 * (displacement.x - initialVelocity.x * deltaTime) / (deltaTime * deltaTime),
+            y = 2 * (displacement.y - initialVelocity.y * deltaTime) / (deltaTime * deltaTime),
+            z = 2 * (displacement.z - initialVelocity.z * deltaTime) / (deltaTime * deltaTime)
+        };
     }
 }

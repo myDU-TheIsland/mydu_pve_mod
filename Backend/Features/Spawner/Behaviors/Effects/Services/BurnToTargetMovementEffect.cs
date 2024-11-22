@@ -12,17 +12,18 @@ public class BurnToTargetMovementEffect : IMovementEffect
         var velocity = @params.Velocity;
         context.TryGetProperty(BehaviorContext.EnginePowerProperty, out double enginePower, 1);
         var acceleration = @params.Acceleration * enginePower;
-        
-        var position = VelocityHelper.LinearInterpolateWithAcceleration(
+
+        var position = VelocityHelper.LinearInterpolateWithAccelerationV2(
             @params.Position,
             @params.TargetPosition,
             ref velocity,
             acceleration,
             @params.MaxVelocity,
+            @params.MaxVelocityGoal,
             context.DeltaTime,
             true
         );
-            
+
         context.TryGetProperty(BehaviorContext.V0Property, out var v0, velocity);
 
         var deltaV = velocity - v0;
@@ -34,7 +35,7 @@ public class BurnToTargetMovementEffect : IMovementEffect
             velocity = v0 + deltaV;
             position = @params.Position + velocity * context.DeltaTime;
         }
-        
+
         context.SetProperty(BehaviorContext.V0Property, velocity);
 
         return new IMovementEffect.Outcome

@@ -185,6 +185,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         }
 
         var functionalWeaponCount = await _constructElementsService.GetFunctionalDamageWeaponCount(constructId);
+        context.BehaviorContext.FunctionalWeaponCount = functionalWeaponCount;
         if (functionalWeaponCount <= 0)
         {
             return;

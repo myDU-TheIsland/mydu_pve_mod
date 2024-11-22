@@ -53,15 +53,23 @@ public class BehaviorContext(
     public long FactionId { get; } = factionId;
     public Guid? TerritoryId { get; } = territoryId;
     public Vec3 Sector { get; } = sector;
+    public Vec3 AccelCalcTargetPosition { get; set; }
+    public Vec3 AccelCalcTargetVelocity { get; set; }
     public Vec3 TargetPosition { get; set; }
+    public double AccelerationG { get; private set; } = prefab.DefinitionItem.AccelerationG;
+    public double AccelerationMps { get; private set; } = prefab.DefinitionItem.AccelerationG * 3.6d;
+    public Vec3 TargetAcceleration { get; private set; }
+    public DateTime LastTargetAccelerationUpdate { get; private set; } = DateTime.UtcNow;
     public ulong? TargetConstructId { get; set; }
     public double TargetDistance { get; set; }
     public Vec3 TargetLinearVelocity { get; private set; }
     public double VelocityWithTargetDotProduct { get; private set; }
     public bool IsApproaching { get; set; }
     public DateTime? LastApproachingUpdate { get; set; }
-    public double TargetMoveDistance { get; set; }
+    public double MaxVelocity { get; set; } = prefab.DefinitionItem.MaxSpeedKph / 3.6d;
+    public double TargetMoveDistance { get; private set; }
     public ConstructDamageData DamageData { get; set; } = new([]);
+    public int FunctionalWeaponCount { get; set; } = 1;
     public ConcurrentDictionary<ulong, ConstructDamageData> TargetDamageData { get; set; } = new();
     public IServiceProvider ServiceProvider { get; init; } = serviceProvider;
     public readonly ConcurrentDictionary<string, bool> PublishedEvents = [];
@@ -136,7 +144,7 @@ public class BehaviorContext(
 
         Position = position;
     }
-    
+
     public void SetTargetMovePosition(Vec3 position)
     {
         Properties.Set(nameof(DynamicProperties.TargetMovePosition), position);
@@ -164,11 +172,28 @@ public class BehaviorContext(
 
     public void SetTargetPosition(Vec3 targetPosition)
     {
+        var deltaTime = (DateTime.UtcNow - LastTargetAccelerationUpdate).TotalSeconds;
+
         TargetPosition = targetPosition;
+        if (deltaTime > 1)
+        {
+            var acceleration = VelocityHelper.CalculateAcceleration(
+                AccelCalcTargetPosition,
+                targetPosition,
+                AccelCalcTargetVelocity,
+                deltaTime
+            );
+            
+            AccelCalcTargetPosition = targetPosition;
+            AccelCalcTargetVelocity = TargetLinearVelocity;
+            TargetAcceleration = acceleration;
+            LastTargetAccelerationUpdate = DateTime.UtcNow;
+        }
     }
 
     public bool IsInsideOptimalRange() => TargetDistance <= GetBestWeaponOptimalRange();
     public bool IsOutsideOptimalRange() => TargetDistance > GetBestWeaponOptimalRange();
+    public bool IsOutsideDoubleOptimalRange() => TargetDistance > GetBestWeaponOptimalRange() * 2;
 
     public double GetBestWeaponOptimalRange()
     {
@@ -205,9 +230,56 @@ public class BehaviorContext(
 
     public Vec3 GetTargetPosition() => TargetPosition;
 
-    public double GetTargetMoveDistance() => TargetMoveDistance;
-
     public ulong? GetTargetConstructId() => this.TargetConstructId;
+
+    public double CalculateVelocityGoal()
+    {
+        var oppositeVector = VelocityWithTargetDotProduct < 0;
+
+        if (TargetDistance > 1.5 * DistanceHelpers.OneSuInMeters)
+        {
+            return MaxVelocity;
+        }
+
+        var brakingDistance = CalculateBrakingDistance();
+
+        if (IsOutsideDoubleOptimalRange() || TargetDistance > brakingDistance * 2)
+        {
+            if (oppositeVector)
+            {
+                return TargetLinearVelocity.Size() * 0.5d;
+            }
+
+            return TargetLinearVelocity.Size() * 1.5d;
+        }
+
+        if (IsOutsideOptimalRange())
+        {
+            if (oppositeVector)
+            {
+                return TargetLinearVelocity.Size() * 0.25d;
+            }
+
+            return TargetLinearVelocity.Size() * 1.2d;
+        }
+
+        return TargetLinearVelocity.Size();
+    }
+
+    public double CalculateMovementPredictionSeconds()
+    {
+        if (IsOutsideDoubleOptimalRange())
+        {
+            return 10;
+        }
+
+        if (IsOutsideOptimalRange())
+        {
+            return 30;
+        }
+
+        return 60;
+    }
 
     public void SetTargetConstructId(ulong? constructId)
     {
@@ -267,24 +339,24 @@ public class BehaviorContext(
     {
         return VelocityHelper.CalculateBrakingDistance(
             Velocity.Size(),
-            Prefab.DefinitionItem.AccelerationG * 3.6d
+            AccelerationMps
         );
     }
-    
+
     public double CalculateBrakingTime()
     {
         return VelocityHelper.CalculateBrakingTime(
             Velocity.Size(),
-            Prefab.DefinitionItem.AccelerationG * 3.6d
+            AccelerationMps
         );
     }
-    
+
     public double CalculateAccelerationToTargetSpeedTime(double fromVelocity)
     {
         return VelocityHelper.CalculateTimeToReachVelocity(
             fromVelocity,
             TargetLinearVelocity.Size(),
-            Prefab.DefinitionItem.AccelerationG * 3.6d
+            AccelerationMps
         );
     }
 

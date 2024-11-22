@@ -6,7 +6,6 @@ public class TargetMovePositionCalculationOutcome
 {
     public bool Valid { get; set; }
     public Vec3 TargetMovePosition { get; set; }
-    public Vec3 TargetLinearVelocity { get; set; }
 
     public static TargetMovePositionCalculationOutcome Invalid() => new();
 
@@ -17,12 +16,10 @@ public class TargetMovePositionCalculationOutcome
     };
     
     public static TargetMovePositionCalculationOutcome ValidCalculation(
-        Vec3 targetMovePosition,
-        Vec3 targetLinearVelocity
+        Vec3 targetMovePosition
     ) => new()
     {
         Valid = true,
         TargetMovePosition = targetMovePosition,
-        TargetLinearVelocity = targetLinearVelocity
     };
 }

@@ -61,20 +61,16 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
             LastTimeOffsetUpdated = DateTime.UtcNow;
         }
 
-        var velocities = await constructService.GetConstructVelocities(@params.TargetConstructId.Value);
-        var targetVelocity = velocities.Linear * @params.DeltaTime; // vel per second
-        
         var futurePosition = VelocityHelper.CalculateFuturePosition(
             targetPos,
-            targetVelocity,
-            60
+            @params.TargetConstructLinearVelocity,
+            @params.TargetConstructAcceleration,
+            @params.PredictionSeconds
         );
-        
-        logger.LogInformation("FUTURE POS DELTA: {D}", futurePosition - targetPos);
 
-        return TargetMovePositionCalculationOutcome.ValidCalculation(
-            targetPos + Offset,
-            velocities.Linear
-        );
+        logger.LogInformation("FUTURE POS DELTA: {A} {D}", @params.TargetConstructAcceleration,
+            futurePosition - targetPos);
+        //targetPos + Offset
+        return TargetMovePositionCalculationOutcome.ValidCalculation(futurePosition);
     }
 }

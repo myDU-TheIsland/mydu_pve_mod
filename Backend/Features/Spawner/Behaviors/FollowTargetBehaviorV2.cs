@@ -95,7 +95,8 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                     Velocity = velocity,
                     Position = npcPos,
                     TargetPosition = targetMovePos,
-                    MaxVelocity = prefab.DefinitionItem.MaxSpeedKph / 3.6d,
+                    MaxVelocity = context.MaxVelocity,
+                    MaxVelocityGoal = context.CalculateVelocityGoal(),
                     MaxAcceleration = acceleration,
                     DeltaTime = context.DeltaTime
                 },
