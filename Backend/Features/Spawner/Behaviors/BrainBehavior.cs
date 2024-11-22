@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
@@ -46,10 +47,10 @@ public class BrainBehavior(ulong constructId, IPrefab prefab) : IConstructBehavi
         
         if (oppositeV)
         {
-            if (totalManeuverTime >= timeToMerge)
+            if (totalManeuverTime >= timeToMerge || brakeDistance <= context.TargetDistance)
             {
                 _logger.LogWarning("BRAKING: {V}", context.Velocity.Size());
-                context.Effects.Activate(new ApplyBrakesMovementEffect(), TimeSpan.FromSeconds(3));
+                context.Effects.Activate<IMovementEffect>(new ApplyBrakesMovementEffect(), TimeSpan.FromSeconds(3));
             }
         }
 

@@ -67,8 +67,10 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
         var futurePosition = VelocityHelper.CalculateFuturePosition(
             targetPos,
             targetVelocity,
-            10
+            60
         );
+        
+        logger.LogInformation("FUTURE POS DELTA: {D}", futurePosition - targetPos);
 
         // return targetPos + Offset;
         return TargetMovePositionCalculationOutcome.ValidCalculation(
