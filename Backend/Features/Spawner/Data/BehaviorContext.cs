@@ -293,10 +293,10 @@ public class BehaviorContext(
         if (!Position.HasValue) return double.PositiveInfinity;
 
         return VelocityHelper.CalculateTimeToReachDistance(
-            Position.Value.ToVector3(),
-            Velocity.ToVector3(),
-            TargetPosition.ToVector3(),
-            TargetLinearVelocity.ToVector3(),
+            Position.Value,
+            Velocity,
+            TargetPosition,
+            TargetLinearVelocity,
             distance
         );
     }

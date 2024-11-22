@@ -266,20 +266,20 @@ public static class VelocityHelper
     }
 
     public static double CalculateTimeToReachDistance(
-        Vector3 position1,
-        Vector3 velocity1,
-        Vector3 position2,
-        Vector3 velocity2,
+        Vec3 position1,
+        Vec3 velocity1,
+        Vec3 position2,
+        Vec3 velocity2,
         double targetDistance)
     {
         var relativePosition = position2 - position1;
         var relativeVelocity = velocity2 - velocity1;
         
         // Current distance between the entities
-        double currentDistance = relativePosition.Length();
+        var currentDistance = relativePosition.Size();
 
         // Relative velocity along the direction of relative position
-        double relativeSpeed = Vector3.Dot(relativePosition, relativeVelocity) / currentDistance;
+        var relativeSpeed = relativePosition.Dot(relativeVelocity) / currentDistance;
 
         // If the relative speed is zero, the entities are not moving toward or away from each other
         if (Math.Abs(relativeSpeed) < 1e-6)
@@ -288,7 +288,7 @@ public static class VelocityHelper
         }
 
         // Time to reach the target distance
-        double time = (currentDistance - targetDistance) / relativeSpeed;
+        var time = (currentDistance - targetDistance) / relativeSpeed;
 
         // Return time only if it's positive (moving towards each other)
         return time >= 0 ? time : double.PositiveInfinity;
