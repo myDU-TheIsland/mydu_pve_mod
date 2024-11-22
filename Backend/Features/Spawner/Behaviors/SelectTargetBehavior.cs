@@ -10,6 +10,7 @@ using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
@@ -30,7 +31,6 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
     private IConstructService _constructService;
     private ISectorPoolManager _sectorPoolManager;
     private IAreaScanService _areaScanService;
-    private Random _random;
     private IConstructDamageService _constructDamageService;
 
     public bool IsActive() => _active;
@@ -48,7 +48,6 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         _constructDamageService = provider.GetRequiredService<IConstructDamageService>();
         _sectorPoolManager = provider.GetRequiredService<ISectorPoolManager>();
         _areaScanService = provider.GetRequiredService<IAreaScanService>();
-        _random = provider.GetRandomProvider().GetRandom();
 
         return Task.CompletedTask;
     }
@@ -62,12 +61,13 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         }
 
         var targetSpan = DateTime.UtcNow - context.TargetSelectedTime;
-        if (context.IsMoveModeDefault() && targetSpan < TimeSpan.FromSeconds(5))
+        if (targetSpan < TimeSpan.FromSeconds(5))
         {
-            var position = await CalculateTargetMovePosition(context);
-            if (!position.HasValue) return;
+            var sameTargetMoveOutcome = await CalculateTargetMovePosition(context);
+            if (!sameTargetMoveOutcome.Valid) return;
 
-            context.SetAutoTargetMovePosition(position.Value);
+            context.SetAutoTargetMovePosition(sameTargetMoveOutcome.TargetMovePosition);
+            context.SetTargetLinearVelocity(sameTargetMoveOutcome.TargetLinearVelocity);
 
             return;
         }
@@ -92,25 +92,23 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             radarContacts = (await _areaScanService.ScanForPlayerContacts(
                     constructId,
                     context.Position.Value,
-                    DistanceHelpers.OneSuInMeters * 5
+                    DistanceHelpers.OneSuInMeters * 8
                 ))
                 .ToList();
-
-            foreach (var contact in radarContacts)
-            {
-                var transformOutcome = await _constructService.GetConstructTransformAsync(contact.ConstructId);
-                contact.Distance = transformOutcome.Position.Distance(context.Position.Value);
-            }
 
             StatsRecorder.Record("NPC_Radar", sw.ElapsedMilliseconds);
         }
 
         context.UpdateRadarContacts(radarContacts);
 
-        if (context.HasAnyRadarContact())
+        if (!context.HasAnyRadarContact())
         {
-            context.RefreshIdleSince();
+            context.SetAutoTargetMovePosition(context.Sector);
+            context.SetAutoTargetConstructId(null);
+            return;
         }
+        
+        context.RefreshIdleSince();
 
         var selectTargetEffect = context.Effects.GetOrNull<ISelectRadarTargetEffect>();
 
@@ -135,10 +133,11 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var targetDamage = await _constructDamageService.GetConstructDamage(targetId);
         context.SetTargetDamageData(targetId, targetDamage);
 
-        var movePos = await CalculateTargetMovePosition(context);
-        if (!movePos.HasValue) return;
+        var outcome = await CalculateTargetMovePosition(context);
+        if (!outcome.Valid) return;
 
-        context.SetAutoTargetMovePosition(movePos.Value);
+        context.SetAutoTargetMovePosition(outcome.TargetMovePosition);
+        context.SetTargetLinearVelocity(outcome.TargetLinearVelocity);
 
         await _sectorPoolManager.SetExpirationFromNow(context.Sector, TimeSpan.FromHours(1));
 
@@ -197,14 +196,14 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         }
     }
 
-    private async Task<Vec3?> CalculateTargetMovePosition(BehaviorContext context)
+    private async Task<TargetMovePositionCalculationOutcome> CalculateTargetMovePosition(BehaviorContext context)
     {
         var targetConstructId = context.GetTargetConstructId();
         
         var effect = context.Effects.GetOrNull<ICalculateTargetMovePositionEffect>();
         if (effect == null || !targetConstructId.HasValue)
         {
-            return new Vec3();
+            return TargetMovePositionCalculationOutcome.Invalid();
         }
         
         var targetMoveDistance = prefab.DefinitionItem.TargetDistance;

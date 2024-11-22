@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
-using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.Helpers.DU;
 
@@ -15,7 +13,6 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors;
 public class RetreatBehavior(ulong constructId, IPrefab prefab) : IConstructBehavior
 {
     private readonly IPrefab _prefab = prefab;
-    private ILogger<RetreatBehavior> _logger;
     private IConstructService _constructService;
 
     public BehaviorTaskCategory Category => BehaviorTaskCategory.HighPriority;
@@ -24,7 +21,6 @@ public class RetreatBehavior(ulong constructId, IPrefab prefab) : IConstructBeha
     {
         var provider = context.ServiceProvider;
         _constructService = provider.GetRequiredService<IConstructService>();
-        _logger = provider.CreateLogger<RetreatBehavior>();
 
         return Task.CompletedTask;
     }
@@ -49,16 +45,13 @@ public class RetreatBehavior(ulong constructId, IPrefab prefab) : IConstructBeha
         // first time initialize position
         if (!context.Position.HasValue)
         {
-            context.Position = npcInfo.rData.position;
+            context.SetPosition(npcInfo.rData.position);
         }
         
-        var npcPos = context.Position.Value;
+        var npcPos = context.Position!.Value;
         
         if (!targetConstructId.HasValue)
         {
-            // BUG TODO THE TARGET CONSTRUCT IS COMING NULL ALL THT TIME
-            // _logger.LogError("Construct {Construct} Target Construct Id NULL", constructId);
-            // context.SetAutoTargetMovePosition(context.Sector);
             return;
         }
         
@@ -66,8 +59,6 @@ public class RetreatBehavior(ulong constructId, IPrefab prefab) : IConstructBeha
         var targetConstructInfo = targetConstructInfoOutcome.Info;
         if (targetConstructInfo == null)
         {
-            // _logger.LogError("Construct {Construct} Target Construct Info {Target} NULL", constructId, targetConstructId.Value);
-            // context.SetAutoTargetMovePosition(context.Sector);
             return;
         }
         

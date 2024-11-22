@@ -9,24 +9,6 @@ public static class BehaviorContextMoveModeExtensions
         context.SetProperty(BehaviorContext.MoveModeProperty, "waypoint");
     }
 
-    public static bool IsMoveModeWaypoint(this BehaviorContext context)
-    {
-        return context.TryGetProperty(
-            BehaviorContext.MoveModeProperty, 
-            out var mode, 
-            string.Empty
-        ) && mode == "waypoint";
-    }
-    
-    public static bool IsMoveModeDefault(this BehaviorContext context)
-    {
-        return context.TryGetProperty(
-            BehaviorContext.MoveModeProperty, 
-            out var mode, 
-            string.Empty
-        ) && mode == string.Empty;
-    }
-    
     public static void SetBraking(this BehaviorContext context, bool value)
     {
         context.SetProperty(BehaviorContext.BrakingProperty, value);

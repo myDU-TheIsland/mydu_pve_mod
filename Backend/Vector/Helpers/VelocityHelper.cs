@@ -12,6 +12,21 @@ public static class VelocityHelper
         return Math.Pow(velocity, 2) / (2 * deceleration);
     }
 
+    public static double CalculateBrakingTime(double initialVelocity, double deceleration)
+    {
+        if (deceleration <= 0)
+        {
+            return 60 * 60;
+        }
+
+        if (initialVelocity <= 0)
+        {
+            return 0;
+        }
+
+        return initialVelocity / deceleration;
+    }
+
     public static bool ShouldStartBraking(Vector3 currentPosition, Vector3 targetPosition, Vector3 currentVelocity,
         double deceleration)
     {
@@ -20,6 +35,21 @@ public static class VelocityHelper
         var brakingDistance = CalculateBrakingDistance(currentVelocity.Length(), deceleration);
 
         return remainingDistance <= brakingDistance;
+    }
+
+    public static double CalculateTimeToReachVelocity(
+        double initialVelocity,
+        double targetVelocity,
+        double acceleration)
+    {
+        if (acceleration == 0)
+        {
+            return 60 * 60; // show 1h as a max
+        }
+
+        var time = (targetVelocity - initialVelocity) / acceleration;
+
+        return Math.Abs(time);
     }
 
     public static Vec3 LinearInterpolateWithAcceleration(
@@ -49,7 +79,7 @@ public static class VelocityHelper
         }
 
         var accelFactor = 0.5d;
-        
+
         // Update velocity based on acceleration and apply half of acceleration for position calculation
         Vec3 displacement = new Vec3
         {
@@ -233,5 +263,34 @@ public static class VelocityHelper
             y = currentPosition.y + velocity.y * futureSeconds,
             z = currentPosition.z + velocity.z * futureSeconds
         };
+    }
+
+    public static double CalculateTimeToReachDistance(
+        Vector3 position1,
+        Vector3 velocity1,
+        Vector3 position2,
+        Vector3 velocity2,
+        double targetDistance)
+    {
+        var relativePosition = position2 - position1;
+        var relativeVelocity = velocity2 - velocity1;
+        
+        // Current distance between the entities
+        double currentDistance = relativePosition.Length();
+
+        // Relative velocity along the direction of relative position
+        double relativeSpeed = Vector3.Dot(relativePosition, relativeVelocity) / currentDistance;
+
+        // If the relative speed is zero, the entities are not moving toward or away from each other
+        if (Math.Abs(relativeSpeed) < 1e-6)
+        {
+            return Math.Abs(currentDistance - targetDistance) < 0.01 ? 0 : double.PositiveInfinity;
+        }
+
+        // Time to reach the target distance
+        double time = (currentDistance - targetDistance) / relativeSpeed;
+
+        // Return time only if it's positive (moving towards each other)
+        return time >= 0 ? time : double.PositiveInfinity;
     }
 }

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.Vector.Helpers;
@@ -17,13 +18,14 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
     private DateTime? LastTimeOffsetUpdated { get; set; }
     private Vec3 Offset { get; set; }
     
-    public async Task<Vec3?> GetTargetMovePosition(ICalculateTargetMovePositionEffect.Params @params)
+    public async Task<TargetMovePositionCalculationOutcome> GetTargetMovePosition(
+        ICalculateTargetMovePositionEffect.Params @params)
     {
         if (!@params.TargetConstructId.HasValue ||
             !@params.InstigatorPosition.HasValue ||
             !@params.InstigatorStartPosition.HasValue)
         {
-            return null;
+            return TargetMovePositionCalculationOutcome.Invalid();
         }
 
         var constructService = provider.GetRequiredService<IConstructService>();
@@ -39,7 +41,7 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
                 @params.TargetConstructId.Value
             );
 
-            return @params.InstigatorStartPosition.Value;
+            return TargetMovePositionCalculationOutcome.MoveToAlternatePosition(@params.InstigatorStartPosition.Value);
         }
 
         var targetPos = targetConstructTransformOutcome.Position;
@@ -47,7 +49,7 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
         var distanceFromTarget = (targetPos - @params.InstigatorPosition.Value).Size();
         if (distanceFromTarget > @params.MaxDistanceVisibility)
         {
-            return @params.InstigatorStartPosition.Value;
+            return TargetMovePositionCalculationOutcome.MoveToAlternatePosition(@params.InstigatorStartPosition.Value);
         }
 
         var distanceGoal = @params.TargetMoveDistance;
@@ -59,16 +61,19 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
             LastTimeOffsetUpdated = DateTime.UtcNow;
         }
 
-        // var velocities = await constructService.GetConstructVelocities(@params.TargetConstructId.Value);
-        // var targetVelocity = velocities.Linear * @params.DeltaTime; // vel per second
-        //
-        // var futurePosition = VelocityHelper.CalculateFuturePosition(
-        //     targetPos,
-        //     targetVelocity,
-        //     10
-        // );
+        var velocities = await constructService.GetConstructVelocities(@params.TargetConstructId.Value);
+        var targetVelocity = velocities.Linear * @params.DeltaTime; // vel per second
+        
+        var futurePosition = VelocityHelper.CalculateFuturePosition(
+            targetPos,
+            targetVelocity,
+            10
+        );
 
-        return targetPos + Offset;
-        // return futurePosition;
+        // return targetPos + Offset;
+        return TargetMovePositionCalculationOutcome.ValidCalculation(
+            futurePosition,
+            velocities.Linear
+        );
     }
 }

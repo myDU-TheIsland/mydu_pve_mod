@@ -204,7 +204,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         SetShootTotalDeltaTime(context.BehaviorContext, totalDeltaTime);
 
         var w = context.WeaponItem;
-        var ammoType = w.AmmoItems
+        var ammoType = w.GetAmmoItems()
             .Where(x => x.Level == prefab.DefinitionItem.AmmoTier &&
                         x.ItemTypeName.Contains(prefab.DefinitionItem.AmmoVariant,
                             StringComparison.CurrentCultureIgnoreCase))

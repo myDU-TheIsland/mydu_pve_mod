@@ -10,7 +10,7 @@ namespace Mod.DynamicEncounters.Features.Common.Services;
 public class CachedAreaScanService(IAreaScanService areaScanService) : IAreaScanService
 {
     private readonly TemporaryMemoryCache<ulong, IEnumerable<ScanContact>> _npcRadar =
-        new(nameof(_npcRadar), TimeSpan.FromSeconds(3));
+        new(nameof(_npcRadar), TimeSpan.FromSeconds(2));
 
     public Task<IEnumerable<ScanContact>> ScanForPlayerContacts(ulong constructId, Vec3 position,
         double radius,

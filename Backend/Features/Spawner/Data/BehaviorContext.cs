@@ -11,6 +11,7 @@ using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
+using Mod.DynamicEncounters.Vector.Helpers;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Data;
@@ -43,8 +44,8 @@ public class BehaviorContext(
 
     public DateTime StartedAt { get; } = DateTime.UtcNow;
     public Vec3 Velocity { get; set; }
-    public Vec3? Position { get; set; }
-    public Vec3? StartPosition { get; set; }
+    public Vec3? Position { get; private set; }
+    public Vec3? StartPosition { get; private set; }
     public Quat Rotation { get; set; }
     public float TargetRotationPositionMultiplier { get; set; } = 1;
     public HashSet<ulong> PlayerIds { get; set; } = [];
@@ -53,7 +54,10 @@ public class BehaviorContext(
     public Guid? TerritoryId { get; } = territoryId;
     public Vec3 Sector { get; } = sector;
     public Vec3 TargetPosition { get; set; }
+    public ulong? TargetConstructId { get; set; }
     public double TargetDistance { get; set; }
+    public Vec3 TargetLinearVelocity { get; private set; }
+    public double VelocityWithTargetDotProduct { get; private set; }
     public bool IsApproaching { get; set; }
     public DateTime? LastApproachingUpdate { get; set; }
     public double TargetMoveDistance { get; set; }
@@ -87,7 +91,7 @@ public class BehaviorContext(
         IsShieldActive = constructInfo.mutableData.shieldState.isActive;
         IsShieldVenting = constructInfo.mutableData.shieldState.isVenting;
     }
-    
+
     public Task NotifyEvent(string @event, BehaviorEventArgs eventArgs)
     {
         // TODO for custom events
@@ -123,36 +127,69 @@ public class BehaviorContext(
         return true;
     }
 
+    public void SetPosition(Vec3 position)
+    {
+        if (!StartPosition.HasValue)
+        {
+            StartPosition = position;
+        }
+
+        Position = position;
+    }
+    
     public void SetTargetMovePosition(Vec3 position)
     {
         Properties.Set(nameof(DynamicProperties.TargetMovePosition), position);
     }
-    
+
+    public void SetTargetLinearVelocity(Vec3 linear)
+    {
+        TargetLinearVelocity = linear;
+
+        var targetDirection = TargetLinearVelocity.NormalizeSafe();
+        var npcDirection = Velocity.NormalizeSafe();
+
+        VelocityWithTargetDotProduct = npcDirection.Dot(targetDirection);
+    }
+
     public void SetIsApproachingTarget(double previousDistance, double currentDistance)
     {
-        // if (LastApproachingUpdate == null || (DateTime.UtcNow - LastApproachingUpdate.Value) > TimeSpan.FromSeconds(5))
-        // {
-            IsApproaching = previousDistance > currentDistance;
-        // }
+        IsApproaching = previousDistance > currentDistance;
     }
-    
+
     public bool IsApproachingTarget()
     {
         return IsApproaching;
     }
-    
+
     public void SetTargetPosition(Vec3 targetPosition)
     {
         TargetPosition = targetPosition;
     }
-    
+
+    public bool IsInsideOptimalRange() => TargetDistance <= GetBestWeaponOptimalRange();
+    public bool IsOutsideOptimalRange() => TargetDistance > GetBestWeaponOptimalRange();
+
+    public double GetBestWeaponOptimalRange()
+    {
+        if (!Position.HasValue) return 0;
+
+        var weaponItem = DamageData.GetBestWeaponByTargetDistance(
+            TargetPosition.Dist(Position.Value)
+        );
+
+        if (weaponItem == null) return 0;
+
+        return DamageData.GetHalfFalloffFiringDistance(weaponItem);
+    }
+
     public void SetTargetDistance(double distance)
     {
         SetIsApproachingTarget(TargetDistance, distance);
-        
+
         TargetDistance = distance;
     }
-    
+
     public void SetTargetMoveDistance(double distance)
     {
         TargetMoveDistance = distance;
@@ -165,24 +202,12 @@ public class BehaviorContext(
             new Vec3()
         );
     }
-    
-    public Vec3 GetTargetPosition()
-    {
-        return TargetPosition;
-    }
-    
-    public double GetTargetMoveDistance()
-    {
-        return TargetMoveDistance;
-    }
 
-    public ulong? GetTargetConstructId()
-    {
-        return this.GetOverrideOrDefault(
-            nameof(DynamicProperties.TargetConstructId),
-            (ulong?)null
-        );
-    }
+    public Vec3 GetTargetPosition() => TargetPosition;
+
+    public double GetTargetMoveDistance() => TargetMoveDistance;
+
+    public ulong? GetTargetConstructId() => this.TargetConstructId;
 
     public void SetTargetConstructId(ulong? constructId)
     {
@@ -192,8 +217,8 @@ public class BehaviorContext(
             return;
         }
 
-        Properties.Set(nameof(DynamicProperties.TargetConstructId), constructId);
-        Properties.Set(nameof(DynamicProperties.TargetSelectedTime), DateTime.UtcNow);
+        TargetConstructId = constructId;
+        TargetSelectedTime = DateTime.UtcNow;
     }
 
     public void SetWaypointList(IEnumerable<Waypoint> waypoints)
@@ -240,10 +265,40 @@ public class BehaviorContext(
 
     public double CalculateBrakingDistance()
     {
-        var velSize = Velocity.Size();
-        var brakingAcceleration = Prefab.DefinitionItem.AccelerationG * 9.81f;
+        return VelocityHelper.CalculateBrakingDistance(
+            Velocity.Size(),
+            Prefab.DefinitionItem.AccelerationG * 3.6d
+        );
+    }
+    
+    public double CalculateBrakingTime()
+    {
+        return VelocityHelper.CalculateBrakingTime(
+            Velocity.Size(),
+            Prefab.DefinitionItem.AccelerationG * 3.6d
+        );
+    }
+    
+    public double CalculateAccelerationToTargetSpeedTime(double fromVelocity)
+    {
+        return VelocityHelper.CalculateTimeToReachVelocity(
+            fromVelocity,
+            TargetLinearVelocity.Size(),
+            Prefab.DefinitionItem.AccelerationG * 3.6d
+        );
+    }
 
-        return velSize * velSize / (2 * brakingAcceleration);
+    public double CalculateTimeToMergeToDistance(double distance)
+    {
+        if (!Position.HasValue) return double.PositiveInfinity;
+
+        return VelocityHelper.CalculateTimeToReachDistance(
+            Position.Value.ToVector3(),
+            Velocity.ToVector3(),
+            TargetPosition.ToVector3(),
+            TargetLinearVelocity.ToVector3(),
+            distance
+        );
     }
 
     public IEnumerable<Waypoint> GetWaypointList()
@@ -288,8 +343,6 @@ public class BehaviorContext(
     private static class DynamicProperties
     {
         public const byte TargetMovePosition = 1;
-        public const byte TargetConstructId = 2;
-        public const byte TargetSelectedTime = 3;
         public const byte WaypointList = 4;
         public const byte WaypointListInitialized = 5;
     }

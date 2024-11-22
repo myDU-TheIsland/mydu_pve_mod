@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Helpers;
@@ -10,6 +11,7 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors;
 
 public class BrainBehavior(ulong constructId, IPrefab prefab) : IConstructBehavior
 {
+    public IPrefab Prefab { get; } = prefab;
     private ILogger<BrainBehavior> _logger;
     public BehaviorTaskCategory Category => BehaviorTaskCategory.MediumPriority;
 
@@ -24,23 +26,48 @@ public class BrainBehavior(ulong constructId, IPrefab prefab) : IConstructBehavi
     {
         await Task.Yield();
         
-        _logger.LogDebug("Construct {Construct}-{Prefab} Brain", constructId, prefab.DefinitionItem.Name);
+        var oppositeV = context.VelocityWithTargetDotProduct < 0;
+        var brakeDistance = context.CalculateBrakingDistance();
+        var brakingTime = context.CalculateBrakingTime();
+        var fromZeroToTargetVelocityTime = context.CalculateAccelerationToTargetSpeedTime(0);
 
-        var targetMovePosition = context.GetTargetMovePosition();
-        var position = context.Position;
-
-        var bestWeapon = context.DamageData.GetBestDamagingWeapon();
-        if (position.HasValue && bestWeapon != null)
+        var timeToMerge = context.CalculateTimeToMergeToDistance(context.GetBestWeaponOptimalRange());
+        var totalManeuverTime = brakingTime + fromZeroToTargetVelocityTime;
+        
+        _logger.LogInformation("Construct {Construct} Brain. TTM={TTM}, TMT={TMT} OV={OV}, BD={BD}, BT={BT}, FZ_TTV={FZTTV}", 
+            constructId, 
+            timeToMerge,
+            totalManeuverTime,
+            oppositeV,
+            brakeDistance,
+            brakingTime,
+            fromZeroToTargetVelocityTime
+        );
+        
+        if (oppositeV)
         {
-            var targetDistance = context.GetTargetMoveDistance();
-            if (context.IsApproachingTarget() && Math.Abs(targetMovePosition.Dist(position.Value)) < targetDistance)
+            if (totalManeuverTime >= timeToMerge)
             {
-                context.TargetRotationPositionMultiplier = -1;
-            }
-            else
-            {
-                context.TargetRotationPositionMultiplier = 1;
+                _logger.LogWarning("BRAKING: {V}", context.Velocity.Size());
+                context.Effects.Activate(new ApplyBrakesMovementEffect(), TimeSpan.FromSeconds(3));
             }
         }
+
+        // var targetMovePosition = context.GetTargetMovePosition();
+        // var position = context.Position;
+        //
+        // var bestWeapon = context.DamageData.GetBestDamagingWeapon();
+        // if (position.HasValue && bestWeapon != null)
+        // {
+        //     var targetDistance = context.GetTargetMoveDistance() * 2;
+        //     if (context.IsApproachingTarget() && Math.Abs(targetMovePosition.Dist(position.Value)) < targetDistance)
+        //     {
+        //         context.TargetRotationPositionMultiplier = -1;
+        //     }
+        //     else
+        //     {
+        //         context.TargetRotationPositionMultiplier = 1;
+        //     }
+        // }
     }
 }

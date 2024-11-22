@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 
@@ -6,7 +7,7 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 
 public interface ICalculateTargetMovePositionEffect : IEffect
 {
-    Task<Vec3?> GetTargetMovePosition(Params @params);
+    Task<TargetMovePositionCalculationOutcome> GetTargetMovePosition(Params @params);
 
     public class Params
     {

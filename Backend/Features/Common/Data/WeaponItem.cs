@@ -19,5 +19,7 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
     public double OptimalCrossSectionDiameter { get; set; } = weaponUnit.OptimalCrossSectionDiameter;
     public double BaseCycleTime { get; set; } = weaponUnit.BaseCycleTime;
     
-    public IEnumerable<AmmoItem> AmmoItems { get; } = ammoItems;
+    private IEnumerable<AmmoItem> AmmoItems { get; } = ammoItems;
+
+    public IEnumerable<AmmoItem> GetAmmoItems() => AmmoItems;
 }

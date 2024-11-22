@@ -13,7 +13,6 @@ using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
-using Mod.DynamicEncounters.Vector.Helpers;
 using Newtonsoft.Json;
 using NQ;
 using NQ.Interfaces;
@@ -51,11 +50,10 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                 return;
             }
 
-            context.Position = npcConstructTransformOutcome.Position;
-            context.StartPosition = npcConstructTransformOutcome.Position;
+            context.SetPosition(npcConstructTransformOutcome.Position);
         }
 
-        var npcPos = context.Position.Value;
+        var npcPos = context.Position!.Value;
         var targetMovePos = context.GetTargetMovePosition();
 
         var forward = VectorMathUtils.GetForward(context.Rotation.ToQuat())
@@ -79,21 +77,6 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
         var accelMove = moveDirection * acceleration * (1 - context.RealismFactor);
 
         var accelV = accelForward + accelMove;
-
-        if (context.IsMoveModeWaypoint())
-        {
-            var shouldBrake = VelocityHelper.ShouldStartBraking(
-                context.Position.Value.ToVector3(),
-                context.GetTargetMovePosition().ToVector3(),
-                context.Velocity.ToVector3(),
-                acceleration
-            );
-
-            if (shouldBrake)
-            {
-                context.SetBraking(true);
-            }
-        }
 
         var velocity = context.Velocity;
 
@@ -148,7 +131,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
         try
         {
-            context.Position = position;
+            context.SetPosition(position);
             var cUpdate = new ConstructUpdate
             {
                 pilotId = ModBase.Bot.PlayerId,
