@@ -42,12 +42,12 @@ public class BrainBehavior(ulong constructId, IPrefab prefab) : IConstructBehavi
             oppositeV,
             brakeDistance,
             brakingTime,
-            fromZeroToTargetVelocityTime
+            fromZeroToTargetVelocityTime    
         );
         
         if (oppositeV)
         {
-            if (totalManeuverTime >= timeToMerge || brakeDistance <= context.TargetDistance)
+            if (totalManeuverTime >= timeToMerge)
             {
                 _logger.LogWarning("BRAKING: {V}", context.Velocity.Size());
                 context.Effects.Activate<IMovementEffect>(new ApplyBrakesMovementEffect(), TimeSpan.FromSeconds(3));
