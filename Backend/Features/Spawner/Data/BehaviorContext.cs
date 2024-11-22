@@ -56,8 +56,23 @@ public class BehaviorContext(
     public Vec3 AccelCalcTargetPosition { get; set; }
     public Vec3 AccelCalcTargetVelocity { get; set; }
     public Vec3 TargetPosition { get; set; }
-    public double AccelerationG { get; private set; } = prefab.DefinitionItem.AccelerationG;
-    public double AccelerationMps { get; private set; } = prefab.DefinitionItem.AccelerationG * 3.6d;
+
+    public bool BoosterActive { get; set; } = false;
+    public double AccelerationG { get; set; } = prefab.DefinitionItem.AccelerationG;
+
+    public double GetAccelerationG()
+    {
+        var boosterG = 0d;
+        if (Modifiers.Velocity.BoosterEnabled && BoosterActive)
+        {
+            boosterG = Modifiers.Velocity.BoosterAccelerationG;
+        }
+
+        return AccelerationG + boosterG;
+    }
+
+    public double GetAccelerationMps() => GetAccelerationG() * 3.6d;
+    
     public Vec3 TargetAcceleration { get; private set; }
     public DateTime LastTargetAccelerationUpdate { get; private set; } = DateTime.UtcNow;
     public ulong? TargetConstructId { get; set; }
@@ -75,6 +90,7 @@ public class BehaviorContext(
     public readonly ConcurrentDictionary<string, bool> PublishedEvents = [];
     public ConcurrentDictionary<string, TimerPropertyValue> PropertyOverrides { get; } = [];
     public IEffectHandler Effects { get; set; } = new EffectHandler(serviceProvider);
+    public BehaviorModifiers Modifiers { get; set; } = prefab.DefinitionItem.Mods;
 
     [Newtonsoft.Json.JsonIgnore]
     [JsonIgnore]
@@ -183,7 +199,7 @@ public class BehaviorContext(
                 AccelCalcTargetVelocity,
                 deltaTime
             );
-            
+
             AccelCalcTargetPosition = targetPosition;
             AccelCalcTargetVelocity = TargetLinearVelocity;
             TargetAcceleration = acceleration;
@@ -234,36 +250,48 @@ public class BehaviorContext(
 
     public double CalculateVelocityGoal()
     {
+        if (!Modifiers.Velocity.Enabled) return MaxVelocity;
+        
         var oppositeVector = VelocityWithTargetDotProduct < 0;
 
-        if (TargetDistance > 1.5 * DistanceHelpers.OneSuInMeters)
+        if (TargetDistance > Modifiers.Velocity.GetFarDistanceM())
         {
             return MaxVelocity;
         }
 
         var brakingDistance = CalculateBrakingDistance();
 
-        if (IsOutsideDoubleOptimalRange() || TargetDistance > brakingDistance * 2)
+        if (IsOutsideDoubleOptimalRange() || TargetDistance > brakingDistance * Modifiers.Velocity.BrakeDistanceFactor)
         {
             if (oppositeVector)
             {
-                return TargetLinearVelocity.Size() * 0.5d;
+                return TargetLinearVelocity.Size() * Modifiers.Velocity.OutsideOptimalRange2X.Negative;
             }
 
-            return TargetLinearVelocity.Size() * 1.5d;
+            return TargetLinearVelocity.Size() * Modifiers.Velocity.OutsideOptimalRange2X.Positive;
         }
 
         if (IsOutsideOptimalRange())
         {
             if (oppositeVector)
             {
-                return TargetLinearVelocity.Size() * 0.25d;
+                return TargetLinearVelocity.Size() * Modifiers.Velocity.OutsideOptimalRange.Negative;
             }
 
-            return TargetLinearVelocity.Size() * 1.2d;
+            return TargetLinearVelocity.Size() * Modifiers.Velocity.OutsideOptimalRange.Positive;
         }
 
-        return TargetLinearVelocity.Size();
+        if (TargetDistance < Modifiers.Velocity.TooCloseDistanceM)
+        {
+            return MaxVelocity;
+        }
+
+        if (oppositeVector)
+        {
+            return TargetLinearVelocity.Size() * Modifiers.Velocity.InsideOptimalRange.Negative;
+        }
+
+        return TargetLinearVelocity.Size() * Modifiers.Velocity.InsideOptimalRange.Positive;
     }
 
     public double CalculateMovementPredictionSeconds()
@@ -339,7 +367,7 @@ public class BehaviorContext(
     {
         return VelocityHelper.CalculateBrakingDistance(
             Velocity.Size(),
-            AccelerationMps
+            GetAccelerationMps()
         );
     }
 
@@ -347,7 +375,7 @@ public class BehaviorContext(
     {
         return VelocityHelper.CalculateBrakingTime(
             Velocity.Size(),
-            AccelerationMps
+            GetAccelerationMps()
         );
     }
 
@@ -356,7 +384,7 @@ public class BehaviorContext(
         return VelocityHelper.CalculateTimeToReachVelocity(
             fromVelocity,
             TargetLinearVelocity.Size(),
-            AccelerationMps
+            GetAccelerationMps()
         );
     }
 
