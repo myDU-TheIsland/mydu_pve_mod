@@ -71,6 +71,6 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
         logger.LogInformation("FUTURE POS DELTA: {A} {D}", @params.TargetConstructAcceleration,
             futurePosition - targetPos);
         //targetPos + Offset
-        return TargetMovePositionCalculationOutcome.ValidCalculation(futurePosition);
+        return TargetMovePositionCalculationOutcome.ValidCalculation(targetPos);
     }
 }
