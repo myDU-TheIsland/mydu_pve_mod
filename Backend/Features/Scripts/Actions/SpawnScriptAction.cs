@@ -227,8 +227,12 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
 
         try
         {
-            await orleans.GetConstructParentingGrain().ReloadConstruct(constructId)
-                .WithRetry(RetryOptions.Default(_logger));
+            // Keep POIs hidden
+            if (!actionItem.Tags.Contains("poi"))
+            {
+                await orleans.GetConstructParentingGrain().ReloadConstruct(constructId)
+                    .WithRetry(RetryOptions.Default(_logger));
+            }
         }
         catch (Exception e)
         {
