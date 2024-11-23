@@ -220,12 +220,12 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         var ammoItem = random.PickOneAtRandom(ammoType);
         var mod = prefab.DefinitionItem.Mods;
         
-        var cycleTime = w.GetShotWaitTime(
+        context.BehaviorContext.ShotWaitTime = w.GetShotWaitTime(
             ammoItem,
             cycleTimeBuffFactor: mod.Weapon.CycleTime
         );
 
-        if (totalDeltaTime < cycleTime)
+        if (totalDeltaTime < context.BehaviorContext.ShotWaitTime)
         {
             return;
         }
@@ -269,7 +269,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
                 effectStrength = 10,
                 falloffDistance = w.FalloffDistance * mod.Weapon.FalloffDistance,
                 falloffTracking = w.FalloffTracking * mod.Weapon.FalloffTracking,
-                fireCooldown = cycleTime,
+                fireCooldown = context.BehaviorContext.ShotWaitTime,
                 baseOptimalDistance = w.BaseOptimalDistance * mod.Weapon.OptimalDistance,
                 falloffAimingCone = w.FalloffAimingCone * mod.Weapon.FalloffAimingCone,
                 baseOptimalTracking = w.BaseOptimalTracking * mod.Weapon.OptimalTracking,

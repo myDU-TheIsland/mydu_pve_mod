@@ -83,6 +83,7 @@ public class BehaviorContext(
     public DateTime? LastApproachingUpdate { get; set; }
     public double MaxVelocity { get; set; } = prefab.DefinitionItem.MaxSpeedKph / 3.6d;
     public double TargetMoveDistance { get; private set; }
+    public double ShotWaitTime { get; set; }
     public ConstructDamageData DamageData { get; set; } = new([]);
     public int FunctionalWeaponCount { get; set; } = 1;
     public ConcurrentDictionary<ulong, ConstructDamageData> TargetDamageData { get; set; } = new();
