@@ -209,18 +209,21 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             .Where(x => x.Level == prefab.DefinitionItem.AmmoTier &&
                         x.ItemTypeName.Contains(prefab.DefinitionItem.AmmoVariant,
                             StringComparison.CurrentCultureIgnoreCase))
-            .Select(x => x.ItemTypeName)
             .ToList();
 
         if (ammoType.Count == 0)
         {
-            ammoType = ["AmmoMissileLarge4"];
+            _logger.LogError("Construct {Construct} has misconfigured Ammo and Weapons", constructId);
+            return;
         }
 
         var ammoItem = random.PickOneAtRandom(ammoType);
-
         var mod = prefab.DefinitionItem.Mods;
-        var cycleTime = w.BaseCycleTime * mod.Weapon.CycleTime;
+        
+        var cycleTime = w.GetShotWaitTime(
+            ammoItem,
+            cycleTimeBuffFactor: mod.Weapon.CycleTime
+        );
 
         if (totalDeltaTime < cycleTime)
         {
@@ -272,7 +275,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
                 baseOptimalTracking = w.BaseOptimalTracking * mod.Weapon.OptimalTracking,
                 baseOptimalAimingCone = w.BaseOptimalAimingCone * mod.Weapon.OptimalAimingCone,
                 optimalCrossSectionDiameter = w.OptimalCrossSectionDiameter,
-                ammoItem = ammoItem,
+                ammoItem = ammoItem.ItemTypeName,
                 weaponItem = w.ItemTypeName
             },
             5,
@@ -283,7 +286,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             constructId,
             sw.Elapsed.TotalMilliseconds,
             w.ItemTypeName,
-            ammoItem
+            ammoItem.ItemTypeName
         );
     }
 }
