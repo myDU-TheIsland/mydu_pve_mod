@@ -22,16 +22,20 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
     public double BaseReloadTime { get; set; } = weaponUnit.BaseReloadTime;
     public double MagazineVolume { get; set; } = weaponUnit.MagazineVolume;
 
+    // weap = 533.34
+    // ammo = 50
     public double GetNumberOfShotsInMagazine(
         AmmoItem ammoItem,
         double magazineBuffFactor = 1.5d
     ) => MagazineVolume * magazineBuffFactor / ammoItem.UnitVolume;
 
+    // mag 16
+    // cycle time 4
     public double GetTimeToEmpty(
         AmmoItem ammoItem,
         double magazineBuffFactor = 1.5d,
         double cycleTimeBuffFactor = 1 / 1.5625d
-    ) => GetNumberOfShotsInMagazine(ammoItem, magazineBuffFactor) / BaseCycleTime * cycleTimeBuffFactor;
+    ) => GetNumberOfShotsInMagazine(ammoItem, magazineBuffFactor) * (BaseCycleTime * cycleTimeBuffFactor);
 
     public double GetReloadTime(double reloadTimeBuffFactor) => BaseReloadTime * reloadTimeBuffFactor;
 
