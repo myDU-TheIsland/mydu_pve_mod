@@ -22,17 +22,16 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
     public double BaseReloadTime { get; set; } = weaponUnit.BaseReloadTime;
     public double MagazineVolume { get; set; } = weaponUnit.MagazineVolume;
 
-    public int GetNumberOfShotsInMagazine(
+    public double GetNumberOfShotsInMagazine(
         AmmoItem ammoItem,
         double magazineBuffFactor = 1.5d
-    ) => (int)Math.Ceiling(MagazineVolume * magazineBuffFactor / ammoItem.UnitVolume);
+    ) => MagazineVolume * magazineBuffFactor / ammoItem.UnitVolume;
 
     public double GetTimeToEmpty(
         AmmoItem ammoItem,
         double magazineBuffFactor = 1.5d,
         double cycleTimeBuffFactor = 1 / 1.5625d
-    ) => GetNumberOfShotsInMagazine(ammoItem, magazineBuffFactor) /
-         Math.Clamp(BaseCycleTime * Math.Clamp(cycleTimeBuffFactor, 0.05d, 5d), 0.5d, BaseCycleTime);
+    ) => GetNumberOfShotsInMagazine(ammoItem, magazineBuffFactor) / BaseCycleTime * cycleTimeBuffFactor;
 
     public double GetReloadTime(double reloadTimeBuffFactor) => BaseReloadTime * reloadTimeBuffFactor;
 
@@ -51,8 +50,8 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
     ) => GetNumberOfShotsInMagazine(ammoItem, magazineBuffFactor) /
          Math.Clamp(
              GetTotalCycleTime(ammoItem, magazineBuffFactor, cycleTimeBuffFactor, reloadTimeBuffFactor),
-             0.1,
-             60
+             0.1d,
+             60d
          );
 
     public double GetShotWaitTime(
@@ -62,15 +61,22 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
         double reloadTimeBuffFactor = 1 / 1.5625d
     )
     {
-        cycleTimeBuffFactor = Math.Clamp(cycleTimeBuffFactor, 0.1, 5);
-        reloadTimeBuffFactor = Math.Clamp(reloadTimeBuffFactor, 0.1, 5);
-        magazineBuffFactor = Math.Clamp(magazineBuffFactor, 0.1, 5);
+        cycleTimeBuffFactor = Math.Clamp(cycleTimeBuffFactor, 0.1d, 5d);
+        reloadTimeBuffFactor = Math.Clamp(reloadTimeBuffFactor, 0.1d, 5d);
+        magazineBuffFactor = Math.Clamp(magazineBuffFactor, 0.1d, 5d);
         
-        return 1 / Math.Clamp(
+        var result = 1d / Math.Clamp(
             GetSustainedRateOfFire(ammoItem, magazineBuffFactor, cycleTimeBuffFactor, reloadTimeBuffFactor),
             0.1d,
-            60
+            60d
         );
+
+        if (result <= 0.5d)
+        {
+            return Math.Clamp(BaseCycleTime, 0.5d, 60);
+        }
+
+        return result;
     }
 
     private IEnumerable<AmmoItem> AmmoItems { get; } = ammoItems;
