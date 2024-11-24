@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,21 +41,28 @@ public partial class TagSectorAsActiveScriptAction : IScriptAction
 
         context.Properties.TryAdd("DelaySeconds", TimeSpan.FromMinutes(30).TotalSeconds);
 
-        if (context.ConstructId.HasValue)
+        var provider = context.ServiceProvider;
+        var orleans = provider.GetOrleans();
+        var constructHandlerRepo = provider.GetRequiredService<IConstructHandleRepository>();
+        
+        var result = (await constructHandlerRepo
+            .FindTagInSectorAsync(context.Sector, "poi")).ToList();
+
+        foreach (var handleItem in result)
         {
-            var orleans = context.ServiceProvider.GetOrleans();
+            var constructId = handleItem.ConstructId;
             var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
-            var info = await constructService.GetConstructInfoAsync(context.ConstructId.Value);
+            var info = await constructService.GetConstructInfoAsync(constructId);
 
             if (!info.ConstructExists)
             {
-                return ScriptActionResult.Successful();
+                continue;
             }
-            
+        
             var name = ReplaceBetweenBracketsWithExclamation(info.Info!.rData.name);
-            
-            var cg = orleans.GetConstructGrain(context.ConstructId.Value);
-            
+        
+            var cg = orleans.GetConstructGrain(constructId);
+        
             // TODO this may fail with faction ownership
             await cg.RenameConstruct(info.Info.mutableData.ownerId.playerId, name);
         }
