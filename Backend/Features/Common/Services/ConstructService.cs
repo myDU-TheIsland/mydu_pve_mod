@@ -342,7 +342,7 @@ public class ConstructService(IServiceProvider provider) : IConstructService
         await db.ExecuteAsync("UPDATE public.construct SET name = @name WHERE id = @id", new
         {
             name,
-            id = constructId
+            id = (long)constructId
         });
     }
 }
