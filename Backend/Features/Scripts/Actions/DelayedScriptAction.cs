@@ -14,7 +14,7 @@ namespace Mod.DynamicEncounters.Features.Scripts.Actions;
 [ScriptActionName(ActionName)]
 public class DelayedScriptAction(ScriptActionItem actionItem) : IScriptAction
 {
-    public const string ActionName = "default-sector-enter";
+    public const string ActionName = "delayed-script";
     public string GetKey() => Name;
 
     public string Name => ActionName;
