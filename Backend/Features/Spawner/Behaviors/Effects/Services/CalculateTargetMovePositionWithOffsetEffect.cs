@@ -52,8 +52,7 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
             return TargetMovePositionCalculationOutcome.MoveToAlternatePosition(@params.InstigatorStartPosition.Value);
         }
 
-        var distanceGoal = @params.TargetMoveDistance;
-        distanceGoal = 10000; // TEMP
+        var distanceGoal = @params.TargetMoveDistance / 2;
 
         var timeDiff = DateTime.UtcNow - (LastTimeOffsetUpdated ?? DateTime.UtcNow);
         if (LastTimeOffsetUpdated == null || timeDiff > TimeSpan.FromSeconds(30))
