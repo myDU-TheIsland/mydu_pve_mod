@@ -15,7 +15,6 @@ using BotLib.Protocols.Queuing;
 using FluentMigrator.Runner;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Common.Services;
@@ -30,6 +29,7 @@ using NQutils;
 using NQutils.Config;
 using NQutils.Sql;
 using Orleans;
+using Services;
 
 namespace Mod.DynamicEncounters;
 
@@ -141,6 +141,8 @@ public class ModBase
             .AddInitializableSingleton<IRDMSStorage, RDMSStorage>()
             .AddInitializableSingleton<IPlanetList, PlanetListStub>()
             .AddInitializableSingleton<IScenegraph, Scenegraph>()
+            .AddInitializableSingleton<IElementBoundingBox, ElementBoundingBox>()
+            .AddInitializableSingleton<IConstructBoundingBox, ConstructBoundingBox>()
             .AddInitializableSingleton<IPub, Pub>()
             .AddInitializableSingleton<Internal.InternalClient, Internal.InternalClient>()
             .RegisterGRPCClient()

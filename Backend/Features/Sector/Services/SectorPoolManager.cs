@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Database.Interfaces;
@@ -40,105 +38,6 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         serviceProvider.GetRequiredService<IConstructSpatialHashRepository>();
 
     private readonly ILogger<SectorPoolManager> _logger = serviceProvider.CreateLogger<SectorPoolManager>();
-
-    public async Task GenerateSectors(SectorGenerationArgs args)
-    {
-        var count = await _sectorInstanceRepository.GetCountWithTagAsync(args.Tag);
-        var missingQuantity = args.Quantity - count;
-
-        if (missingQuantity <= 0)
-        {
-            _logger.LogDebug("No Sectors Missing. Missing {Missing} of {Total}", missingQuantity, args.Quantity);
-            return;
-        }
-
-        var handleCount = await _constructHandleManager.GetActiveCount();
-        var featureReaderService = serviceProvider.GetRequiredService<IFeatureReaderService>();
-        var maxBudgetConstructs = await featureReaderService.GetIntValueAsync("MaxConstructHandles", 50);
-
-        if (handleCount >= maxBudgetConstructs)
-        {
-            _logger.LogError("Generate Sector: Reached MAX Number of Construct Handles to Spawn: {Max}",
-                maxBudgetConstructs);
-            return;
-        }
-
-        var allSectorInstances = await _sectorInstanceRepository.GetAllAsync();
-        var sectorInstanceMap = allSectorInstances
-            .Select(k => k.Sector.GridSnap(SectorGridSnap * args.SectorMinimumGap).ToLongVector3())
-            .ToHashSet();
-
-        var random = _randomProvider.GetRandom();
-
-        var randomMinutes = random.Next(0, 60);
-
-        for (var i = 0; i < missingQuantity; i++)
-        {
-            if (!args.Encounters.Any())
-            {
-                continue;
-            }
-
-            var encounter = random.PickOneAtRandom(args.Encounters);
-
-            // TODO
-            var radius = MathFunctions.Lerp(
-                encounter.Properties.MinRadius,
-                encounter.Properties.MaxRadius,
-                random.NextDouble()
-            );
-
-            Vec3 position;
-            var interactions = 0;
-            const int maxInteractions = 100;
-
-            do
-            {
-                position = random.RandomDirectionVec3() * radius;
-                position += encounter.Properties.CenterPosition;
-                position = position.GridSnap(SectorGridSnap);
-
-                interactions++;
-            } while (
-                interactions < maxInteractions ||
-                sectorInstanceMap
-                    .Contains(
-                        position.GridSnap(SectorGridSnap * args.SectorMinimumGap).ToLongVector3()
-                    )
-            );
-
-            var instance = new SectorInstance
-            {
-                Id = Guid.NewGuid(),
-                Sector = position,
-                FactionId = args.FactionId,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow + encounter.Properties.ExpirationTimeSpan +
-                            TimeSpan.FromMinutes(randomMinutes * i),
-                TerritoryId = encounter.TerritoryId,
-                OnLoadScript = encounter.OnLoadScript,
-                OnSectorEnterScript = encounter.OnSectorEnterScript,
-            };
-
-            if (position is { x: 0, y: 0, z: 0 })
-            {
-                _logger.LogWarning("BLOCKED Sector 0,0,0 creation");
-                return;
-            }
-
-            try
-            {
-                await _sectorInstanceRepository.AddAsync(instance);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e,
-                    "Failed to create sector. Likely violating unique constraint. It will be tried again on the next cycle");
-            }
-
-            await Task.Delay(200);
-        }
-    }
 
     public async Task GenerateTerritorySectors(SectorGenerationArgs args)
     {
@@ -220,6 +119,11 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 TerritoryId = args.TerritoryId,
                 OnLoadScript = encounter.OnLoadScript,
                 OnSectorEnterScript = encounter.OnSectorEnterScript,
+                Properties = new SectorInstanceProperties
+                {
+                    Tags = [],
+                    HasActiveMarker = encounter.Properties.HasActiveMarker
+                }
             };
 
             if (position is { x: 0, y: 0, z: 0 })
@@ -473,7 +377,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 sectorInstance.OnSectorEnterScript,
                 sectorInstance.Sector
             );
-            
+
             return SectorActivationOutcome.Failed(e.Message);
         }
 
@@ -499,50 +403,43 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         {
             _logger.LogError(e, "Failed to publish {Event}", nameof(SectorActivatedEvent));
         }
-        
+
         return SectorActivationOutcome.Activated();
     }
 
     public async Task UpdateExpirationNames()
     {
         var constructHandleRepository = serviceProvider.GetRequiredService<IConstructHandleRepository>();
-        var poiMap = await constructHandleRepository.GetPoiConstructExpirationTimeSpansAsync();
+        var items = (await constructHandleRepository.GetPoiConstructExpirationTimeSpansAsync()).ToList();
         var orleans = serviceProvider.GetOrleans();
 
-        _logger.LogInformation("Update Expiration Names found: {Count}", poiMap.Count);
+        _logger.LogInformation("Update Expiration Names found: {Count}", items.Count);
 
         using var db = serviceProvider.GetRequiredService<IPostgresConnectionFactory>().Create();
         db.Open();
 
-        foreach (var kvp in poiMap)
+        foreach (var item in items)
         {
             try
             {
-                var constructInfoGrain = orleans.GetConstructInfoGrain(kvp.Key);
+                var constructInfoGrain = orleans.GetConstructInfoGrain(item.ConstructId);
                 var constructInfo = await constructInfoGrain.Get();
                 var constructName = constructInfo.rData.name;
 
-                var pieces = constructName.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                if (pieces.Length == 0)
+                var newName = $"{constructName} | [{(int)item.ExpiresAt.TotalMinutes}m]";
+                if (item.StartedAt.HasValue && item.SectorInstanceProperties.HasActiveMarker)
                 {
-                    continue;
+                    newName = $"{constructName} | [!!!]";
                 }
 
-                var firstPiece = pieces[0].Trim();
-                var newName = $"{firstPiece} | [{(int)kvp.Value.TotalMinutes}m]";
+                var constructService = serviceProvider.GetRequiredService<IConstructService>();
+                await constructService.RenameConstruct(item.ConstructId, newName);
 
-                // TODO move this to a service or repo
-                await db.ExecuteAsync("UPDATE public.construct SET name = @name WHERE id = @id", new
-                {
-                    name = newName,
-                    id = (long)kvp.Key
-                });
-
-                _logger.LogDebug("Construct {Construct} Name Updated to: {Name}", kvp.Key, newName);
+                _logger.LogDebug("Construct {Construct} Name Updated to: {Name}", item.ConstructId, newName);
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to update expiration name of {Construct}", kvp.Key);
+                _logger.LogError(e, "Failed to update expiration name of {Construct}", item.ConstructId);
             }
         }
     }

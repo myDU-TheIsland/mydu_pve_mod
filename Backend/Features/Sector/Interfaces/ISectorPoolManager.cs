@@ -7,7 +7,6 @@ namespace Mod.DynamicEncounters.Features.Sector.Interfaces;
 
 public interface ISectorPoolManager
 {
-    Task GenerateSectors(SectorGenerationArgs args);
     Task GenerateTerritorySectors(SectorGenerationArgs args);
 
     Task LoadUnloadedSectors();

@@ -22,6 +22,9 @@
     <Reference Include="BotLib">
       <HintPath>NQ\BotLib.dll</HintPath>
     </Reference>
+    <Reference Include="Grains">
+      <HintPath>NQ\Grains.dll</HintPath>
+    </Reference>
     <Reference Include="Interfaces">
       <HintPath>NQ\Interfaces.dll</HintPath>
     </Reference>

@@ -5,7 +5,7 @@ namespace Mod.DynamicEncounters.Features.Sector.Data;
 
 public class SectorInstance
 {
-    public Guid Id { get; set; } 
+    public Guid Id { get; set; }
     public Vec3 Sector { get; set; }
     public long FactionId { get; set; }
     public DateTime ExpiresAt { get; set; }
@@ -15,6 +15,8 @@ public class SectorInstance
     public Guid TerritoryId { get; set; }
     public string OnLoadScript { get; set; }
     public string OnSectorEnterScript { get; set; }
+
+    public SectorInstanceProperties Properties { get; set; }
 
     public bool IsForceExpired(DateTime dateTime)
         => ForceExpiresAt.HasValue && ForceExpiresAt.Value < dateTime;

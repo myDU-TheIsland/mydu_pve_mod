@@ -49,7 +49,6 @@ public class BrainBehavior(ulong constructId, IPrefab prefab) : IConstructBehavi
         {
             if (totalManeuverTime >= timeToMerge)
             {
-                _logger.LogWarning("BRAKING: {V}", context.Velocity.Size());
                 // context.Effects.Activate<IMovementEffect>(new ApplyBrakesMovementEffect(), TimeSpan.FromSeconds(3));
             }
         }

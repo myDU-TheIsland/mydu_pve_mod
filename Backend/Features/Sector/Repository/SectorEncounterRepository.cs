@@ -73,6 +73,7 @@ public class SectorEncounterRepository(IServiceProvider provider) : ISectorEncou
                 E.on_sector_enter_script,
                 E.active,
                 E.faction_id,
+                E.json_properties->>'HasActiveMarker' sector_has_active_marker,
                 T.spawn_position_x,
                 T.spawn_position_y,
                 T.spawn_position_z,
@@ -118,6 +119,7 @@ public class SectorEncounterRepository(IServiceProvider provider) : ISectorEncou
                 E.on_sector_enter_script,
                 E.active,
                 E.faction_id,
+                E.json_properties->>'HasActiveMarker' sector_has_active_marker,
                 T.spawn_position_x,
                 T.spawn_position_y,
                 T.spawn_position_z,
@@ -151,6 +153,7 @@ public class SectorEncounterRepository(IServiceProvider provider) : ISectorEncou
                 E.on_sector_enter_script,
                 E.active,
                 E.faction_id,
+                E.json_properties->>'HasActiveMarker' sector_has_active_marker,
                 T.spawn_position_x,
                 T.spawn_position_y,
                 T.spawn_position_z,
@@ -172,22 +175,6 @@ public class SectorEncounterRepository(IServiceProvider provider) : ISectorEncou
         return queryResult.Select(DbRowWithTerritoryToModel);
     }
 
-    private static SectorEncounterItem DbRowToModel(DbRow row)
-    {
-        return new SectorEncounterItem
-        {
-            Id = row.id,
-            Name = row.name,
-            OnLoadScript = row.on_load_script,
-            OnSectorEnterScript = row.on_sector_enter_script,
-            Active = row.active,
-            Tag = row.tag,
-            TerritoryId = row.territory_id,
-            RestrictToOwnedTerritory = row.restrict_to_owned_territory,
-            Properties = JsonConvert.DeserializeObject<EncounterProperties>(row.json_properties)
-        };
-    }
-    
     private static SectorEncounterItem DbRowWithTerritoryToModel(DbRowWithTerritoryJoin row)
     {
         return new SectorEncounterItem
@@ -211,6 +198,7 @@ public class SectorEncounterRepository(IServiceProvider provider) : ISectorEncou
                 MaxRadius = row.spawn_max_radius,
                 MinRadius = row.spawn_min_radius,
                 ExpirationTimeSpan = row.spawn_expiration_span,
+                HasActiveMarker = row.sector_has_active_marker
             }
         };
     }
@@ -237,5 +225,6 @@ public class SectorEncounterRepository(IServiceProvider provider) : ISectorEncou
         public double spawn_max_radius { get; set; }
         public TimeSpan spawn_expiration_span { get; set; }
         public bool territory_active { get; set; }
+        public bool sector_has_active_marker { get; set; }
     }
 }

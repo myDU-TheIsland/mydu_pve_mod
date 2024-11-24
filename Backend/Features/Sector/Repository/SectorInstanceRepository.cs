@@ -4,12 +4,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Data;
 using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Data;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using Newtonsoft.Json;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Sector.Repository;
@@ -88,6 +88,7 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
             OnSectorEnterScript = first.on_sector_enter_script,
             StartedAt = first.started_at,
             TerritoryId = first.territory_id,
+            Properties = JsonConvert.DeserializeObject<SectorInstanceProperties>(first.json_properties),
             Sector = new Vec3
             {
                 x = first.sector_x,
@@ -395,5 +396,6 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
         public DateTime? force_expire_at { get; set; }
         public DateTime? started_at { get; set; }
         public Guid territory_id { get; set; }
+        public string json_properties { get; set; }
     }
 }

@@ -167,6 +167,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
                 FactionId = context.FactionId ?? 1,
                 JsonProperties = new ConstructHandleProperties
                 {
+                    ConstructName = resultName,
                     Tags = actionItem.Tags,
                     Behaviors = behaviorList,
                     Context = context.Properties

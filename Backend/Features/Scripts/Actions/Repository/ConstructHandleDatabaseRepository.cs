@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.Sector.Data;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Newtonsoft.Json;
 using NQ;
@@ -277,14 +278,20 @@ public class ConstructHandleDatabaseRepository(IServiceProvider provider) : ICon
         );
     }
 
-    public async Task<Dictionary<ulong, TimeSpan>> GetPoiConstructExpirationTimeSpansAsync()
+    public async Task<IEnumerable<PoiExpirationData>> GetPoiConstructExpirationTimeSpansAsync()
     {
         using var db = _factory.Create();
         db.Open();
 
         var result = (await db.QueryAsync<ConstructTimeSpanRow>(
             """
-            SELECT CH.construct_id, SI.expires_at - NOW() time_span FROM public.mod_npc_construct_handle CH
+            SELECT 
+                CH.construct_id, 
+                SI.expires_at - NOW() time_span, 
+                CH.json_properties handle_properties,
+                SI.started_at,
+                SI.json_properties sector_instance_properties
+            FROM public.mod_npc_construct_handle CH
             INNER JOIN public.mod_sector_instance SI ON (SI.sector_x = CH.sector_x AND SI.sector_y = CH.sector_y AND SI.sector_z = CH.sector_z)
             INNER JOIN public.construct C ON (C.id = CH.construct_id)
             WHERE CH.deleted_at IS NULL AND
@@ -294,10 +301,14 @@ public class ConstructHandleDatabaseRepository(IServiceProvider provider) : ICon
 
         var distinctResult = result.DistinctBy(x => x.construct_id);
 
-        return distinctResult.ToDictionary(
-            k => (ulong)k.construct_id,
-            v => v.time_span
-        );
+        return distinctResult.Select(r => new PoiExpirationData
+        {
+            ConstructId = (ulong)r.construct_id,
+            HandleProperties = JsonConvert.DeserializeObject<ConstructHandleProperties>(r.handle_properties),
+            SectorInstanceProperties = JsonConvert.DeserializeObject<SectorInstanceProperties>(r.sector_instance_properties),
+            StartedAt = r.started_at,
+            ExpiresAt = r.time_span
+        });
     }
 
     public async Task TagAsDeletedConstructHandledThatAreDeletedConstructs()
@@ -323,7 +334,8 @@ public class ConstructHandleDatabaseRepository(IServiceProvider provider) : ICon
         using var db = _factory.Create();
         db.Open();
 
-        return await db.ExecuteScalarAsync<int>("SELECT COUNT(0) FROM public.mod_npc_construct_handle WHERE deleted_at IS NULL");
+        return await db.ExecuteScalarAsync<int>(
+            "SELECT COUNT(0) FROM public.mod_npc_construct_handle WHERE deleted_at IS NULL");
     }
 
     public async Task CleanupOldDeletedConstructHandles()
@@ -379,6 +391,9 @@ public class ConstructHandleDatabaseRepository(IServiceProvider provider) : ICon
     {
         public long construct_id { get; set; }
         public TimeSpan time_span { get; set; }
+        public DateTime? started_at { get; set; }
+        public string handle_properties { get; set; }
+        public string sector_instance_properties { get; set; }
     }
 
     private struct DbRow
