@@ -77,6 +77,10 @@ public class SpawnLootForConstruct(ScriptActionItem actionItem) : IScriptAction
         }
         
         logger.LogInformation("Processed Element Replacements");
+
+        await itemSpawnerService.SpawnSpaceFuel(
+            new SpawnFuelCommand(context.ConstructId.Value)
+        );
         
         return ScriptActionResult.Successful();
     }

@@ -18,7 +18,7 @@ public class LootController : Controller
 
         var itemSpawner = provider.GetRequiredService<IItemSpawnerService>();
 
-        await itemSpawner.SpawnFuel(
+        await itemSpawner.SpawnSpaceFuel(
             new SpawnFuelCommand((ulong)constructId)
         );
 

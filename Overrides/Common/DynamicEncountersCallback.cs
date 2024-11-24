@@ -12,6 +12,11 @@ public static class DynamicEncountersCallback
     
     public static async Task ExecuteCallback(IServiceProvider provider, string url)
     {
+        if (string.IsNullOrEmpty(url))
+        {
+            return;
+        }
+        
         var logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(DynamicEncountersCallback));
         
         url = url.Replace(PveModPlaceholder, Config.GetPveModBaseUrl());

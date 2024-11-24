@@ -53,6 +53,7 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
         }
 
         var distanceGoal = @params.TargetMoveDistance;
+        distanceGoal = 10000; // TEMP
 
         var timeDiff = DateTime.UtcNow - (LastTimeOffsetUpdated ?? DateTime.UtcNow);
         if (LastTimeOffsetUpdated == null || timeDiff > TimeSpan.FromSeconds(30))
@@ -71,6 +72,6 @@ public class CalculateTargetMovePositionWithOffsetEffect(IServiceProvider provid
         logger.LogInformation("FUTURE POS DELTA: {A} {D}", @params.TargetConstructAcceleration,
             futurePosition - targetPos);
         //targetPos + Offset
-        return TargetMovePositionCalculationOutcome.ValidCalculation(targetPos);
+        return TargetMovePositionCalculationOutcome.ValidCalculation(targetPos + Offset);
     }
 }

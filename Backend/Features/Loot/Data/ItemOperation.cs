@@ -10,6 +10,7 @@ public class ItemOperation
     public EntityId Owner { get; set; } = new();
     public string OnSuccessCallbackUrl { get; set; } = "";
     public string OnFailCallbackUrl { get; set; } = "";
+    public bool BypassLock { get; set; }
 
     public class ItemDefinition
     {

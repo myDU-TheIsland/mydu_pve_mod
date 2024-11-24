@@ -29,5 +29,6 @@ public enum ActionType
     CreateParty = 112,
     AcceptInvite = 113,
     PushConstructData = 114,
+    GiveTakeContainer = 115,
     Callback = 1999999
 }

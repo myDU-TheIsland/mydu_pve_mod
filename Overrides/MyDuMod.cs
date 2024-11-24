@@ -245,6 +245,10 @@ public class MyDuMod : IMod
                 var giveItemsToPlayerAction = new GiveTakePlayerItemsAction(_provider);
                 await giveItemsToPlayerAction.HandleAction(playerId, action);
                 break;
+            case ActionType.GiveTakeContainer:
+                var giveTakeContainerAction = new GiveTakeContainerAction(_provider);
+                await giveTakeContainerAction.HandleAction(playerId, action);
+                break;
             case ActionType.LoadBoardApp:
                 await _injection.InjectJs(playerId, Resources.CommonJs);
                 await _injection.InjectJs(playerId, Resources.CreateRootDivJs);

@@ -8,6 +8,7 @@ public class ItemOperation
     public IEnumerable<ItemQuantity> Items { get; set; } = [];
     public Dictionary<string, PropertyValue> Properties { get; set; } = [];
     public EntityId Owner { get; set; } = new();
+    public bool BypassLock { get; set; }
 
     public class ItemQuantity
     {

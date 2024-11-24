@@ -107,7 +107,7 @@ public class ItemSpawnerService(IServiceProvider provider) : IItemSpawnerService
         );
     }
 
-    public async Task SpawnFuel(SpawnFuelCommand command)
+    public async Task SpawnSpaceFuel(SpawnFuelCommand command)
     {
         var spaceFuelContainers = new List<ElementId>();
 
@@ -119,54 +119,65 @@ public class ItemSpawnerService(IServiceProvider provider) : IItemSpawnerService
         var random = provider.GetRandomProvider().GetRandom();
 
         var itemDef = _bank.GetDefinition(command.FuelType);
-
+        
         if (itemDef == null)
         {
             _logger.LogError("No item definition found for {Item}", command.FuelType);
 
             return;
         }
+        
+        var fuelDef = _bank.GetBaseObject<Fuel>(itemDef.Id);
+        
+        if (fuelDef == null)
+        {
+            _logger.LogError("No fuel base obj found for {Item}", command.FuelType);
 
-        var elementManagementGrain = _orleans.GetElementManagementGrain();
-        var elementGrain = _orleans.GetConstructElementsGrain(command.ConstructId);
+            return;
+        }
+
+        var modManagerGrain = _orleans.GetModManagerGrain();
 
         foreach (var container in spaceFuelContainers)
         {
             var containerGrain = _orleans.GetContainerGrain(container);
             var containerInfo = await containerGrain.Get(ModBase.Bot.PlayerId);
-            var elementInfo = await elementGrain.GetElement(container);
 
             var volume = random.NextInt64(0, (long)containerInfo.maxVolume);
 
             try
             {
-                await _dataAccessor.SetDynamicProperty(
-                    ElementPropertyUpdate.Create(
-                        elementInfo,
-                        "current_volume",
-                        new PropertyValue(volume)
-                    )
-                );
-
-                await _dataAccessor.ContainerGiveAsync(
-                    (long)container.elementId,
-                    new ItemAndQuantity
-                    {
-                        item = new ItemInfo
+                var itemOperation = new ItemOperation
+                {
+                    Items = [
+                        new ItemOperation.ItemDefinition
                         {
-                            type = itemDef.Id
-                        },
-                        quantity = volume
+                            Quantity = new LitreQuantity(volume).ToQuantity(),
+                            Name = command.FuelType,
+                        }
+                    ],
+                    BypassLock = true
+                };
+
+                await modManagerGrain.TriggerModAction(
+                    ModBase.Bot.PlayerId,
+                    new ModAction
+                    {
+                        actionId = 115,
+                        playerId = ModBase.Bot.PlayerId,
+                        elementId = container,
+                        modName = "Mod.DynamicEncounters",
+                        payload = JsonConvert.SerializeObject(itemOperation)
                     }
                 );
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Failed to add item to container");
+                _logger.LogError(e, "Failed to fuel item to container");
             }
         }
 
-        _logger.LogInformation("Items Spawned on Construct {Construct}", command.ConstructId);
+        _logger.LogInformation("Fuel Spawn requested on Construct {Construct}", command.ConstructId);
     }
 
     private async IAsyncEnumerable<ElementId> GetAvailableContainers<T>(ulong constructId) where T : ContainerUnit

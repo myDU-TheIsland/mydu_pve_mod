@@ -7,5 +7,5 @@ public interface IItemSpawnerService
 {
     Task SpawnItems(SpawnItemOnRandomContainersCommand onRandomContainersCommand);
     Task GiveTakeItemsWithCallback(GiveTakePlayerItemsWithCallbackCommand command);
-    Task SpawnFuel(SpawnFuelCommand command);
+    Task SpawnSpaceFuel(SpawnFuelCommand command);
 }
