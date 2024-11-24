@@ -42,7 +42,6 @@ public partial class TagSectorAsActiveScriptAction : IScriptAction
         context.Properties.TryAdd("DelaySeconds", TimeSpan.FromMinutes(30).TotalSeconds);
 
         var provider = context.ServiceProvider;
-        var orleans = provider.GetOrleans();
         var constructHandlerRepo = provider.GetRequiredService<IConstructHandleRepository>();
         
         var result = (await constructHandlerRepo
@@ -60,11 +59,8 @@ public partial class TagSectorAsActiveScriptAction : IScriptAction
             }
         
             var name = ReplaceBetweenBracketsWithExclamation(info.Info!.rData.name);
-        
-            var cg = orleans.GetConstructGrain(constructId);
-        
-            // TODO this may fail with faction ownership
-            await cg.RenameConstruct(info.Info.mutableData.ownerId.playerId, name);
+
+            await constructService.RenameConstruct(constructId, name);
         }
 
         return await script.ExecuteAsync(context);

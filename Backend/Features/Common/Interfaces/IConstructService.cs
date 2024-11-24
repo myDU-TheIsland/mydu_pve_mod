@@ -25,4 +25,5 @@ public interface IConstructService
     Task<bool> IsInSafeZone(ulong constructId);
     Task SendIdentificationNotification(ulong constructId, TargetingConstructData targeting);
     Task SendAttackingNotification(ulong constructId, TargetingConstructData targeting);
+    Task RenameConstruct(ulong constructId, string name);
 }

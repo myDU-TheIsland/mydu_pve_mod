@@ -138,4 +138,9 @@ public class CachedConstructService(
             _ => false
         );
     }
+
+    public Task RenameConstruct(ulong constructId, string name)
+    {
+        return service.RenameConstruct(constructId, name);
+    }
 }

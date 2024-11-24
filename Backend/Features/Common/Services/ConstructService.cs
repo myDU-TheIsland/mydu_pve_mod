@@ -333,4 +333,16 @@ public class ConstructService(IServiceProvider provider) : IConstructService
                 0UL
             );
     }
+
+    public async Task RenameConstruct(ulong constructId, string name)
+    {
+        using var db = provider.GetRequiredService<IPostgresConnectionFactory>().Create();
+        db.Open();
+        
+        await db.ExecuteAsync("UPDATE public.construct SET name = @name WHERE id = @id", new
+        {
+            name,
+            id = constructId
+        });
+    }
 }
