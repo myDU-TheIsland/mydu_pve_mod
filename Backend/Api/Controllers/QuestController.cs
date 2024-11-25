@@ -231,7 +231,7 @@ public class QuestController : Controller
         {
             var def = bank.GetDefinition(item.ItemName);
             if (def == null) continue;
-            var obj = bank.GetBaseObject<Consumable>(def.Id);
+            var obj = bank.GetBaseObject<BaseItem>(def.Id);
             if (obj == null) continue;
 
             response.TotalMass += obj.UnitMass * item.Quantity;
