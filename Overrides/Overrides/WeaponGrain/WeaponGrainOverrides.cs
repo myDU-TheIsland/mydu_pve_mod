@@ -412,7 +412,8 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
                 await _behaviorContextApiClient.RegisterDamage(
                     new RegisterDamageRequest
                     {
-                        ConstructId = constructId,
+                        InstigatorConstructId = constructId,
+                        ConstructId = weaponFire.targetId,
                         PlayerId = playerId,
                         Damage = damage,
                         Type = "shield-hit"
@@ -426,7 +427,8 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
                 await _behaviorContextApiClient.RegisterDamage(
                     new RegisterDamageRequest
                     {
-                        ConstructId = constructId,
+                        InstigatorConstructId = constructId,
+                        ConstructId = weaponFire.targetId,
                         PlayerId = playerId,
                         Damage = damage,
                         Type = "voxel-hit"

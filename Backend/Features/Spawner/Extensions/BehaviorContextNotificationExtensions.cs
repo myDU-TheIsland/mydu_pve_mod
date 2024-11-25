@@ -123,10 +123,10 @@ public static class BehaviorContextNotificationExtensions
         var logger = eventArgs.Context.ServiceProvider.CreateLogger<BehaviorContext>();
 
         var targetConstructId = eventArgs.Context.GetTargetConstructId();
-        
+
         var constructService = eventArgs.Context.ServiceProvider
             .GetRequiredService<IConstructService>();
-        
+
         try
         {
             if (eventArgs.Context.PlayerIds.Count == 0)
@@ -189,28 +189,22 @@ public static class BehaviorContextNotificationExtensions
 
         taskList.AddRange(tasks);
 
-        var contacts = context.Contacts.ToList()
-            .Where(x => x.Distance <= 5 * DistanceHelpers.OneSuInMeters);
-        var playerIds = eventArgs.Context.PlayerIds.ToHashSet();
-        var pilots = new HashSet<ulong>();
-        
-        foreach (var contact in contacts)
+        var totalDamage = context.GetTotalDamageFromHistory();
+        var totalDamageByPlayer = context.GetTotalDamageByPlayer();
+        var playerWithMinDamage = totalDamageByPlayer
+            .Where(kvp => kvp.Value > totalDamage * 0.1d)
+            .Select(kvp => kvp.Key)
+            .ToHashSet();
+
+        if (playerWithMinDamage.Count == 0)
         {
-            try
-            {
-                var info = await constructService.GetConstructInfoAsync(contact.ConstructId);
-                if (info.Info?.mutableData.pilot != null)
-                {
-                    pilots.Add(info.Info.mutableData.pilot.Value);
-                }
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Failed to intersect contact for reward.");
-            }
+            var topDamagePlayers = totalDamageByPlayer.OrderByDescending(x => x.Value);
+            playerWithMinDamage = topDamagePlayers.Take(3).Select(x => x.Key).ToHashSet();
         }
 
-        playerIds = playerIds.Intersect(pilots).ToHashSet();
+        var playerIds = eventArgs.Context.PlayerIds.ToHashSet();
+
+        playerIds = playerIds.Intersect(playerWithMinDamage).ToHashSet();
 
         var scriptExecutionTask = context.Prefab.Events.OnDestruction.ExecuteAsync(
             new ScriptContext(

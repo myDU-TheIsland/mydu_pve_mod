@@ -34,6 +34,8 @@ public class BehaviorContextApiClient(IServiceProvider provider) : IBehaviorCont
                 ),
                 cancellationToken
             );
+            
+            _logger.LogInformation("Register Damage Done for Construct {ConstructId} - {Damage}", request.ConstructId, request.Damage);
         }
         catch (Exception e)
         {

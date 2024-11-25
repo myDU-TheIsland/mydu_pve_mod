@@ -57,15 +57,29 @@ public class BehaviorContext(
     public Vec3 TargetPosition { get; set; }
 
     public ConcurrentBag<ScanContact> Contacts { get; private set; }
-    public ConcurrentBag<DamageDealtData> DamageHistory { get; } = [];
+    public ConcurrentBag<DamageDealtData> DamageHistory { get; private set; } = [];
 
     public bool BoosterActive { get; set; } = false;
     public double AccelerationG { get; set; } = prefab.DefinitionItem.AccelerationG;
 
     public void RegisterDamage(DamageDealtData data)
     {
-        DamageHistory.Add(data);
+        DamageHistory = new ConcurrentBag<DamageDealtData>(GetRecentDamageHistory()) { data };
     }
+
+    public IEnumerable<DamageDealtData> GetRecentDamageHistory()
+    {
+        return DamageHistory.Where(x => x.DateTime > DateTime.UtcNow - TimeSpan.FromMinutes(10));
+    }
+
+    public double GetTotalDamageFromHistory() => DamageHistory.Sum(x => x.Damage);
+    public Dictionary<ulong, double> GetTotalDamageByPlayer() => DamageHistory.GroupBy(x => x.PlayerId)
+        .Select(x => new
+        {
+            PlayerId = x.Key,
+            Sum = x.Sum(d => d.Damage)
+        })
+        .ToDictionary(k => k.PlayerId, v => v.Sum);
 
     public double GetAccelerationG()
     {

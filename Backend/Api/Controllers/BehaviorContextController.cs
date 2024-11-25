@@ -216,6 +216,7 @@ public class BehaviorContextController : Controller
         context.RegisterDamage(
             new DamageDealtData
             {
+                ConstructId = request.InstigatorConstructId,
                 Damage = request.Damage,
                 PlayerId = request.PlayerId,
                 Type = request.Type,
@@ -228,7 +229,7 @@ public class BehaviorContextController : Controller
 
     public class RegisterDamageRequest
     {
-        public ulong ConstructId { get; set; }
+        public ulong InstigatorConstructId { get; set; }
         public ulong PlayerId { get; set; }
         public double Damage { get; set; }
         public string Type { get; set; } = "shield-hit";
