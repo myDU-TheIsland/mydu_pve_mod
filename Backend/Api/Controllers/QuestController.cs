@@ -238,8 +238,11 @@ public class QuestController : Controller
             response.TotalVolume += obj.UnitVolume * item.Quantity;
 
             var unitPrice = await marketOrderRepository.GetAveragePriceOfItemAsync(def.Id);
-            response.QuantaReward += unitPrice * item.Quantity * request.QuantaRewardFactor;
+            response.QuantaReward += Math.Clamp(unitPrice, 100000, long.MaxValue) * item.Quantity;;
         }
+
+        response.ItemRewardQuantity = response.QuantaReward / request.ItemRewardPrice;
+        response.QuantaReward *= request.QuantaRewardFactor;
 
         return Ok(response);
     }
@@ -249,11 +252,13 @@ public class QuestController : Controller
         public double TotalVolume { get; set; }
         public double TotalMass { get; set; }
         public double QuantaReward { get; set; }
+        public double ItemRewardQuantity { get; set; }
     }
 
     public class CalculateIndustryDeliveryPackageRequest
     {
         public double QuantaRewardFactor { get; set; } = 0.25d;
+        public double ItemRewardPrice { get; set; } = 5000;
         public List<ItemQuantity> Items { get; set; } = [];
 
         public struct ItemQuantity
