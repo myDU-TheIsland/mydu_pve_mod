@@ -26,7 +26,7 @@ public class PickupItemTaskItemDefinition(
 
         if (questItem == null)
         {
-            return QuestInteractionOutcome.Failed($"Quest not found {context.QuestTaskId.QuestId}");
+            return QuestInteractionOutcome.QuestNotFound(context.QuestTaskId.QuestId);
         }
         
         var factionRepository = context.Provider.GetRequiredService<IFactionRepository>();
@@ -34,7 +34,7 @@ public class PickupItemTaskItemDefinition(
 
         if (factionItem == null)
         {
-            return QuestInteractionOutcome.Failed($"Faction not found {questItem.FactionId.Id}");
+            return QuestInteractionOutcome.FactionNotFound(questItem.FactionId.Id);
         }
         
         var itemSpawner = context.Provider.GetRequiredService<IItemSpawnerService>();

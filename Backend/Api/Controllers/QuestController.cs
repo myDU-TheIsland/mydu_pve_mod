@@ -2,15 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Backend;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
+using Mod.DynamicEncounters.Features.Market.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Data;
 using Mod.DynamicEncounters.Features.Quests.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using NQutils.Def;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
 
@@ -213,6 +216,51 @@ public class QuestController : Controller
                 playerQuestsMap
             )
         );
+    }
+
+    [Route("calculate/industry-package")]
+    [HttpPost]
+    public async Task<IActionResult> CalculateIndustryDeliveryContainer([FromBody] CalculateIndustryDeliveryPackageRequest request)
+    {
+        var bank = _provider.GetGameplayBank();
+        var marketOrderRepository = _provider.GetRequiredService<IMarketOrderRepository>();
+
+        var response = new CalculateIndustryDeliveryPackageResponse();
+        
+        foreach (var item in request.Items)
+        {
+            var def = bank.GetDefinition(item.ItemName);
+            if (def == null) continue;
+            var obj = bank.GetBaseObject<Element>(def.Id);
+            if (obj == null) continue;
+
+            response.TotalMass += obj.UnitMass * item.Quantity;
+            response.TotalVolume += obj.UnitVolume * item.Quantity;
+
+            var unitPrice = await marketOrderRepository.GetAveragePriceOfItemAsync(def.Id);
+            response.QuantaReward += unitPrice * item.Quantity * request.QuantaRewardFactor;
+        }
+
+        return Ok(response);
+    }
+
+    public class CalculateIndustryDeliveryPackageResponse
+    {
+        public double TotalVolume { get; set; }
+        public double TotalMass { get; set; }
+        public double QuantaReward { get; set; }
+    }
+
+    public class CalculateIndustryDeliveryPackageRequest
+    {
+        public double QuantaRewardFactor { get; set; } = 0.25d;
+        public List<ItemQuantity> Items { get; set; } = [];
+
+        public struct ItemQuantity
+        {
+            public string ItemName { get; set; }
+            public long Quantity { get; set; }
+        }
     }
 
     public class QuestInteractRequest
