@@ -145,7 +145,7 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
 
         var result = (await db.QueryAsync<DbRow>(
             """
-            SELECT * FROM public.mod_sector_instance WHERE is = @id
+            SELECT * FROM public.mod_sector_instance WHERE id = @id
             """,
             new
             {
