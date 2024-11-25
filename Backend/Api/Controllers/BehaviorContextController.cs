@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -203,6 +204,36 @@ public class BehaviorContextController : Controller
         return Ok();
     }
 
+    [HttpPost]
+    [Route("register-damage")]
+    public IActionResult RegisterDamage(ulong constructId, [FromBody] RegisterDamageRequest request)
+    {
+        if (!ConstructBehaviorContextCache.Data.TryGetValue(constructId, out var context))
+        {
+            return NotFound();
+        }
+
+        context.RegisterDamage(
+            new DamageDealtData
+            {
+                Damage = request.Damage,
+                PlayerId = request.PlayerId,
+                Type = request.Type,
+                DateTime = DateTime.UtcNow
+            }
+        );
+
+        return Ok();
+    }
+
+    public class RegisterDamageRequest
+    {
+        public ulong ConstructId { get; set; }
+        public ulong PlayerId { get; set; }
+        public double Damage { get; set; }
+        public string Type { get; set; } = "shield-hit";
+    }
+    
     public class SetTargetPositionRequest
     {
         public Vec3? Position { get; set; }

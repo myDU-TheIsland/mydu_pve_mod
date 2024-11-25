@@ -57,9 +57,15 @@ public class BehaviorContext(
     public Vec3 TargetPosition { get; set; }
 
     public ConcurrentBag<ScanContact> Contacts { get; private set; }
+    public ConcurrentBag<DamageDealtData> DamageHistory { get; } = [];
 
     public bool BoosterActive { get; set; } = false;
     public double AccelerationG { get; set; } = prefab.DefinitionItem.AccelerationG;
+
+    public void RegisterDamage(DamageDealtData data)
+    {
+        DamageHistory.Add(data);
+    }
 
     public double GetAccelerationG()
     {

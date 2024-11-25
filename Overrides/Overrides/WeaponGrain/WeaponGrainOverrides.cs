@@ -13,6 +13,8 @@ using MathNet.Spatial.Units;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mod.DynamicEncounters.Overrides.ApiClient.Interfaces;
+using Mod.DynamicEncounters.Overrides.ApiClient.Services;
 using Mod.DynamicEncounters.Overrides.Common.Interfaces;
 using NQ;
 using NQ.Interfaces;
@@ -27,6 +29,8 @@ namespace Mod.DynamicEncounters.Overrides.Overrides.WeaponGrain;
 
 public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDataService cachedConstructDataService)
 {
+    private readonly IBehaviorContextApiClient _behaviorContextApiClient = new BehaviorContextApiClient(provider);
+    
     private static readonly MemoryCache TimerCache = new(
         new MemoryCacheOptions
         {
@@ -370,7 +374,6 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
         logger.LogInformation("Hit Ratio: {Num5} < {Hit}", num5, hitRatio);
         // await Notifications.SimpleNotificationToPlayer(provider, playerId, $"Hit: {num5} < {hitRatio}");
 
-        double range;
         // 0-1 <= 2.5
         if (num5 <= hitRatio)
         {
@@ -381,18 +384,19 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
 
             var talentGrain = orleans.GetTalentGrain(playerId);
 
-            range = ElementPropertiesHelper.GetPropertyOrDefault(weaponInfo.properties, weaponUnit,
+            var damage = ElementPropertiesHelper.GetPropertyOrDefault(weaponInfo.properties, weaponUnit,
                 WeaponUnit.d_baseDamage) * ammoDef.DamageModifier;
-            range = EffectSystem.ApplyModifiers(range,
+            damage = EffectSystem.ApplyModifiers(damage,
                 EffectSystem.RegroupModifiers(await talentGrain.Bonuses(weaponInfo.elementType))
                     .GetValueOrDefault("damageBuff"));
-            range = EffectSystem.ApplyModifiers(range,
+            damage = EffectSystem.ApplyModifiers(damage,
                 EffectSystem.RegroupModifiers(await talentGrain.Bonuses(ammoTypeId))
                     .GetValueOrDefault("damageModifier"));
-            var shieldHitResult = await targetConstructFightGrain.ConstructTakeHit(new WeaponShotPower()
+
+            var shieldHitResult = await targetConstructFightGrain.ConstructTakeHit(new WeaponShotPower
             {
                 ammoType = ammoTypeId,
-                power = range,
+                power = damage,
                 originPlayerId = playerId,
                 originConstructId = weaponFire.targetId
             });
@@ -404,10 +408,30 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
                 result.coreUnitStressDamage = shieldHitResult.coreUnitStressDamage;
 
                 logger.LogInformation("Shield Absorbed Hit");
+                
+                await _behaviorContextApiClient.RegisterDamage(
+                    new RegisterDamageRequest
+                    {
+                        ConstructId = constructId,
+                        PlayerId = playerId,
+                        Damage = damage,
+                        Type = "shield-hit"
+                    }
+                );
             }
             else
             {
                 logger.LogInformation("Shield NOT Absorbed Hit");
+                
+                await _behaviorContextApiClient.RegisterDamage(
+                    new RegisterDamageRequest
+                    {
+                        ConstructId = constructId,
+                        PlayerId = playerId,
+                        Damage = damage,
+                        Type = "voxel-hit"
+                    }
+                );
 
                 var constructInfoGrain = orleans.GetConstructInfoGrain(weaponFire.constructId);
                 var constructInfo = await constructInfoGrain.Get();
@@ -435,7 +459,7 @@ public class WeaponGrainOverrides(IServiceProvider provider, ICachedConstructDat
 
                 var playerListAndPosition = await targetConstructGrain.GetKillablePlayerListAndPosition();
                 var voxelResult =
-                    await directServiceGrain.MakeVoxelDamages(weaponFire, ammoDef, range, playerListAndPosition);
+                    await directServiceGrain.MakeVoxelDamages(weaponFire, ammoDef, damage, playerListAndPosition);
                 var deathInfo = new PlayerDeathInfo
                 {
                     reason = DeathReason.WeaponShot,
