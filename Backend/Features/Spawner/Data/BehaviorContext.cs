@@ -40,7 +40,6 @@ public class BehaviorContext(
     public const string V0Property = "V0";
     public const string BrakingProperty = "Braking";
     public const string MoveModeProperty = "MoveMode";
-    public const string ContactListProperty = "ContactList";
 
     public DateTime StartedAt { get; } = DateTime.UtcNow;
     public Vec3 Velocity { get; set; }
@@ -57,6 +56,8 @@ public class BehaviorContext(
     public Vec3 AccelCalcTargetVelocity { get; set; }
     public Vec3 TargetPosition { get; set; }
 
+    public ConcurrentBag<ScanContact> Contacts { get; private set; }
+
     public bool BoosterActive { get; set; } = false;
     public double AccelerationG { get; set; } = prefab.DefinitionItem.AccelerationG;
 
@@ -72,7 +73,7 @@ public class BehaviorContext(
     }
 
     public double GetAccelerationMps() => GetAccelerationG() * 3.6d;
-    
+
     public Vec3 TargetAcceleration { get; private set; }
     public DateTime LastTargetAccelerationUpdate { get; private set; } = DateTime.UtcNow;
     public ulong? TargetConstructId { get; set; }
@@ -252,7 +253,7 @@ public class BehaviorContext(
     public double CalculateVelocityGoal()
     {
         if (!Modifiers.Velocity.Enabled) return MaxVelocity;
-        
+
         var oppositeVector = VelocityWithTargetDotProduct < 0;
 
         if (TargetDistance > Modifiers.Velocity.GetFarDistanceM())
@@ -345,14 +346,10 @@ public class BehaviorContext(
 
     public void UpdateRadarContacts(IList<ScanContact> contacts)
     {
-        SetProperty(
-            ContactListProperty,
-            contacts.ToList()
-        );
+        Contacts = new ConcurrentBag<ScanContact>(contacts);
     }
 
-    public bool HasAnyRadarContact() =>
-        TryGetProperty<IEnumerable<ScanContact>>(ContactListProperty, out var contacts, []) && contacts.Any();
+    public bool HasAnyRadarContact() => !Contacts.IsEmpty;
 
     public void RefreshIdleSince()
     {
