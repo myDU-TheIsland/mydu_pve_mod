@@ -26,8 +26,8 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
 
         await db.ExecuteAsync(
             """
-            INSERT INTO public.mod_sector_instance (id, faction_id, sector_x, sector_y, sector_z, expires_at, on_load_script, on_sector_enter_script, force_expire_at, territory_id)
-            VALUES (@Id, @FactionId, @PosX, @PosY, @PosZ, @ExpiresAt, @OnLoadScript, @OnSectorEnterScript, NOW() + INTERVAL '6 hours', @TerritoryId);
+            INSERT INTO public.mod_sector_instance (id, faction_id, sector_x, sector_y, sector_z, expires_at, on_load_script, on_sector_enter_script, force_expire_at, territory_id, json_properties)
+            VALUES (@Id, @FactionId, @PosX, @PosY, @PosZ, @ExpiresAt, @OnLoadScript, @OnSectorEnterScript, NOW() + INTERVAL '6 hours', @TerritoryId, @json_properties::jsonb);
             """,
             new
             {
@@ -39,7 +39,8 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
                 item.ExpiresAt,
                 item.OnLoadScript,
                 item.OnSectorEnterScript,
-                item.TerritoryId
+                item.TerritoryId,
+                json_properties = JsonConvert.SerializeObject(item.Properties)
             }
         );
     }
