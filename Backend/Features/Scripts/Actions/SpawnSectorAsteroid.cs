@@ -68,6 +68,15 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
 
         var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
         var info = await constructService.GetConstructInfoAsync(asteroidId);
+        
+        await taskQueueService.EnqueueScript(
+            new ScriptActionItem
+            {
+                Type = "delete-asteroid",
+                ConstructId = asteroidId
+            },
+            DateTime.UtcNow + TimeSpan.FromHours(6)
+        );
 
         if (info.Info != null)
         {
