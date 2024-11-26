@@ -170,15 +170,18 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
                 constructName = npcConstructInfo.rData.name
             };
 
-            await _constructService.SendIdentificationNotification(
-                targetId,
-                targeting
-            );
+            if (selectedTarget.Distance <= 2 * DistanceHelpers.OneSuInMeters)
+            {
+                await _constructService.SendIdentificationNotification(
+                    targetId,
+                    targeting
+                );
 
-            await _constructService.SendAttackingNotification(
-                targetId,
-                targeting
-            );
+                await _constructService.SendAttackingNotification(
+                    targetId,
+                    targeting
+                );
+            }
         }
         catch (Exception e)
         {
