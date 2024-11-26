@@ -84,7 +84,7 @@ public class BehaviorContext(
     public ulong? GetHighestThreatConstruct()
     {
         var damageHistory = DamageHistory
-            .Where(x => x.DateTime > DateTime.UtcNow)
+            .Where(x => x.DateTime > DateTime.UtcNow - TimeSpan.FromMinutes(1))
             .GroupBy(x => x.ConstructId)
             .Select(x => new
             {
