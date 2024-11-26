@@ -10,5 +10,6 @@ public static class FactionRegistration
     {
         services.AddSingleton<IFactionRepository, FactionRepository>();
         services.AddSingleton<IFactionTerritoryRepository, FactionTerritoryRepository>();
+        services.AddSingleton<IFactionNameRepository, FactionNameRepository>();
     }
 }

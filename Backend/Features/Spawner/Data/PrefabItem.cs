@@ -9,6 +9,8 @@ public class PrefabItem
     [JsonIgnore]
     public Guid Id { get; set; }
     public string Name { get; set; }
+    public string RandomNameGroup { get; set; } = string.Empty;
+    public bool UseRandomNameGroup { get; set; } = false;
     public string Folder { get; set; }
     public string Path { get; set; }
     public ulong OwnerId { get; set; }

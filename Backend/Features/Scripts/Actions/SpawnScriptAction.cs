@@ -12,6 +12,7 @@ using Mod.DynamicEncounters.Common.Data;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
+using Mod.DynamicEncounters.Features.Faction.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
@@ -116,6 +117,20 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         if (string.IsNullOrEmpty(resultName))
         {
             resultName = $"E-{random.Next(1000, 9999)}";
+        }
+
+        if (constructDef.DefinitionItem.UseRandomNameGroup)
+        {
+            var factionNameRepository = provider.GetRequiredService<IFactionNameRepository>();
+            var randomName = await factionNameRepository.GetRandomFactionNameByGroup(
+                context.FactionId ?? 1,
+                constructDef.DefinitionItem.RandomNameGroup
+            );
+
+            if (!string.IsNullOrEmpty(randomName))
+            {
+                resultName = randomName;
+            }
         }
 
         var fixture = ConstructFixture.FromSource(source);

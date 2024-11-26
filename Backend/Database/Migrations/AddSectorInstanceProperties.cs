@@ -8,7 +8,6 @@ namespace Mod.DynamicEncounters.Database.Migrations;
 public class AddSectorInstanceProperties : Migration
 {
     private const string SectorInstanceTable = "mod_sector_instance";
-    // private const string SectorEncounterTable = "mod_sector_encounter";
     
     public override void Up()
     {
@@ -20,6 +19,7 @@ public class AddSectorInstanceProperties : Migration
 
     public override void Down()
     {
-        
+        Delete.Column("json_properties")
+            .FromTable(SectorInstanceTable);
     }
 }
