@@ -302,6 +302,48 @@ public class BehaviorContext(
 
     public ulong? GetTargetConstructId() => this.TargetConstructId;
 
+    private double GetOutsideOfOptimalRange2XTargetVelocity()
+    {
+        if (TargetLinearVelocity.Size() < MinVelocity)
+        {
+            return MaxVelocity / 2;
+        }
+        
+        return Math.Clamp(
+            TargetLinearVelocity.Size(),
+            MinVelocity,
+            MaxVelocity
+        );
+    }
+    
+    private double GetOutsideOfOptimalRangeTargetVelocity()
+    {
+        if (TargetLinearVelocity.Size() < MinVelocity)
+        {
+            return MaxVelocity / 4;
+        }
+        
+        return Math.Clamp(
+            TargetLinearVelocity.Size(),
+            MinVelocity,
+            MaxVelocity
+        );
+    }
+    
+    private double GetInsideOfOptimalRangeTargetVelocity()
+    {
+        if (TargetLinearVelocity.Size() < MinVelocity)
+        {
+            return MinVelocity;
+        }
+        
+        return Math.Clamp(
+            TargetLinearVelocity.Size(),
+            MinVelocity,
+            MaxVelocity
+        );
+    }
+    
     public double CalculateVelocityGoal()
     {
         if (!Modifiers.Velocity.Enabled) return MaxVelocity;
@@ -319,20 +361,20 @@ public class BehaviorContext(
         {
             if (oppositeVector)
             {
-                return TargetLinearVelocity.Size() * Modifiers.Velocity.OutsideOptimalRange2X.Negative;
+                return GetOutsideOfOptimalRange2XTargetVelocity() * Modifiers.Velocity.OutsideOptimalRange2X.Negative;
             }
 
-            return TargetLinearVelocity.Size() * Modifiers.Velocity.OutsideOptimalRange2X.Positive;
+            return GetOutsideOfOptimalRange2XTargetVelocity() * Modifiers.Velocity.OutsideOptimalRange2X.Positive;
         }
 
         if (IsOutsideOptimalRange())
         {
             if (oppositeVector)
             {
-                return TargetLinearVelocity.Size() * Modifiers.Velocity.OutsideOptimalRange.Negative;
+                return GetOutsideOfOptimalRangeTargetVelocity() * Modifiers.Velocity.OutsideOptimalRange.Negative;
             }
 
-            return TargetLinearVelocity.Size() * Modifiers.Velocity.OutsideOptimalRange.Positive;
+            return GetOutsideOfOptimalRangeTargetVelocity() * Modifiers.Velocity.OutsideOptimalRange.Positive;
         }
 
         if (TargetDistance < Modifiers.Velocity.TooCloseDistanceM)
@@ -340,18 +382,12 @@ public class BehaviorContext(
             return MaxVelocity;
         }
 
-        var targetVelocityClamped = Math.Clamp(
-            TargetLinearVelocity.Size(),
-            MinVelocity,
-            MaxVelocity
-        );
-        
         if (oppositeVector)
         {
-            return targetVelocityClamped * Modifiers.Velocity.InsideOptimalRange.Negative;
+            return GetInsideOfOptimalRangeTargetVelocity() * Modifiers.Velocity.InsideOptimalRange.Negative;
         }
 
-        return targetVelocityClamped * Modifiers.Velocity.InsideOptimalRange.Positive;
+        return GetInsideOfOptimalRangeTargetVelocity() * Modifiers.Velocity.InsideOptimalRange.Positive;
     }
 
     public double CalculateMovementPredictionSeconds()
