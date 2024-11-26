@@ -81,6 +81,37 @@ public class BehaviorContext(
         })
         .ToDictionary(k => k.PlayerId, v => v.Sum);
 
+    public ulong? GetHighestThreatConstruct()
+    {
+        var damageHistory = DamageHistory
+            .Where(x => x.DateTime > DateTime.UtcNow)
+            .GroupBy(x => x.ConstructId)
+            .Select(x => new
+            {
+                ConstructId = x.Key,
+                TotalDamage = x.Sum(d => d.Damage)
+            })
+            .OrderByDescending(x => x.TotalDamage);
+
+        var highestThreat = damageHistory.FirstOrDefault();
+        if (highestThreat == null)
+        {
+            return GetClosestTarget();
+        }
+
+        return highestThreat.ConstructId;
+    }
+
+    public ulong? GetClosestTarget()
+    {
+        if (Contacts.Count == 0)
+        {
+            return null;
+        }
+        
+        return Contacts.MinBy(x => x.Distance).ConstructId;
+    }
+    
     public double GetAccelerationG()
     {
         var boosterG = 0d;
