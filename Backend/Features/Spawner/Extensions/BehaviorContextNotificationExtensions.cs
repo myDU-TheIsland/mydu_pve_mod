@@ -199,12 +199,15 @@ public static class BehaviorContextNotificationExtensions
         if (playerWithMinDamage.Count == 0)
         {
             var topDamagePlayers = totalDamageByPlayer.OrderByDescending(x => x.Value);
-            playerWithMinDamage = topDamagePlayers.Take(3).Select(x => x.Key).ToHashSet();
+            playerWithMinDamage = topDamagePlayers.Take(5).Select(x => x.Key).ToHashSet();
         }
 
-        var playerIds = eventArgs.Context.PlayerIds.ToHashSet();
+        var playerIds = playerWithMinDamage;
 
-        playerIds = playerIds.Intersect(playerWithMinDamage).ToHashSet();
+        if (playerWithMinDamage.Count == 0)
+        {
+            playerIds = eventArgs.Context.PlayerIds.ToHashSet();
+        }
 
         var scriptExecutionTask = context.Prefab.Events.OnDestruction.ExecuteAsync(
             new ScriptContext(
