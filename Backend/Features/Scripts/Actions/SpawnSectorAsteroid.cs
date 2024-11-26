@@ -66,6 +66,17 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
             2
         );
 
+        var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
+        var info = await constructService.GetConstructInfoAsync(asteroidId);
+
+        if (info.Info != null)
+        {
+            var name = info.Info.rData.name
+                .Replace("A-", "T-");
+            
+            await constructService.RenameConstruct(asteroidId, name);
+        }
+        
         await asteroidManagerGrain.ForcePublish(asteroidId);
 
         return ScriptActionResult.Successful();
