@@ -133,6 +133,7 @@ public class BehaviorContext(
     public double VelocityWithTargetDotProduct { get; private set; }
     public bool IsApproaching { get; set; }
     public DateTime? LastApproachingUpdate { get; set; }
+    public double MinVelocity { get; set; } = prefab.DefinitionItem.MinSpeedKph / 3.6d;
     public double MaxVelocity { get; set; } = prefab.DefinitionItem.MaxSpeedKph / 3.6d;
     public double TargetMoveDistance { get; private set; }
     public double ShotWaitTime { get; set; }
@@ -339,12 +340,18 @@ public class BehaviorContext(
             return MaxVelocity;
         }
 
+        var targetVelocityClamped = Math.Clamp(
+            TargetLinearVelocity.Size(),
+            MinVelocity,
+            MaxVelocity
+        );
+        
         if (oppositeVector)
         {
-            return TargetLinearVelocity.Size() * Modifiers.Velocity.InsideOptimalRange.Negative;
+            return targetVelocityClamped * Modifiers.Velocity.InsideOptimalRange.Negative;
         }
 
-        return TargetLinearVelocity.Size() * Modifiers.Velocity.InsideOptimalRange.Positive;
+        return targetVelocityClamped * Modifiers.Velocity.InsideOptimalRange.Positive;
     }
 
     public double CalculateMovementPredictionSeconds()

@@ -25,6 +25,7 @@ public class PrefabItem
     public List<string> WeaponItems { get; set; } = [];
     public double AccelerationG { get; set; } = 15;
     public float RotationSpeed { get; set; } = 0.5f;
+    public double MinSpeedKph { get; set; } = 2000;
     public double MaxSpeedKph { get; set; } = 20000;
     public double TargetDecisionTimeSeconds { get; set; } = 30;
     public double TargetDistance { get; set; } = 20000;
