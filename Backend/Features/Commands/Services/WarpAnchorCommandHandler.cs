@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Backend.Scenegraph;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,13 +8,16 @@ using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Commands.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Services;
 using Mod.DynamicEncounters.Features.Interfaces;
+using Mod.DynamicEncounters.Features.Warp.Data;
+using Mod.DynamicEncounters.Features.Warp.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using Mod.DynamicEncounters.Vector.Helpers;
 using NQ;
 using NQ.Interfaces;
 
 namespace Mod.DynamicEncounters.Features.Commands.Services;
 
-public class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
+public partial class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
 {
     private readonly ILogger<NpcKillsCommandHandler> _logger =
         ModBase.ServiceProvider.CreateLogger<NpcKillsCommandHandler>();
@@ -37,6 +42,64 @@ public class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
         if (command == "@wac")
         {
             await HandleCreateWarpAnchorCommand(instigatorPlayerId, command);
+        }
+        else if (command.StartsWith("@wac ::pos{0,0,"))
+        {
+            var pieces = command.Split(" ");
+            var position = pieces[1];
+
+            try
+            {
+                var posVec = position.PositionToVec3();
+
+                var warpAnchorService = ModBase.ServiceProvider.GetRequiredService<IWarpAnchorService>();
+                var outcome = await warpAnchorService.CreateWarpAnchorForPosition(
+                    new CreateWarpAnchorCommand
+                    {
+                        Position = posVec,
+                        PlayerId = instigatorPlayerId
+                    }
+                );
+
+                await SendAlertForOutcome(instigatorPlayerId, outcome);
+            }
+            catch (Exception e)
+            {
+                await _playerAlertService.SendErrorAlert(instigatorPlayerId, "Failed to process command. Invalid position");
+                _logger.LogError(e, "Failed to process wac position command");
+            }
+        }
+        else if (MatchesWarpAnchorForwardCommand().IsMatch(command))
+        {
+            var pieces = command.Split(" ");
+            if (!double.TryParse(pieces[1], out var distance))
+            {
+                await SendAlertForOutcome(instigatorPlayerId, CreateWarpAnchorOutcome.InvalidDistance());
+                return;
+            }
+            
+            var warpAnchorService = ModBase.ServiceProvider.GetRequiredService<IWarpAnchorService>();
+            var outcome = await warpAnchorService.CreateWarpAnchorForward(
+                new CreateWarpAnchorForwardCommand
+                {
+                    Distance = distance,
+                    PlayerId = instigatorPlayerId
+                }
+            );
+            
+            await SendAlertForOutcome(instigatorPlayerId, outcome);
+        }
+    }
+
+    private async Task SendAlertForOutcome(ulong instigatorPlayerId, CreateWarpAnchorOutcome outcome)
+    {
+        if (outcome.Success)
+        {
+            await _playerAlertService.SendInfoAlert(instigatorPlayerId, outcome.Message);
+        }
+        else
+        {
+            await _playerAlertService.SendErrorAlert(instigatorPlayerId, outcome.Message);
         }
     }
 
@@ -73,4 +136,7 @@ public class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
             }
         );
     }
+
+    [GeneratedRegex("@wac [0-9]+")]
+    private static partial Regex MatchesWarpAnchorForwardCommand();
 }

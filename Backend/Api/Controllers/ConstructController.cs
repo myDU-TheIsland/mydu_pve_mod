@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using Backend;
+using Backend.Scenegraph;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
@@ -190,6 +192,25 @@ public class ConstructController : Controller
         }
 
         return Ok(report);
+    }
+
+    [HttpGet]
+    [Route("{constructId:long}/forward")]
+    public async Task<IActionResult> GetForward(ulong constructId)
+    {
+        var provider = ModBase.ServiceProvider;
+        var constructService = provider.GetRequiredService<IConstructService>();
+        var scenegraph = provider.GetRequiredService<IScenegraph>();
+
+        var info = await constructService.GetConstructInfoAsync(constructId);
+        var quat = info.Info!.rData.rotation.ToQuat();
+        var pos = await scenegraph.GetConstructCenterWorldPosition(constructId);
+        
+        var forward = Vector3.Transform(Vector3.UnitY, quat);
+
+        var aheadPos = pos.ToVector3() + forward * 1000;
+
+        return Ok($"::pos{{0,0,{aheadPos.X}, {aheadPos.Y}, {aheadPos.Z}}}");
     }
 
     [HttpGet]

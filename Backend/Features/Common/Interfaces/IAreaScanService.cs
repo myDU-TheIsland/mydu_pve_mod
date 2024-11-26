@@ -18,4 +18,5 @@ public interface IAreaScanService
     Task<IEnumerable<ScanContact>> ScanForAbandonedConstructs(Vec3 position, double radius, int limit = 10);
 
     Task<IEnumerable<ScanContact>> ScanForAsteroids(Vec3 position, double radius);
+    Task<IEnumerable<ScanContact>> ScanForPlanetaryBodies(Vec3 position, double radius);
 }

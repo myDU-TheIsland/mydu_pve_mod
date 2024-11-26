@@ -133,6 +133,29 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
 
         return rows.Select(MapToModel);
     }
+    
+    public async Task<IEnumerable<ScanContact>> ScanForPlanetaryBodies(Vec3 position, double radius)
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        var rows = (await db.QueryAsync<DbRow>(
+            $"""
+             SELECT 
+             	 C.id, 
+             	 C.name,
+             	 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance 
+              FROM public.construct C
+              WHERE ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
+             	 AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
+             	 AND C.deleted_at IS NULL
+             	 AND (C.json_properties->>'kind' = '1')
+              ORDER BY distance
+             """
+        )).ToList();
+
+        return rows.Select(MapToModel);
+    }
 
     private static ScanContact MapToModel(DbRow row)
     {

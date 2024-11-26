@@ -1,0 +1,11 @@
+﻿using System.Threading.Tasks;
+using Mod.DynamicEncounters.Features.Warp.Data;
+
+namespace Mod.DynamicEncounters.Features.Warp.Interfaces;
+
+public interface IWarpAnchorService
+{
+    Task<CreateWarpAnchorOutcome> SpawnWarpAnchor(CreateWarpAnchorCommand command);
+    Task<CreateWarpAnchorOutcome> CreateWarpAnchorForPosition(CreateWarpAnchorCommand command);
+    Task<CreateWarpAnchorOutcome> CreateWarpAnchorForward(CreateWarpAnchorForwardCommand command);
+}

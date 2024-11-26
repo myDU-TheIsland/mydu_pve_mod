@@ -11,6 +11,8 @@ using Mod.DynamicEncounters.Features.ExtendedProperties.Extensions;
 using Mod.DynamicEncounters.Features.ExtendedProperties.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
+using Mod.DynamicEncounters.Features.Warp.Data;
+using Mod.DynamicEncounters.Features.Warp.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQutils.Sql;
@@ -28,58 +30,23 @@ public class WarpController : Controller
         {
             return BadRequest();
         }
-
+        
         var provider = ModBase.ServiceProvider;
-        var spawner = provider.GetRequiredService<IBlueprintSpawnerService>();
-        var taskQueueService = provider.GetRequiredService<ITaskQueueService>();
-        var traitRepository = provider.GetRequiredService<ITraitRepository>();
-        var elementTraitMap = (await traitRepository.GetElementTraits(request.ElementTypeName)).Map();
+        var warpAnchorService = provider.GetRequiredService<IWarpAnchorService>();
 
-        var blueprintFileName = "Warp_Signature.json";
-        if (elementTraitMap.TryGetValue("supercruise", out var trait))
+        var outcome = await warpAnchorService.SpawnWarpAnchor(new CreateWarpAnchorCommand
         {
-            if (trait.Properties.TryGetValue("blueprintFileName", out var prop))
-            {
-                blueprintFileName = prop.Prop.ValueAs<string>();
-            }
+            PlayerId = request.PlayerId,
+            Position = request.Position,
+            ElementTypeName = request.ElementTypeName
+        });
+
+        if (!outcome.Success || !outcome.WarpAnchorConstructId.HasValue)
+        {
+            return BadRequest();
         }
-
-        var constructId = await spawner.SpawnAsync(
-            new SpawnArgs
-            {
-                Folder = "pve",
-                File = blueprintFileName,
-                Position = request.Position,
-                IsUntargetable = true,
-                OwnerEntityId = new EntityId { playerId = request.PlayerId },
-                Name = "[!] Warp Signature"
-            }
-        );
-
-        var connectionFactory = provider.GetRequiredService<IPostgresConnectionFactory>();
-        using var db = connectionFactory.Create();
-
-        // Make sure the beacon is active by setting all elements to have been created 3 days in the past *shrugs*
-        await db.ExecuteAsync(
-            """
-            UPDATE public.element SET created_at = NOW() - INTERVAL '3 DAYS' WHERE construct_id = @constructId
-            """,
-            new
-            {
-                constructId = (long)constructId
-            }
-        );
-
-        await taskQueueService.EnqueueScript(
-            new ScriptActionItem
-            {
-                Type = "delete",
-                ConstructId = constructId
-            },
-            DateTime.UtcNow + TimeSpan.FromMinutes(1)
-        );
-
-        return Ok(constructId);
+        
+        return Ok(outcome.WarpAnchorConstructId.Value.constructId);
     }
 
     [HttpPost]

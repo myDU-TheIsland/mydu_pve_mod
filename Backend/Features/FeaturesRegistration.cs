@@ -23,6 +23,7 @@ using Mod.DynamicEncounters.Features.Sector;
 using Mod.DynamicEncounters.Features.Services;
 using Mod.DynamicEncounters.Features.Spawner;
 using Mod.DynamicEncounters.Features.TaskQueue;
+using Mod.DynamicEncounters.Features.Warp;
 
 namespace Mod.DynamicEncounters.Features;
 
@@ -75,5 +76,6 @@ public static class FeaturesRegistration
         services.RegisterPlayerParty();
         services.RegisterCommands();
         services.RegisterMarketServices();
+        services.RegisterWarpServices();
     }
 }

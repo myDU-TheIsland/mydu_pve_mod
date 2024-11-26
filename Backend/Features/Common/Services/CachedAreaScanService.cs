@@ -36,4 +36,9 @@ public class CachedAreaScanService(IAreaScanService areaScanService) : IAreaScan
     {
         return areaScanService.ScanForAsteroids(position, radius);
     }
+
+    public Task<IEnumerable<ScanContact>> ScanForPlanetaryBodies(Vec3 position, double radius)
+    {
+        return areaScanService.ScanForPlanetaryBodies(position, radius);
+    }
 }
