@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Backend.Scenegraph;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Interfaces;
@@ -10,6 +11,8 @@ using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
+using Mod.DynamicEncounters.Features.VoxelService.Data;
+using Mod.DynamicEncounters.Features.VoxelService.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQ.Interfaces;
@@ -27,6 +30,8 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
     private bool _active = true;
     private IConstructElementsService _constructElementsService;
+    private IVoxelServiceClient _pveVoxelService;
+    private IScenegraph _sceneGraph;
 
     public bool IsActive() => _active;
 
@@ -38,10 +43,10 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         _orleans = provider.GetOrleans();
 
         _constructElementsService = provider.GetRequiredService<IConstructElementsService>();
-
         _coreUnitElementId = await _constructElementsService.GetCoreUnit(constructId);
-
         _constructService = provider.GetRequiredService<IConstructService>();
+        _pveVoxelService = provider.GetRequiredService<IVoxelServiceClient>();
+        _sceneGraph = provider.GetRequiredService<IScenegraph>();
 
         context.Properties.TryAdd("CORE_ID", _coreUnitElementId);
 
@@ -224,7 +229,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             ammoItem,
             cycleTimeBuffFactor: mod.Weapon.CycleTime
         );
-
+        
         if (totalDeltaTime < context.BehaviorContext.ShotWaitTime)
         {
             return;
@@ -238,12 +243,25 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
         if (context.TargetConstructId > 0)
         {
-            var targetInSafeZone = await _constructService.NoCache().IsInSafeZone(context.TargetConstructId);
+            var targetInSafeZone = await _constructService.IsInSafeZone(context.TargetConstructId);
             if (targetInSafeZone)
             {
                 return;
             }
         }
+
+        var relativeLocation = await _sceneGraph.ResolveRelativeLocation(
+            new RelativeLocation { position = context.ConstructPosition, rotation = Quat.Identity },
+            context.TargetConstructId
+        );
+        
+        var shootPoint =  _pveVoxelService.QueryRandomPoint(
+            new QueryRandomPoint
+            {
+                ConstructId = context.TargetConstructId,
+                FromLocalPosition = relativeLocation.position
+            }
+        );
 
         SetShootTotalDeltaTime(context.BehaviorContext, 0);
 
