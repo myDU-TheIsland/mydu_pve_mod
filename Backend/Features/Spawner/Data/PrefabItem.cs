@@ -33,7 +33,7 @@ public class PrefabItem
     public double RealismFactor { get; set; }
     public int MaxWeaponCount { get; set; } = 2;
     public bool DamagesVoxel { get; set; } = true;
-    public bool UsesCustomShootAction { get; set; } = false;
+    public bool UsesCustomShootAction { get; set; } = true;
 
     public PrefabEvents Events { get; set; } = new();
 
