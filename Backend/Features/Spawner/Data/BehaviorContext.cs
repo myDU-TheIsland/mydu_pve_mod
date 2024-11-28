@@ -42,7 +42,7 @@ public class BehaviorContext(
     public const string MoveModeProperty = "MoveMode";
 
     public bool PushPositionModActionEnabled { get; } = false;
-    public bool CustomActionShootEnabled { get; } = true;
+    public bool CustomActionShootEnabled { get; } = false;
     public bool RealisticFiring { get; } = true;
     public DateTime StartedAt { get; } = DateTime.UtcNow;
     public Vec3 Velocity { get; set; }
