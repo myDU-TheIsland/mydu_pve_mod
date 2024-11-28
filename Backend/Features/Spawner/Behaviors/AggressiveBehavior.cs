@@ -254,6 +254,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         var isInSafeZone = await _constructService.IsInSafeZone(constructId);
         if (isInSafeZone)
         {
+            SetShootTotalDeltaTime(context.BehaviorContext, 0);
             return;
         }
 
@@ -262,6 +263,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             var targetInSafeZone = await _constructService.IsInSafeZone(context.TargetConstructId);
             if (targetInSafeZone)
             {
+                SetShootTotalDeltaTime(context.BehaviorContext, 0);
                 return;
             }
         }
