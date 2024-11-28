@@ -14,4 +14,5 @@ public class ShootWeaponData
     public required Vec3 LocalHitPosition { get; set; }
     public required SentinelWeapon Weapon { get; set; }
     public required double CrossSection { get; set; }
+    public required bool DamagesVoxel { get; set; }
 }

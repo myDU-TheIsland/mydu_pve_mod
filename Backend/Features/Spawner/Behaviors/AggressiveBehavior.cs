@@ -334,7 +334,8 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
                             LocalHitPosition = context.HitPosition,
                             ShooterConstructSize = context.ConstructSize,
                             ShooterPlayerId = ModBase.Bot.PlayerId,
-                            TargetConstructId = context.TargetConstructId
+                            TargetConstructId = context.TargetConstructId,
+                            DamagesVoxel = context.BehaviorContext.DamagesVoxel
                         })
                 }
             );

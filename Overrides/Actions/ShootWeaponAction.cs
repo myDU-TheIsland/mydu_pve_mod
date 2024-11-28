@@ -252,12 +252,20 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
                     return ShotOutcome.InvalidAmmoDefinition(weapon.ammoItem);
                 }
 
-                var voxelResult = await directServiceGrain.MakeVoxelDamages(
-                    weaponFire,
-                    ammo,
-                    weapon.damage,
-                    playerListAndPosition
-                );
+                VoxelInternalEditResults voxelResult;
+                if (@params.ShootWeaponData.DamagesVoxel)
+                {
+                    voxelResult = await directServiceGrain.MakeVoxelDamages(
+                        weaponFire,
+                        ammo,
+                        weapon.damage,
+                        playerListAndPosition
+                    );
+                }
+                else
+                {
+                    voxelResult = new VoxelInternalEditResults();
+                }
 
                 var deathInfo = new PlayerDeathInfo
                 {

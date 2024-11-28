@@ -32,6 +32,8 @@ public class PrefabItem
     public long FactionId { get; set; }
     public double RealismFactor { get; set; }
     public int MaxWeaponCount { get; set; } = 2;
+    public bool DamagesVoxel { get; set; } = true;
+    public bool UsesCustomShootAction { get; set; } = false;
 
     public PrefabEvents Events { get; set; } = new();
 
