@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using NQ;
 
@@ -17,4 +18,7 @@ public class QueryRandomPointOutcome
 
     public static QueryRandomPointOutcome Failed(HttpResponseMessage responseMessage)
         => new() { Success = false, Message = $"Failed to retrieve point: HTTP: {responseMessage.StatusCode}" };
+    
+    public static QueryRandomPointOutcome Failed(Exception exception)
+        => new() { Success = false, Message = $"Failed to retrieve point: Exception: {exception.Message}" };
 }

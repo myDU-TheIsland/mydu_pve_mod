@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -61,33 +62,44 @@ public class VoxelServiceClient(IServiceProvider provider) : IVoxelServiceClient
             return QueryRandomPointOutcome.Disabled();
         }
 
-        var httpClient = _httpClientFactory.CreateClient();
-
-        var response = await httpClient.PostAsync(
-            new Uri(
-                new Uri(GetPveVoxelServiceBaseUrl()),
-                $"/v1/mesh/cache/{query.ConstructId.constructId}/random-point"
-            ),
-            new StringContent(
-                JsonConvert.SerializeObject(
-                    new
-                    {
-                        FromPosition = query.FromLocalPosition
-                    }
-                ),
-                Encoding.UTF8,
-                "application/json"
-            )
-        );
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            return QueryRandomPointOutcome.Failed(response);
+            var httpClient = _httpClientFactory.CreateClient();
+
+            var cts = new CancellationTokenSource();
+            cts.CancelAfter(300);
+            
+            var response = await httpClient.PostAsync(
+                new Uri(
+                    new Uri(GetPveVoxelServiceBaseUrl()),
+                    $"/v1/mesh/cache/{query.ConstructId.constructId}/random-point"
+                ),
+                new StringContent(
+                    JsonConvert.SerializeObject(
+                        new
+                        {
+                            FromPosition = query.FromLocalPosition
+                        }
+                    ),
+                    Encoding.UTF8,
+                    "application/json"
+                ),
+                cts.Token
+            );
+
+            if (!response.IsSuccessStatusCode)
+            {
+                return QueryRandomPointOutcome.Failed(response);
+            }
+
+            var point = await response.Content.ReadFromJsonAsync<Vec3>();
+
+            return QueryRandomPointOutcome.FoundPosition(point);
         }
-
-        var point = await response.Content.ReadFromJsonAsync<Vec3>();
-
-        return QueryRandomPointOutcome.FoundPosition(point);
+        catch (Exception e)
+        {
+            return QueryRandomPointOutcome.Failed(e);
+        }
     }
 
     private static string GetPveVoxelServiceBaseUrl()

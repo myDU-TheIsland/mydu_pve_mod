@@ -227,10 +227,24 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         var ammoItem = random.PickOneAtRandom(ammoType);
         var mod = prefab.DefinitionItem.Mods;
 
-        context.BehaviorContext.ShotWaitTime = w.GetShotWaitTime(
-            ammoItem,
-            cycleTimeBuffFactor: mod.Weapon.CycleTime
-        );
+        var damageModifier = context.QuantityModifier;
+
+        if (context.BehaviorContext.RealisticFiring)
+        {
+            damageModifier = 1;
+            context.BehaviorContext.ShotWaitTime = w.GetShotWaitTimePerGun(
+                ammoItem,
+                weaponCount: context.QuantityModifier,
+                cycleTimeBuffFactor: mod.Weapon.CycleTime
+            );
+        }
+        else
+        {
+            context.BehaviorContext.ShotWaitTime = w.GetShotWaitTime(
+                ammoItem,
+                cycleTimeBuffFactor: mod.Weapon.CycleTime
+            );
+        }
 
         if (totalDeltaTime < context.BehaviorContext.ShotWaitTime)
         {
@@ -278,7 +292,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         var weapon = new SentinelWeapon
         {
             aoe = true,
-            damage = w.BaseDamage * mod.Weapon.Damage * context.QuantityModifier,
+            damage = w.BaseDamage * mod.Weapon.Damage * damageModifier,
             range = w.BaseOptimalDistance * mod.Weapon.OptimalDistance +
                     w.FalloffDistance * mod.Weapon.FalloffDistance,
             aoeRange = 100000,
@@ -297,7 +311,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             weaponItem = w.ItemTypeName
         };
         
-        if (context.BehaviorContext.ModActionShootEnabled)
+        if (context.BehaviorContext.CustomActionShootEnabled)
         {
             var modManagerGrain = _orleans.GetModManagerGrain();
             await modManagerGrain.TriggerModAction(
