@@ -9,11 +9,13 @@ using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.VoxelService.Data;
 using Mod.DynamicEncounters.Features.VoxelService.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using Newtonsoft.Json;
 using NQ;
 using NQ.Interfaces;
 using Orleans;
@@ -224,12 +226,12 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
         var ammoItem = random.PickOneAtRandom(ammoType);
         var mod = prefab.DefinitionItem.Mods;
-        
+
         context.BehaviorContext.ShotWaitTime = w.GetShotWaitTime(
             ammoItem,
             cycleTimeBuffFactor: mod.Weapon.CycleTime
         );
-        
+
         if (totalDeltaTime < context.BehaviorContext.ShotWaitTime)
         {
             return;
@@ -254,51 +256,87 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             new RelativeLocation { position = context.ConstructPosition, rotation = Quat.Identity },
             context.TargetConstructId
         );
-        
-        var shootPoint =  _pveVoxelService.QueryRandomPoint(
+
+        var shootPointOutcome = await _pveVoxelService.QueryRandomPoint(
             new QueryRandomPoint
             {
                 ConstructId = context.TargetConstructId,
                 FromLocalPosition = relativeLocation.position
             }
         );
+        if (shootPointOutcome.Success)
+        {
+            context.HitPosition = shootPointOutcome.LocalPosition;
+            _logger.LogInformation("Hit Pos: {Pos}", context.HitPosition);
+        }
 
         SetShootTotalDeltaTime(context.BehaviorContext, 0);
 
         var sw = new Stopwatch();
         sw.Start();
 
-        await context.NpcShotGrain.Fire(
-            w.DisplayName,
-            context.ConstructPosition,
-            constructId,
-            context.ConstructSize,
-            context.TargetConstructId,
-            context.TargetPosition,
-            new SentinelWeapon
-            {
-                aoe = true,
-                damage = w.BaseDamage * mod.Weapon.Damage * context.QuantityModifier,
-                range = w.BaseOptimalDistance * mod.Weapon.OptimalDistance +
-                        w.FalloffDistance * mod.Weapon.FalloffDistance,
-                aoeRange = 100000,
-                baseAccuracy = w.BaseAccuracy * mod.Weapon.Accuracy,
-                effectDuration = 10,
-                effectStrength = 10,
-                falloffDistance = w.FalloffDistance * mod.Weapon.FalloffDistance,
-                falloffTracking = w.FalloffTracking * mod.Weapon.FalloffTracking,
-                fireCooldown = context.BehaviorContext.ShotWaitTime,
-                baseOptimalDistance = w.BaseOptimalDistance * mod.Weapon.OptimalDistance,
-                falloffAimingCone = w.FalloffAimingCone * mod.Weapon.FalloffAimingCone,
-                baseOptimalTracking = w.BaseOptimalTracking * mod.Weapon.OptimalTracking,
-                baseOptimalAimingCone = w.BaseOptimalAimingCone * mod.Weapon.OptimalAimingCone,
-                optimalCrossSectionDiameter = w.OptimalCrossSectionDiameter,
-                ammoItem = ammoItem.ItemTypeName,
-                weaponItem = w.ItemTypeName
-            },
-            5,
-            context.HitPosition
-        );
+        var weapon = new SentinelWeapon
+        {
+            aoe = true,
+            damage = w.BaseDamage * mod.Weapon.Damage * context.QuantityModifier,
+            range = w.BaseOptimalDistance * mod.Weapon.OptimalDistance +
+                    w.FalloffDistance * mod.Weapon.FalloffDistance,
+            aoeRange = 100000,
+            baseAccuracy = w.BaseAccuracy * mod.Weapon.Accuracy,
+            effectDuration = 10,
+            effectStrength = 10,
+            falloffDistance = w.FalloffDistance * mod.Weapon.FalloffDistance,
+            falloffTracking = w.FalloffTracking * mod.Weapon.FalloffTracking,
+            fireCooldown = context.BehaviorContext.ShotWaitTime,
+            baseOptimalDistance = w.BaseOptimalDistance * mod.Weapon.OptimalDistance,
+            falloffAimingCone = w.FalloffAimingCone * mod.Weapon.FalloffAimingCone,
+            baseOptimalTracking = w.BaseOptimalTracking * mod.Weapon.OptimalTracking,
+            baseOptimalAimingCone = w.BaseOptimalAimingCone * mod.Weapon.OptimalAimingCone,
+            optimalCrossSectionDiameter = w.OptimalCrossSectionDiameter,
+            ammoItem = ammoItem.ItemTypeName,
+            weaponItem = w.ItemTypeName
+        };
+        
+        if (context.BehaviorContext.ModActionShootEnabled)
+        {
+            var modManagerGrain = _orleans.GetModManagerGrain();
+            await modManagerGrain.TriggerModAction(
+                ModBase.Bot.PlayerId,
+                new ModAction
+                {
+                    modName = "Mod.DynamicEncounters",
+                    constructId = constructId,
+                    actionId = 116,
+                    payload = JsonConvert.SerializeObject(
+                        new ShootWeaponData
+                        {
+                            Weapon = weapon,
+                            CrossSection = 5,
+                            ShooterName = w.DisplayName,
+                            ShooterPosition = context.ConstructPosition,
+                            ShooterConstructId = constructId,
+                            LocalHitPosition = context.HitPosition,
+                            ShooterConstructSize = context.ConstructSize,
+                            ShooterPlayerId = ModBase.Bot.PlayerId,
+                            TargetConstructId = context.TargetConstructId
+                        })
+                }
+            );
+        }
+        else
+        {
+            await context.NpcShotGrain.Fire(
+                w.DisplayName,
+                context.ConstructPosition,
+                constructId,
+                context.ConstructSize,
+                context.TargetConstructId,
+                context.TargetPosition,
+                weapon,
+                5,
+                context.HitPosition
+            );
+        }
 
         _logger.LogInformation("Construct {Construct} Shot Weapon. Took: {Time}ms {Weapon} / {Ammo}",
             constructId,

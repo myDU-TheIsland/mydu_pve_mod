@@ -41,6 +41,8 @@ public class BehaviorContext(
     public const string BrakingProperty = "Braking";
     public const string MoveModeProperty = "MoveMode";
 
+    public bool PushPositionModActionEnabled { get; } = false;
+    public bool ModActionShootEnabled { get; } = true;
     public DateTime StartedAt { get; } = DateTime.UtcNow;
     public Vec3 Velocity { get; set; }
     public Vec3? Position { get; private set; }
