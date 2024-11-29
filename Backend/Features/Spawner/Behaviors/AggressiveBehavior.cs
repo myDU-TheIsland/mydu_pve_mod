@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Backend.Scenegraph;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mod.DynamicEncounters.Common.Data;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
@@ -15,7 +16,6 @@ using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.VoxelService.Data;
 using Mod.DynamicEncounters.Features.VoxelService.Interfaces;
 using Mod.DynamicEncounters.Helpers;
-using Newtonsoft.Json;
 using NQ;
 using NQ.Interfaces;
 using Orleans;
@@ -315,29 +315,27 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         
         if (context.BehaviorContext.CustomActionShootEnabled)
         {
+            var shootWeaponData = new ShootWeaponData
+            {
+                Weapon = weapon,
+                CrossSection = 5,
+                ShooterName = w.DisplayName,
+                ShooterPosition = context.ConstructPosition,
+                ShooterConstructId = constructId,
+                LocalHitPosition = context.HitPosition,
+                ShooterConstructSize = context.ConstructSize,
+                ShooterPlayerId = ModBase.Bot.PlayerId,
+                TargetConstructId = context.TargetConstructId,
+                DamagesVoxel = context.BehaviorContext.DamagesVoxel
+            };
+            
             var modManagerGrain = _orleans.GetModManagerGrain();
             await modManagerGrain.TriggerModAction(
                 ModBase.Bot.PlayerId,
-                new ModAction
-                {
-                    modName = "Mod.DynamicEncounters",
-                    constructId = constructId,
-                    actionId = 116,
-                    payload = JsonConvert.SerializeObject(
-                        new ShootWeaponData
-                        {
-                            Weapon = weapon,
-                            CrossSection = 5,
-                            ShooterName = w.DisplayName,
-                            ShooterPosition = context.ConstructPosition,
-                            ShooterConstructId = constructId,
-                            LocalHitPosition = context.HitPosition,
-                            ShooterConstructSize = context.ConstructSize,
-                            ShooterPlayerId = ModBase.Bot.PlayerId,
-                            TargetConstructId = context.TargetConstructId,
-                            DamagesVoxel = context.BehaviorContext.DamagesVoxel
-                        })
-                }
+                new ActionBuilder()
+                    .ShootWeapon(shootWeaponData)
+                    .WithConstructId(constructId)
+                    .Build()
             );
         }
         else

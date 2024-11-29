@@ -304,30 +304,30 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
                     result.destroyedElementTypes = damageResult.broken
                         .Select((Func<(ElementId, ulong), ulong>)(t => t.Item2)).ToList();
                 }
-
-                weaponImpact.ImpactPositionWorld = @params.ShotImpactWorldPosition;
-                weaponImpact.ImpactPositionLocal = @params.ShootWeaponData.LocalHitPosition;
-                weaponImpact.TargetId = targetConstructId;
-                
-                var hitWeaponShot = new WeaponShot
-                {
-                    id = (ulong)TimePoint.Now().networkTime,
-                    originConstructId = shooterConstructId,
-                    originPositionWorld = shooterWeaponPos.ToNqVec3(),
-                    originPositionLocal = shooterWeaponLocalPos,
-                    targetConstructId = targetConstructId,
-                    weaponType = _bank.IdFor(weapon.weaponItem),
-                    ammoType = _bank.IdFor(weapon.ammoItem),
-                    impactPositionWorld = hitPositionWorld.position,
-                    impactPositionLocal = @params.ShootWeaponData.LocalHitPosition,
-                    shieldDamage = result.shieldDamage,
-                    rawShieldDamage = result.rawShieldDamage,
-                    coreUnitDestroyed = result.coreUnitDestroyed,
-                    impactElementType = 3
-                };
-
-                await directServiceGrain.PropagateShotImpact(hitWeaponShot);
             }
+            
+            weaponImpact.ImpactPositionWorld = @params.ShotImpactWorldPosition;
+            weaponImpact.ImpactPositionLocal = @params.ShootWeaponData.LocalHitPosition;
+            weaponImpact.TargetId = targetConstructId;
+                
+            var hitWeaponShot = new WeaponShot
+            {
+                id = (ulong)TimePoint.Now().networkTime,
+                originConstructId = shooterConstructId,
+                originPositionWorld = shooterWeaponPos.ToNqVec3(),
+                originPositionLocal = shooterWeaponLocalPos,
+                targetConstructId = targetConstructId,
+                weaponType = _bank.IdFor(weapon.weaponItem),
+                ammoType = _bank.IdFor(weapon.ammoItem),
+                impactPositionWorld = hitPositionWorld.position,
+                impactPositionLocal = @params.ShootWeaponData.LocalHitPosition,
+                shieldDamage = result.shieldDamage,
+                rawShieldDamage = result.rawShieldDamage,
+                coreUnitDestroyed = result.coreUnitDestroyed,
+                impactElementType = 3
+            };
+
+            await directServiceGrain.PropagateShotImpact(hitWeaponShot);
 
             return ShotOutcome.HitTarget(
                 weaponImpact,
