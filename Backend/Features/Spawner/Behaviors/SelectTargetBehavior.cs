@@ -152,7 +152,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var targetVel = await _constructService.GetConstructVelocities(targetId);
         context.SetTargetLinearVelocity(targetVel.Linear);
 
-        await _sectorPoolManager.SetExpirationFromNow(context.Sector, TimeSpan.FromHours(1));
+        await _sectorPoolManager.SetExpirationFromNow(context.Sector, context.ActiveSectorExpirationSeconds);
 
         try
         {

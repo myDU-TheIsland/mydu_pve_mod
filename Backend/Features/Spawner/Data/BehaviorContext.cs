@@ -41,6 +41,7 @@ public class BehaviorContext(
     public const string BrakingProperty = "Braking";
     public const string MoveModeProperty = "MoveMode";
 
+    public TimeSpan ActiveSectorExpirationSeconds { get; } = TimeSpan.FromMinutes(prefab.DefinitionItem.SectorExpirationSeconds);
     public bool PushPositionModActionEnabled { get; } = false;
     public bool CustomActionShootEnabled { get; } = prefab.DefinitionItem.UsesCustomShootAction;
     public bool DamagesVoxel { get; } = prefab.DefinitionItem.DamagesVoxel;

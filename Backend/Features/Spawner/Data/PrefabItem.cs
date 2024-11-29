@@ -34,6 +34,7 @@ public class PrefabItem
     public int MaxWeaponCount { get; set; } = 2;
     public bool DamagesVoxel { get; set; } = true;
     public bool UsesCustomShootAction { get; set; } = true;
+    public double SectorExpirationSeconds { get; set; } = 60 * 30;
 
     public PrefabEvents Events { get; set; } = new();
 
