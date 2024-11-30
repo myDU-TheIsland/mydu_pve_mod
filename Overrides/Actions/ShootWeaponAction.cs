@@ -359,7 +359,7 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
                 @params.ShotOriginWorldPosition,
                 @params.ShotImpactWorldPosition,
                 16d,
-                0.5d
+                num - hitRatio
             ),
             result
         );
