@@ -422,10 +422,10 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         {
             try
             {
-                var newName = $"{item.SectorName} | [{(int)item.ExpiresAt.TotalMinutes}m]";
+                var newName = $"{item.SectorName} [{(int)item.ExpiresAt.TotalMinutes}m]";
                 if (item.StartedAt.HasValue && item.SectorInstanceProperties.HasActiveMarker)
                 {
-                    newName = $"{item.SectorName} | [!!!]";
+                    newName = $"{item.SectorName} [!!!]";
                 }
 
                 var constructService = serviceProvider.GetRequiredService<IConstructService>();
