@@ -9,6 +9,8 @@ using Mod.DynamicEncounters.Features.Scripts.Actions;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using NQ;
+using NQ.Interfaces;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
 
@@ -100,6 +102,20 @@ public class PlayerController : Controller
                 Skin = x.Skin
             })
         );
+
+        return Ok();
+    }
+
+    [HttpPost]
+    [Route("{playerId:long}/set-player-name")]
+    public async Task<IActionResult> SetPlayerName(ulong playerId, string name)
+    {
+        var provider = ModBase.ServiceProvider;
+        var playerGrain = provider.GetOrleans().GetPlayerGrain(playerId);
+        await playerGrain.SetPlayerInfo(new PlayerInfo
+        {
+            name = name
+        });
 
         return Ok();
     }
