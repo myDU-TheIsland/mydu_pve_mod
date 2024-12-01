@@ -52,7 +52,7 @@ public class PlayerController : Controller
         var bank = provider.GetGameplayBank();
         var playerService = provider.GetRequiredService<IPlayerService>();
         var taskQueueService = provider.GetRequiredService<ITaskQueueService>();
-        
+
         var playerIds = (await playerService.GetAllPlayersActiveOnInterval(request.Interval)).ToList();
 
         foreach (var playerId in playerIds)
@@ -79,7 +79,7 @@ public class PlayerController : Controller
 
         return Ok($"Enqueued {playerIds.Count} messages");
     }
-    
+
     [HttpPost]
     [Route("{playerId:long}/give-element-skin")]
     public async Task<IActionResult> GiveElementSkin(ulong playerId, [FromBody] GiveElementSkinsRequest request)
@@ -93,7 +93,7 @@ public class PlayerController : Controller
 
         var filteredSkins = request.Items
             .Where(x => !map.ContainsKey(x.ElementTypeId) || !map[x.ElementTypeId].Contains(x.Skin));
-        
+
         await playerService.GivePlayerElementSkins(
             playerId,
             filteredSkins.Select(x => new IPlayerService.ElementSkinItem
@@ -108,16 +108,21 @@ public class PlayerController : Controller
 
     [HttpPost]
     [Route("{playerId:long}/set-player-name")]
-    public async Task<IActionResult> SetPlayerName(ulong playerId, string name)
+    public async Task<IActionResult> SetPlayerName(ulong playerId, [FromBody] SetPlayerNameRequest request)
     {
         var provider = ModBase.ServiceProvider;
         var playerGrain = provider.GetOrleans().GetPlayerGrain(playerId);
         await playerGrain.SetPlayerInfo(new PlayerInfo
         {
-            name = name
+            name = request.Name
         });
 
         return Ok();
+    }
+
+    public class SetPlayerNameRequest
+    {
+        public string Name { get; set; }
     }
 
     public class GiveElementSkinsToAllActivePlayersRequest
@@ -125,12 +130,12 @@ public class PlayerController : Controller
         public TimeSpan Interval { get; set; }
         public IEnumerable<Item> Items { get; set; }
     }
-    
+
     public class GiveElementSkinsRequest
     {
         public IEnumerable<Item> Items { get; set; }
     }
-    
+
     public class Item
     {
         public string ElementTypeName { get; set; }
