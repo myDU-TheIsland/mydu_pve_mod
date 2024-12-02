@@ -11,6 +11,7 @@ using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQ.Interfaces;
+using NQutils.Def;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
 
@@ -107,24 +108,28 @@ public class PlayerController : Controller
     }
 
     [HttpPost]
-    [Route("{playerId:long}/set-player-name")]
-    public async Task<IActionResult> SetPlayerName(ulong playerId, [FromBody] SetPlayerNameRequest request)
+    [Route("{playerId:long}/board/{constructId:long}")]
+    public async Task<IActionResult> BoardConstruct(ulong playerId, ulong constructId)
     {
         var provider = ModBase.ServiceProvider;
         var playerGrain = provider.GetOrleans().GetPlayerGrain(playerId);
-        await playerGrain.SetPlayerInfo(new PlayerInfo
-        {
-            name = request.Name
-        });
+        var constructElementsGrain = provider.GetOrleans().GetConstructElementsGrain(constructId);
+        var seats = await constructElementsGrain.GetElementsOfType<PVPSeatUnit>();
+
+        var random = provider.GetRandomProvider().GetRandom();
+        var seat = random.PickOneAtRandom(seats);
+
+        var elementInfo = await constructElementsGrain.GetElement(seat);
+        
+        await playerGrain.TeleportPlayer(
+            new RelativeLocation
+            {
+                constructId = constructId,
+                position = elementInfo.position
+            });
 
         return Ok();
     }
-
-    public class SetPlayerNameRequest
-    {
-        public string Name { get; set; }
-    }
-
     public class GiveElementSkinsToAllActivePlayersRequest
     {
         public TimeSpan Interval { get; set; }
