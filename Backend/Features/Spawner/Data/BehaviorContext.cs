@@ -12,6 +12,7 @@ using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.Vector.Helpers;
+using MongoDB.Driver.Linq;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Data;
@@ -41,7 +42,9 @@ public class BehaviorContext(
     public const string BrakingProperty = "Braking";
     public const string MoveModeProperty = "MoveMode";
 
-    public TimeSpan ActiveSectorExpirationSeconds { get; } = TimeSpan.FromSeconds(prefab.DefinitionItem.SectorExpirationSeconds);
+    public TimeSpan ActiveSectorExpirationSeconds { get; } =
+        TimeSpan.FromSeconds(prefab.DefinitionItem.SectorExpirationSeconds);
+
     public bool PushPositionModActionEnabled { get; } = false;
     public bool CustomActionShootEnabled { get; } = prefab.DefinitionItem.UsesCustomShootAction;
     public bool DamagesVoxel { get; } = prefab.DefinitionItem.DamagesVoxel;
@@ -78,6 +81,7 @@ public class BehaviorContext(
     }
 
     public double GetTotalDamageFromHistory() => DamageHistory.Sum(x => x.Damage);
+
     public Dictionary<ulong, double> GetTotalDamageByPlayer() => DamageHistory.GroupBy(x => x.PlayerId)
         .Select(x => new
         {
@@ -113,10 +117,10 @@ public class BehaviorContext(
         {
             return null;
         }
-        
+
         return Contacts.MinBy(x => x.Distance).ConstructId;
     }
-    
+
     public double GetAccelerationG()
     {
         var boosterG = 0d;
@@ -143,7 +147,7 @@ public class BehaviorContext(
     public double TargetMoveDistance { get; private set; }
     public double ShotWaitTime { get; set; }
     public ConstructDamageData DamageData { get; set; } = new([]);
-    public int FunctionalWeaponCount { get; set; } = 1;
+    public Dictionary<string, List<WeaponEffectivenessData>> WeaponEffectivenessData { get; set; } = new();
     public ConcurrentDictionary<ulong, ConstructDamageData> TargetDamageData { get; set; } = new();
     public IServiceProvider ServiceProvider { get; init; } = serviceProvider;
     public readonly ConcurrentDictionary<string, bool> PublishedEvents = [];
@@ -190,6 +194,46 @@ public class BehaviorContext(
         {
             Properties[key] = false;
         }
+    }
+
+    public bool HasAnyDamagingWeapons()
+    {
+        return GetAvailableWeapons().Any();
+    }
+
+    public IEnumerable<WeaponEffectivenessData> GetAvailableWeapons()
+    {
+        return WeaponEffectivenessData
+            .SelectMany(x => x.Value).Where(x => !x.IsDestroyed());
+    }
+
+    public (int functionalCount, int totalCount) GetWeaponEffectivenessFactors(string itemTypeName)
+    {
+        if (!WeaponEffectivenessData.TryGetValue(itemTypeName, out var list))
+        {
+            return (0, 1);
+        }
+
+        if (list.Count == 0)
+        {
+            return (0, 1);
+        }
+
+        var functionalCount = list.Count(x => !x.IsDestroyed());
+        var totalCount = list.Count;
+
+        return (functionalCount, totalCount);
+    }
+    
+    public WeaponItem? GetBestFunctionalWeaponByTargetDistance(double targetDistance)
+    {
+        var availableWeapons = GetAvailableWeapons()
+            .Select(w => w.Name);
+        var weapons = DamageData.Weapons
+            .Where(w => availableWeapons.Contains(w.ItemTypeName));
+
+        var damageTrait = new ConstructDamageData(weapons);
+        return damageTrait.GetBestWeaponByTargetDistance(targetDistance);
     }
 
     public bool IsBehaviorActive<T>() where T : IConstructBehavior
@@ -313,42 +357,42 @@ public class BehaviorContext(
         {
             return MaxVelocity / 2;
         }
-        
+
         return Math.Clamp(
             TargetLinearVelocity.Size(),
             MinVelocity,
             MaxVelocity
         );
     }
-    
+
     private double GetOutsideOfOptimalRangeTargetVelocity()
     {
         if (TargetLinearVelocity.Size() < MinVelocity)
         {
             return MaxVelocity / 4;
         }
-        
+
         return Math.Clamp(
             TargetLinearVelocity.Size(),
             MinVelocity,
             MaxVelocity
         );
     }
-    
+
     private double GetInsideOfOptimalRangeTargetVelocity()
     {
         if (TargetLinearVelocity.Size() < MinVelocity)
         {
             return MinVelocity;
         }
-        
+
         return Math.Clamp(
             TargetLinearVelocity.Size(),
             MinVelocity,
             MaxVelocity
         );
     }
-    
+
     public double CalculateVelocityGoal()
     {
         if (!Modifiers.Velocity.Enabled) return MaxVelocity;

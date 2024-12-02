@@ -111,16 +111,22 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         var constructSize = (ulong)constructInfo.rData.geometry.size;
         var targetPos = targetInfo.rData.position;
 
+        if (!context.Position.HasValue) return;
+        
         var damageTrait = context.DamageData;
         if (!damageTrait.Weapons.Any())
         {
             return;
         }
 
-        if (!context.Position.HasValue) return;
-
+        context.WeaponEffectivenessData = await _constructElementsService.GetDamagingWeaponsEffectiveness(constructId);
+        if (!context.HasAnyDamagingWeapons())
+        {
+            return;
+        }
+        
         var targetDistance = context.GetTargetPosition().Distance(context.Position.Value);
-        var weapon = damageTrait.GetBestWeaponByTargetDistance(targetDistance);
+        var weapon = context.GetBestFunctionalWeaponByTargetDistance(targetDistance);
 
         if (weapon == null) return;
 
@@ -191,16 +197,16 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             return;
         }
 
-        var functionalWeaponCount = await _constructElementsService.GetFunctionalDamageWeaponCount(constructId);
-        context.BehaviorContext.FunctionalWeaponCount = functionalWeaponCount;
-        if (functionalWeaponCount <= 0)
-        {
-            return;
-        }
+        var (functionalCount, totalCount) =
+            context.BehaviorContext.GetWeaponEffectivenessFactors(context.WeaponItem.ItemTypeName);
 
-        _logger.LogDebug("Construct {Construct} Functional Weapon Count {Count}", constructId, functionalWeaponCount);
+        if (functionalCount == 0 || totalCount == 0) return;
+        var functionalWeaponFactor = (double)functionalCount / totalCount;
 
-        context.QuantityModifier = functionalWeaponCount;
+        // 2 weapons, one damaged = 2x slower
+        var cycleTimeFactor = 1 / functionalWeaponFactor;
+        
+        context.QuantityModifier = functionalCount;
         context.QuantityModifier = Math.Clamp(context.QuantityModifier, 0, prefab.DefinitionItem.MaxWeaponCount);
 
         var random = context.BehaviorContext.ServiceProvider.GetRequiredService<IRandomProvider>()
@@ -235,14 +241,16 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             context.BehaviorContext.ShotWaitTime = w.GetShotWaitTimePerGun(
                 ammoItem,
                 weaponCount: context.QuantityModifier,
-                cycleTimeBuffFactor: mod.Weapon.CycleTime
+                cycleTimeBuffFactor: mod.Weapon.CycleTime,
+                factor: cycleTimeFactor
             );
         }
         else
         {
             context.BehaviorContext.ShotWaitTime = w.GetShotWaitTime(
                 ammoItem,
-                cycleTimeBuffFactor: mod.Weapon.CycleTime
+                cycleTimeBuffFactor: mod.Weapon.CycleTime,
+                factor: cycleTimeFactor
             );
         }
 
