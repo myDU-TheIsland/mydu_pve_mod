@@ -144,6 +144,7 @@ public class ModBase
             .AddInitializableSingleton<IElementBoundingBox, ElementBoundingBox>()
             .AddInitializableSingleton<IConstructBoundingBox, ConstructBoundingBox>()
             .AddInitializableSingleton<IPub, Pub>()
+            .AddInitializableSingleton<IRecipes, Recipes>()
             .AddInitializableSingleton<Internal.InternalClient, Internal.InternalClient>()
             .RegisterGRPCClient()
             .AddInitializableSingleton<IScenegraphAPI, ScenegraphAPI>()

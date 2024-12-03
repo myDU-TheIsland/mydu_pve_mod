@@ -71,7 +71,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Database\Migrations\Orleans\" />
-    <Folder Include="Features\Market\Data\" />
     <Folder Include="Features\Sector\Scripts\" />
     <Folder Include="Resources\" />
   </ItemGroup>

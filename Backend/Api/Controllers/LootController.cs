@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Backend;
@@ -7,8 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
+using Mod.DynamicEncounters.Features.Market.Interfaces;
 using Mod.DynamicEncounters.Helpers;
-using MongoDB.Driver.Linq;
 using NQutils.Def;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
@@ -86,10 +85,10 @@ public class LootController : Controller
     [Route("item-type/{itemTypeName}/tier/{tier:int}")]
     public async Task<IActionResult> CreateItemTypeLoot(string itemTypeName, int tier)
     {
-        await Task.Yield();
-
         var provider = ModBase.ServiceProvider;
         var bank = provider.GetGameplayBank();
+        var recipePriceCalculator = provider.GetRequiredService<IRecipePriceCalculator>();
+        var recipeOutputData = await recipePriceCalculator.GetItemPriceMap();
 
         var definition = bank.GetDefinition(itemTypeName);
 
@@ -99,9 +98,9 @@ public class LootController : Controller
         }
 
         var items = new List<IGameplayDefinition>();
-
+        
         EnumerateItemsRecursive(definition, items);
-
+        
         items = items.Where(x => x.BaseObject.hidden == false)
             .Where(x => x.BaseObject is BaseItem baseItem && baseItem.level == tier)
             .ToList();
@@ -111,8 +110,9 @@ public class LootController : Controller
                 .LootItemRule(x.Name)
                 {
                     MinQuantity = 1,
-                    MaxQuantity = 10,
+                    MaxQuantity = recipeOutputData.TryGetValue(x.Name, out var value1) ? value1.Quantity.GetReadableValue() : 0,
                     Chance = 1,
+                    MaxSpawnCost = recipeOutputData.TryGetValue(x.Name, out var value2) ? value2.Quanta.Value : 0
                 }));
     }
 
