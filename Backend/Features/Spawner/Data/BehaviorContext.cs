@@ -12,7 +12,6 @@ using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.Vector.Helpers;
-using MongoDB.Driver.Linq;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Data;
@@ -170,6 +169,7 @@ public class BehaviorContext(
     public double ShieldPercent { get; set; } = 0;
     public bool IsShieldActive { get; set; }
     public bool IsShieldVenting { get; set; }
+    public double FunctionalWeaponFactor { get; set; }
 
     public void UpdateShieldState(ConstructInfo constructInfo)
     {

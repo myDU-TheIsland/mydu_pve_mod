@@ -201,8 +201,10 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             context.BehaviorContext.GetWeaponEffectivenessFactors(context.WeaponItem.ItemTypeName);
 
         if (functionalCount == 0 || totalCount == 0) return;
-        var functionalWeaponFactor = (double)functionalCount / totalCount;
+        var functionalWeaponFactor = Math.Clamp((double)functionalCount / totalCount, 0d, 1d);
 
+        context.BehaviorContext.FunctionalWeaponFactor = functionalWeaponFactor;
+        
         // 2 weapons, one damaged = 2x slower
         var cycleTimeFactor = 1 / functionalWeaponFactor;
         
