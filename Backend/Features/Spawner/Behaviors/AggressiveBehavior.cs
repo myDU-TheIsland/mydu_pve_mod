@@ -243,17 +243,15 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             context.BehaviorContext.ShotWaitTime = w.GetShotWaitTimePerGun(
                 ammoItem,
                 weaponCount: context.QuantityModifier,
-                cycleTimeBuffFactor: mod.Weapon.CycleTime,
-                factor: cycleTimeFactor
-            );
+                cycleTimeBuffFactor: mod.Weapon.CycleTime
+            ) * cycleTimeFactor;
         }
         else
         {
             context.BehaviorContext.ShotWaitTime = w.GetShotWaitTime(
                 ammoItem,
-                cycleTimeBuffFactor: mod.Weapon.CycleTime,
-                factor: cycleTimeFactor
-            );
+                cycleTimeBuffFactor: mod.Weapon.CycleTime
+            ) * cycleTimeFactor;
         }
 
         if (totalDeltaTime < context.BehaviorContext.ShotWaitTime)

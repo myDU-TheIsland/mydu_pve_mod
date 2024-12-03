@@ -58,8 +58,7 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
         AmmoItem ammoItem,
         double magazineBuffFactor = 1.5d,
         double cycleTimeBuffFactor = 1 / 1.5625d,
-        double reloadTimeBuffFactor = 1 / 1.5625d,
-        double factor = 1
+        double reloadTimeBuffFactor = 1 / 1.5625d
     )
     {
         cycleTimeBuffFactor = Math.Clamp(cycleTimeBuffFactor, 0.1d, 5d);
@@ -77,7 +76,7 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
             return Math.Clamp(BaseCycleTime, 0.5d, 60);
         }
 
-        return result * factor;
+        return result;
     }
 
     public double GetShotWaitTimePerGun(
@@ -85,12 +84,11 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
         int weaponCount,
         double magazineBuffFactor = 1.5d,
         double cycleTimeBuffFactor = 1 / 1.5625d,
-        double reloadTimeBuffFactor = 1 / 1.5625d,
-        double factor = 1
+        double reloadTimeBuffFactor = 1 / 1.5625d
     )
     {
         return GetShotWaitTime(ammoItem, magazineBuffFactor, cycleTimeBuffFactor, reloadTimeBuffFactor) /
-            Math.Clamp(weaponCount, 1, 10) * factor;
+            Math.Clamp(weaponCount, 1, 10);
     }
 
     private IEnumerable<AmmoItem> AmmoItems { get; } = ammoItems;
