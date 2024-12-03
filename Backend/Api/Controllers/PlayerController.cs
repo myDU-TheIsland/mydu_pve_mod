@@ -111,19 +111,23 @@ public class PlayerController : Controller
     [Route("{playerId:long}/board/{constructId:long}")]
     public async Task<IActionResult> BoardConstruct(ulong playerId, ulong constructId)
     {
-        var provider = ModBase.ServiceProvider;
-        var playerGrain = provider.GetOrleans().GetPlayerGrain(playerId);
-        var constructElementsGrain = provider.GetOrleans().GetConstructElementsGrain(constructId);
-        var seats = await constructElementsGrain.GetElementsOfType<PVPSeatUnit>();
+        var orleans = ModBase.ServiceProvider.GetOrleans();
 
-        var random = provider.GetRandomProvider().GetRandom();
-        var seat = random.PickOneAtRandom(seats);
-
-        var elementInfo = await constructElementsGrain.GetElement(seat);
+        var playerGrain = orleans.GetPlayerGrain(playerId);
+        var constructElementsGrain = orleans.GetConstructElementsGrain(constructId);
+        var seats = (await constructElementsGrain.GetElementsOfType<PVPSeatUnit>()).ToList();
+        var controlUnits = (await constructElementsGrain.GetElementsOfType<ControlUnit>()).ToList();
         
+        seats.AddRange(controlUnits);
+
+        if (seats.Count == 0) NotFound();
+
+        var elementInfo = await constructElementsGrain.GetElement(seats[0]);
+
         await playerGrain.TeleportPlayer(
             new RelativeLocation
             {
+                rotation = Quat.Identity,
                 constructId = constructId,
                 position = elementInfo.position
             });

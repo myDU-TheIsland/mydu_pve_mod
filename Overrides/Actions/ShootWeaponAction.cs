@@ -154,6 +154,8 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
             shooterRot.ToQuat()
         );
         
+        var targetConstructGrain = _orleans.GetConstructGrain(targetConstructId);
+        
         var weapon = @params.ShootWeaponData.Weapon;
 
         var weaponImpact = new WeaponImpact();
@@ -223,7 +225,6 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
                     await targetConstructDamageGrain.TriggerCoreUnitStressDestruction(deathInfoPvp);
                 }
 
-                var targetConstructGrain = _orleans.GetConstructGrain(targetConstructId);
                 var playerListAndPosition = await targetConstructGrain.GetKillablePlayerListAndPosition();
 
                 var weaponFire = new WeaponFire
@@ -335,6 +336,16 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
             );
         }
 
+        var targetConstructInfoGrain = _orleans.GetConstructInfoGrain(targetConstructId);
+        var targetInfo = await targetConstructInfoGrain.Get();
+
+        var missImpact = CalculateMissImpact(
+            @params.ShotOriginWorldPosition,
+            targetPosition,
+            targetInfo.rData.geometry.size / 0.5d,
+            num - hitRatio
+        );
+        
         var missWeaponShot = new WeaponShot
         {
             id = (ulong)TimePoint.Now().networkTime,
@@ -344,23 +355,18 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
             targetConstructId = targetConstructId,
             weaponType = _bank.IdFor(weapon.weaponItem),
             ammoType = _bank.IdFor(weapon.ammoItem),
-            impactPositionWorld = hitPositionWorld.position,
-            impactPositionLocal = @params.ShootWeaponData.LocalHitPosition,
+            impactPositionWorld = missImpact.ImpactPositionWorld,
+            impactPositionLocal = missImpact.ImpactPositionLocal,
             shieldDamage = result.shieldDamage,
             rawShieldDamage = result.rawShieldDamage,
             coreUnitDestroyed = result.coreUnitDestroyed,
             impactElementType = 3
         };
-
+        
         await directServiceGrain.PropagateShotImpact(missWeaponShot);
 
         return ShotOutcome.Miss(
-            CalculateMissImpact(
-                @params.ShotOriginWorldPosition,
-                @params.ShotImpactWorldPosition,
-                16d,
-                num - hitRatio
-            ),
+            missImpact,
             result
         );
     }

@@ -293,6 +293,10 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             context.HitPosition = shootPointOutcome.LocalPosition;
             _logger.LogInformation("Hit Pos: {Pos}", context.HitPosition);
         }
+        else
+        {
+            context.HitPosition = random.RandomDirectionVec3() * context.ConstructSize * 2;
+        }
 
         SetShootTotalDeltaTime(context.BehaviorContext, 0);
 
