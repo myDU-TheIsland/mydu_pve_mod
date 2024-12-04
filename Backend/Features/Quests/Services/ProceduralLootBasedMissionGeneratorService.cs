@@ -134,7 +134,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         if (dropContainerList.Count == 0)
         {
-            return ProceduralQuestOutcome.Failed($"No drop containers available for '{dropContainerTerritory}'");
+            return ProceduralQuestOutcome.Failed($"No drop containers available for order mission '{dropContainerTerritory}'");
         }
 
         var dropContainer = random.PickOneAtRandom(dropContainerList);
