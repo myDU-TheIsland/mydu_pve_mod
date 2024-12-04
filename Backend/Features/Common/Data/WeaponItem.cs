@@ -6,6 +6,9 @@ namespace Mod.DynamicEncounters.Features.Common.Data;
 
 public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weaponUnit, IEnumerable<AmmoItem> ammoItems)
 {
+    private const double FullMagBuff = 1.5d;
+    private const double FullBuff = 1 / 1.5625d;
+    
     public ulong ItemTypeId { get; set; } = itemTypeId;
     public string ItemTypeName { get; set; } = itemTypeName;
     public string DisplayName { get; set; } = weaponUnit.DisplayName;
@@ -24,52 +27,44 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
 
     public double GetNumberOfShotsInMagazine(
         AmmoItem ammoItem,
-        double magazineBuffFactor = 1.5d
-    ) => MagazineVolume * magazineBuffFactor / ammoItem.UnitVolume;
+        double magazineBuffFactor = FullMagBuff
+    ) => Math.Floor(MagazineVolume * magazineBuffFactor / ammoItem.UnitVolume);
 
     public double GetTimeToEmpty(
         AmmoItem ammoItem,
-        double magazineBuffFactor = 1.5d,
-        double cycleTimeBuffFactor = 1 / 1.5625d
+        double magazineBuffFactor = FullMagBuff,
+        double cycleTimeBuffFactor = FullBuff
     ) => GetNumberOfShotsInMagazine(ammoItem, magazineBuffFactor) * (BaseCycleTime * cycleTimeBuffFactor);
 
-    public double GetReloadTime(double reloadTimeBuffFactor) => BaseReloadTime * reloadTimeBuffFactor;
+    public double GetReloadTime(double reloadTimeBuffFactor = FullBuff) => BaseReloadTime * reloadTimeBuffFactor;
 
     public double GetTotalCycleTime(
         AmmoItem ammoItem,
-        double magazineBuffFactor = 1.5d,
-        double cycleTimeBuffFactor = 1 / 1.5625d,
-        double reloadTimeBuffFactor = 1 / 1.5625d
+        double magazineBuffFactor = FullMagBuff,
+        double cycleTimeBuffFactor = FullBuff,
+        double reloadTimeBuffFactor = FullBuff
     ) => GetTimeToEmpty(ammoItem, magazineBuffFactor, cycleTimeBuffFactor) + GetReloadTime(reloadTimeBuffFactor);
 
     public double GetSustainedRateOfFire(
         AmmoItem ammoItem,
-        double magazineBuffFactor = 1.5d,
-        double cycleTimeBuffFactor = 1 / 1.5625d,
-        double reloadTimeBuffFactor = 1 / 1.5625d
+        double magazineBuffFactor = FullMagBuff,
+        double cycleTimeBuffFactor = FullBuff,
+        double reloadTimeBuffFactor = FullBuff
     ) => GetNumberOfShotsInMagazine(ammoItem, magazineBuffFactor) /
-         Math.Clamp(
-             GetTotalCycleTime(ammoItem, magazineBuffFactor, cycleTimeBuffFactor, reloadTimeBuffFactor),
-             0.1d,
-             60d
-         );
+         GetTotalCycleTime(ammoItem, magazineBuffFactor, cycleTimeBuffFactor, reloadTimeBuffFactor);
 
     public double GetShotWaitTime(
         AmmoItem ammoItem,
-        double magazineBuffFactor = 1.5d,
-        double cycleTimeBuffFactor = 1 / 1.5625d,
-        double reloadTimeBuffFactor = 1 / 1.5625d
+        double magazineBuffFactor = FullMagBuff,
+        double cycleTimeBuffFactor = FullBuff,
+        double reloadTimeBuffFactor = FullBuff
     )
     {
         cycleTimeBuffFactor = Math.Clamp(cycleTimeBuffFactor, 0.1d, 5d);
         reloadTimeBuffFactor = Math.Clamp(reloadTimeBuffFactor, 0.1d, 5d);
         magazineBuffFactor = Math.Clamp(magazineBuffFactor, 0.1d, 5d);
 
-        var result = 1d / Math.Clamp(
-            GetSustainedRateOfFire(ammoItem, magazineBuffFactor, cycleTimeBuffFactor, reloadTimeBuffFactor),
-            0.1d,
-            60d
-        );
+        var result = 1d / GetSustainedRateOfFire(ammoItem, magazineBuffFactor, cycleTimeBuffFactor, reloadTimeBuffFactor);
 
         if (result <= 0.5d)
         {
@@ -82,13 +77,13 @@ public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weapon
     public double GetShotWaitTimePerGun(
         AmmoItem ammoItem,
         int weaponCount,
-        double magazineBuffFactor = 1.5d,
-        double cycleTimeBuffFactor = 1 / 1.5625d,
-        double reloadTimeBuffFactor = 1 / 1.5625d
+        double magazineBuffFactor = FullMagBuff,
+        double cycleTimeBuffFactor = FullBuff,
+        double reloadTimeBuffFactor = FullBuff
     )
     {
         return GetShotWaitTime(ammoItem, magazineBuffFactor, cycleTimeBuffFactor, reloadTimeBuffFactor) /
-            Math.Clamp(weaponCount, 1, 10);
+               Math.Clamp(weaponCount, 1, 10);
     }
 
     private IEnumerable<AmmoItem> AmmoItems { get; } = ammoItems;

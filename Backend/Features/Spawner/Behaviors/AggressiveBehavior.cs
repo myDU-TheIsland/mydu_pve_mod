@@ -205,9 +205,6 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
         context.BehaviorContext.FunctionalWeaponFactor = functionalWeaponFactor;
         
-        // 2 weapons, one damaged = 2x slower
-        var cycleTimeFactor = 1 / functionalWeaponFactor;
-        
         context.QuantityModifier = functionalCount;
         context.QuantityModifier = Math.Clamp(context.QuantityModifier, 0, prefab.DefinitionItem.MaxWeaponCount);
 
@@ -235,24 +232,11 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         var ammoItem = random.PickOneAtRandom(ammoType);
         var mod = prefab.DefinitionItem.Mods;
 
-        var damageModifier = context.QuantityModifier;
-
-        if (context.BehaviorContext.RealisticFiring)
-        {
-            damageModifier = 1;
-            context.BehaviorContext.ShotWaitTime = w.GetShotWaitTimePerGun(
-                ammoItem,
-                weaponCount: context.QuantityModifier,
-                cycleTimeBuffFactor: mod.Weapon.CycleTime
-            ) * cycleTimeFactor;
-        }
-        else
-        {
-            context.BehaviorContext.ShotWaitTime = w.GetShotWaitTime(
-                ammoItem,
-                cycleTimeBuffFactor: mod.Weapon.CycleTime
-            ) * cycleTimeFactor;
-        }
+        context.BehaviorContext.ShotWaitTime = w.GetShotWaitTimePerGun(
+            ammoItem,
+            weaponCount: context.QuantityModifier,
+            cycleTimeBuffFactor: mod.Weapon.CycleTime
+        );
 
         if (totalDeltaTime < context.BehaviorContext.ShotWaitTime)
         {
@@ -306,7 +290,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         var weapon = new SentinelWeapon
         {
             aoe = true,
-            damage = w.BaseDamage * mod.Weapon.Damage * damageModifier,
+            damage = w.BaseDamage * mod.Weapon.Damage,
             range = w.BaseOptimalDistance * mod.Weapon.OptimalDistance +
                     w.FalloffDistance * mod.Weapon.FalloffDistance,
             aoeRange = 100000,

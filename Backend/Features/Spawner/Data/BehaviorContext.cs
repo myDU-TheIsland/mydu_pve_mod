@@ -47,7 +47,6 @@ public class BehaviorContext(
     public bool PushPositionModActionEnabled { get; } = false;
     public bool CustomActionShootEnabled { get; } = prefab.DefinitionItem.UsesCustomShootAction;
     public bool DamagesVoxel { get; } = prefab.DefinitionItem.DamagesVoxel;
-    public bool RealisticFiring { get; } = true;
     public DateTime StartedAt { get; } = DateTime.UtcNow;
     public Vec3 Velocity { get; set; }
     public Vec3? Position { get; private set; }

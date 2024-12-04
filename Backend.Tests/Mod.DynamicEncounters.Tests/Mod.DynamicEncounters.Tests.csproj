@@ -31,13 +31,33 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="Backend">
+        <HintPath>..\..\Backend\NQ\Backend.dll</HintPath>
+      </Reference>
+      <Reference Include="Backend.PubSub">
+        <HintPath>..\..\Backend\NQ\Backend.PubSub.dll</HintPath>
+      </Reference>
+      <Reference Include="Backend.Telemetry">
+        <HintPath>..\..\Backend\NQ\Backend.Telemetry.dll</HintPath>
+      </Reference>
+      <Reference Include="BotLib">
+        <HintPath>..\..\Backend\NQ\BotLib.dll</HintPath>
+      </Reference>
+      <Reference Include="Grains">
+        <HintPath>..\..\Backend\NQ\Grains.dll</HintPath>
+      </Reference>
+      <Reference Include="Interfaces">
+        <HintPath>..\..\Backend\NQ\Interfaces.dll</HintPath>
+      </Reference>
       <Reference Include="NQutils">
         <HintPath>..\..\Overrides\NQ\NQutils.dll</HintPath>
       </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Stubs\" />
+      <Reference Include="Router">
+        <HintPath>..\..\Backend\NQ\Router.dll</HintPath>
+      </Reference>
+      <Reference Include="Router.Orleans">
+        <HintPath>..\..\Backend\NQ\Router.Orleans.dll</HintPath>
+      </Reference>
     </ItemGroup>
 
     <ItemGroup>
