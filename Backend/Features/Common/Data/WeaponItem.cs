@@ -6,8 +6,8 @@ namespace Mod.DynamicEncounters.Features.Common.Data;
 
 public class WeaponItem(ulong itemTypeId, string itemTypeName, WeaponUnit weaponUnit, IEnumerable<AmmoItem> ammoItems)
 {
-    private const double FullMagBuff = 1.5d;
-    private const double FullBuff = 1 / 1.5625d;
+    public const double FullMagBuff = 1.5d;
+    public const double FullBuff = 0.5625D;
     
     public ulong ItemTypeId { get; set; } = itemTypeId;
     public string ItemTypeName { get; set; } = itemTypeName;
