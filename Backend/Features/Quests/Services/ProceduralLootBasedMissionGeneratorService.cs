@@ -167,7 +167,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                 factionId,
                 questType,
                 questSeed,
-                "Delivery Mission Title",
+                "Production Order",
                 dropInSafeZone,
                 new ProceduralQuestProperties
                 {
@@ -192,7 +192,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                             questGuid,
                             Guid.NewGuid()
                         ),
-                        "Deliver Message",
+                        "TODO Deliver Message",
                         QuestTaskItemType.Deliver,
                         QuestTaskItemStatus.InProgress,
                         deliveryPos,
