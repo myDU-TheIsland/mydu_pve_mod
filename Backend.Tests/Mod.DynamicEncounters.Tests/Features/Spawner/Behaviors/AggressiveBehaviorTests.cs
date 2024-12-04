@@ -105,7 +105,7 @@ public class AggressiveBehaviorTests
                 Velocity = new BehaviorModifiers.VelocityModifiers(),
                 Weapon = new BehaviorModifiers.WeaponModifiers
                 {
-                    CycleTime = 1 / 1.5625f,
+                    CycleTime = (float)WeaponItem.FullBuff,
                 },
             },
         };
@@ -143,48 +143,26 @@ public class AggressiveBehaviorTests
 
         const int weaponCount = 2;
         
-        var shotWaitTimePerGun = weaponItem.GetShotWaitTimePerGun(
-            ammo,
-            weaponCount, 
-            cycleTimeBuffFactor: WeaponItem.FullBuff,
-            magazineBuffFactor: WeaponItem.FullMagBuff,
-            reloadTimeBuffFactor: WeaponItem.FullBuff
-        );
-        var shotWaitTime = weaponItem.GetShotWaitTime(
-            ammo, 
-            cycleTimeBuffFactor: WeaponItem.FullBuff,
-            reloadTimeBuffFactor: WeaponItem.FullBuff,
-            magazineBuffFactor: WeaponItem.FullMagBuff
-        );
-        var sustainedRateOfFire = weaponItem.GetSustainedRateOfFire(
-            ammo, 
-            cycleTimeBuffFactor: WeaponItem.FullBuff,
-            magazineBuffFactor: WeaponItem.FullMagBuff,
-            reloadTimeBuffFactor: WeaponItem.FullBuff
-        );
-        var numberOfShotsInMagazine = weaponItem.GetNumberOfShotsInMagazine(
-            ammo,
-            magazineBuffFactor: WeaponItem.FullMagBuff
-        );
-        var totalCycleTime = weaponItem.GetNumberOfShotsInMagazine(
-            ammo,
-            magazineBuffFactor: WeaponItem.FullMagBuff
-        );
-        var timeToEmpty = weaponItem.GetTimeToEmpty(
-            ammo, 
-            cycleTimeBuffFactor: WeaponItem.FullBuff,
-            magazineBuffFactor: WeaponItem.FullMagBuff
-        );
-        var reloadTime = weaponItem.GetReloadTime(reloadTimeBuffFactor: WeaponItem.FullBuff);
+        var shotWaitTimePerGun = weaponItem.GetShotWaitTimePerGun(ammo, weaponCount);
+        var shotWaitTime = weaponItem.GetShotWaitTime(ammo);
+        var sustainedRateOfFire = weaponItem.GetSustainedRateOfFire(ammo);
+        var numberOfShotsInMagazine = weaponItem.GetNumberOfShotsInMagazine(ammo);
+        var totalCycleTime = weaponItem.GetTotalCycleTime(ammo);
+        var timeToEmpty = weaponItem.GetTimeToEmpty(ammo);
+        var reloadTime = weaponItem.GetReloadTime();
+        var shotsPerMinute = 60d / shotWaitTimePerGun;
         
         Console.WriteLine($"{weaponItem.ItemTypeName}:");
         Console.WriteLine($"{nameof(shotWaitTimePerGun)} = {weaponCount}x {shotWaitTimePerGun}");
         Console.WriteLine($"{nameof(shotWaitTime)} = {shotWaitTime}");
+        Console.WriteLine($"{nameof(shotsPerMinute)} = {shotsPerMinute}");
         Console.WriteLine($"{nameof(sustainedRateOfFire)} = {sustainedRateOfFire}");
         Console.WriteLine($"{nameof(numberOfShotsInMagazine)} = {numberOfShotsInMagazine}");
         Console.WriteLine($"{nameof(totalCycleTime)} = {totalCycleTime}");
         Console.WriteLine($"{nameof(timeToEmpty)} = {timeToEmpty}");
         Console.WriteLine($"{nameof(reloadTime)} = {reloadTime}");
+        
+        Assert.That(shotsPerMinute, Is.EqualTo(6.611747836202212));
     }
     
     [Test]
@@ -196,47 +174,25 @@ public class AggressiveBehaviorTests
 
         const int weaponCount = 2;
         
-        var shotWaitTimePerGun = weaponItem.GetShotWaitTimePerGun(
-            ammo,
-            weaponCount, 
-            cycleTimeBuffFactor: WeaponItem.FullBuff,
-            magazineBuffFactor: WeaponItem.FullMagBuff,
-            reloadTimeBuffFactor: WeaponItem.FullBuff
-        );
-        var shotWaitTime = weaponItem.GetShotWaitTime(
-            ammo, 
-            cycleTimeBuffFactor: WeaponItem.FullBuff,
-            reloadTimeBuffFactor: WeaponItem.FullBuff,
-            magazineBuffFactor: WeaponItem.FullMagBuff
-        );
-        var sustainedRateOfFire = weaponItem.GetSustainedRateOfFire(
-            ammo, 
-            cycleTimeBuffFactor: WeaponItem.FullBuff,
-            magazineBuffFactor: WeaponItem.FullMagBuff,
-            reloadTimeBuffFactor: WeaponItem.FullBuff
-        );
-        var numberOfShotsInMagazine = weaponItem.GetNumberOfShotsInMagazine(
-            ammo,
-            magazineBuffFactor: WeaponItem.FullMagBuff
-        );
-        var totalCycleTime = weaponItem.GetNumberOfShotsInMagazine(
-            ammo,
-            magazineBuffFactor: WeaponItem.FullMagBuff
-        );
-        var timeToEmpty = weaponItem.GetTimeToEmpty(
-            ammo, 
-            cycleTimeBuffFactor: WeaponItem.FullBuff,
-            magazineBuffFactor: WeaponItem.FullMagBuff
-        );
-        var reloadTime = weaponItem.GetReloadTime(reloadTimeBuffFactor: WeaponItem.FullBuff);
+        var shotWaitTimePerGun = weaponItem.GetShotWaitTimePerGun(ammo, weaponCount);
+        var shotWaitTime = weaponItem.GetShotWaitTime(ammo);
+        var sustainedRateOfFire = weaponItem.GetSustainedRateOfFire(ammo);
+        var numberOfShotsInMagazine = weaponItem.GetNumberOfShotsInMagazine(ammo);
+        var totalCycleTime = weaponItem.GetTotalCycleTime(ammo);
+        var timeToEmpty = weaponItem.GetTimeToEmpty(ammo);
+        var reloadTime = weaponItem.GetReloadTime();
+        var shotsPerMinute = 60d / shotWaitTimePerGun;
         
         Console.WriteLine($"{weaponItem.ItemTypeName}:");
         Console.WriteLine($"{nameof(shotWaitTimePerGun)} = {weaponCount}x {shotWaitTimePerGun}");
+        Console.WriteLine($"{nameof(shotsPerMinute)} = {shotsPerMinute}");
         Console.WriteLine($"{nameof(shotWaitTime)} = {shotWaitTime}");
         Console.WriteLine($"{nameof(sustainedRateOfFire)} = {sustainedRateOfFire}");
         Console.WriteLine($"{nameof(numberOfShotsInMagazine)} = {numberOfShotsInMagazine}");
         Console.WriteLine($"{nameof(totalCycleTime)} = {totalCycleTime}");
         Console.WriteLine($"{nameof(timeToEmpty)} = {timeToEmpty}");
         Console.WriteLine($"{nameof(reloadTime)} = {reloadTime}");
+        
+        Assert.That(shotsPerMinute, Is.EqualTo(19.459612183027005));
     }
 }
