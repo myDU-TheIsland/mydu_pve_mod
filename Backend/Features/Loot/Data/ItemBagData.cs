@@ -7,7 +7,7 @@ public class ItemBagData(double maxBudget)
 {
     public double MaxBudget { get; set; } = maxBudget;
     public double CurrentCost { get; set; } = 0;
-    private IList<ItemAndQuantity> _entries { get; init; } = [];
+    public IList<ItemAndQuantity> Entries { get; init; } = [];
     public IList<ElementReplace> ElementsToReplace { get; set; } = [];
     
     public readonly struct ElementReplace(string elementName, string replaceElementName, long quantity)
@@ -30,11 +30,11 @@ public class ItemBagData(double maxBudget)
             return false;
         }
         
-        _entries.Add(itemAndQuantity);
+        Entries.Add(itemAndQuantity);
         CurrentCost += cost;
 
         return true;
     }
 
-    public IEnumerable<ItemAndQuantity> GetEntries() => _entries;
+    public IEnumerable<ItemAndQuantity> GetEntries() => Entries;
 }

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
-using Mod.DynamicEncounters.Features.Market.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using NQutils.Def;
 
@@ -81,14 +80,16 @@ public class LootController : Controller
         return Ok();
     }
 
-    [HttpGet]
+    [HttpPost]
     [Route("item-type/{itemTypeName}/tier/{tier:int}")]
-    public async Task<IActionResult> CreateItemTypeLoot(string itemTypeName, int tier)
+    public IActionResult CreateItemTypeLoot(
+        string itemTypeName,
+        int tier,
+        [FromBody] GenerateLootDataRequest request
+    )
     {
         var provider = ModBase.ServiceProvider;
         var bank = provider.GetGameplayBank();
-        var recipePriceCalculator = provider.GetRequiredService<IRecipePriceCalculator>();
-        var recipeOutputData = await recipePriceCalculator.GetItemPriceMap();
 
         var definition = bank.GetDefinition(itemTypeName);
 
@@ -98,21 +99,21 @@ public class LootController : Controller
         }
 
         var items = new List<IGameplayDefinition>();
-        
+
         EnumerateItemsRecursive(definition, items);
-        
+
         items = items.Where(x => x.BaseObject.hidden == false)
             .Where(x => x.BaseObject is BaseItem baseItem && baseItem.level == tier)
             .ToList();
-        
+
         return Ok(items
             .Select(x => new LootDefinitionItem
                 .LootItemRule(x.Name)
                 {
-                    MinQuantity = 1,
-                    MaxQuantity = recipeOutputData.TryGetValue(x.Name, out var value1) ? value1.Quantity.GetReadableValue() : 0,
+                    MinQuantity = request.MinQuantity,
+                    MaxQuantity = request.MaxQuantity,
                     Chance = 1,
-                    MaxSpawnCost = recipeOutputData.TryGetValue(x.Name, out var value2) ? value2.Quanta.Value : 0
+                    MaxSpawnCost = 1
                 }));
     }
 
@@ -128,5 +129,11 @@ public class LootController : Controller
         {
             EnumerateItemsRecursive(child, result);
         }
+    }
+
+    public class GenerateLootDataRequest
+    {
+        public long MinQuantity { get; set; } = 1;
+        public long MaxQuantity { get; set; } = 1;
     }
 }

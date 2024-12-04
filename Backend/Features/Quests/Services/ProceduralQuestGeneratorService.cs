@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Quests.Data;
@@ -37,6 +36,19 @@ public class ProceduralQuestGeneratorService(IServiceProvider provider) : IProce
 
             switch (questType)
             {
+                case QuestTypes.Order:
+                    var orderGen = provider.GetRequiredService<IProceduralLootBasedMissionGeneratorService>();
+                    var orderOutcome = await orderGen.GenerateAsync(playerId, factionId, territoryId, questSeed);
+                    if (orderOutcome.Success)
+                    {
+                        result.Add(orderOutcome.QuestItem);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Failed to Generate Quest: {Message}", orderOutcome.Message);
+                    }
+                    
+                    break;
                 case QuestTypes.Transport:
                     var transportGen = provider.GetRequiredService<IProceduralTransportMissionGeneratorService>();
                     var transportOutcome = await transportGen.GenerateAsync(playerId, factionId, territoryId, questSeed);
