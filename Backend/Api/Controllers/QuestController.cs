@@ -204,7 +204,7 @@ public class QuestController : Controller
                 request.FactionId,
                 request.TerritoryId,
                 request.Seed,
-                10
+                20
             );
 
         return Ok(

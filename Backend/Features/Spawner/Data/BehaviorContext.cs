@@ -61,6 +61,7 @@ public class BehaviorContext(
     public Vec3 AccelCalcTargetPosition { get; set; }
     public Vec3 AccelCalcTargetVelocity { get; set; }
     public Vec3 TargetPosition { get; set; }
+    public Vec3 TargetMovePosition { get; private set; }
 
     public ConcurrentBag<ScanContact> Contacts { get; private set; }
     public ConcurrentBag<DamageDealtData> DamageHistory { get; private set; } = [];
@@ -265,7 +266,7 @@ public class BehaviorContext(
 
     public void SetTargetMovePosition(Vec3 position)
     {
-        Properties.Set(nameof(DynamicProperties.TargetMovePosition), position);
+        TargetMovePosition = position;
     }
 
     public void SetTargetLinearVelocity(Vec3 linear)
@@ -340,10 +341,7 @@ public class BehaviorContext(
 
     public Vec3 GetTargetMovePosition()
     {
-        return this.GetOverrideOrDefault(
-            nameof(DynamicProperties.TargetMovePosition),
-            new Vec3()
-        );
+        return TargetMovePosition;
     }
 
     public Vec3 GetTargetPosition() => TargetPosition;
@@ -392,20 +390,20 @@ public class BehaviorContext(
         );
     }
 
-    public double CalculateVelocityGoal()
+    public double CalculateVelocityGoal(double distance)
     {
         if (!Modifiers.Velocity.Enabled) return MaxVelocity;
 
         var oppositeVector = VelocityWithTargetDotProduct < 0;
 
-        if (TargetDistance > Modifiers.Velocity.GetFarDistanceM())
+        if (distance > Modifiers.Velocity.GetFarDistanceM())
         {
             return MaxVelocity;
         }
 
         var brakingDistance = CalculateBrakingDistance();
 
-        if (IsOutsideDoubleOptimalRange() || TargetDistance > brakingDistance * Modifiers.Velocity.BrakeDistanceFactor)
+        if (IsOutsideDoubleOptimalRange() || distance > brakingDistance * Modifiers.Velocity.BrakeDistanceFactor)
         {
             if (oppositeVector)
             {
@@ -425,7 +423,7 @@ public class BehaviorContext(
             return GetOutsideOfOptimalRangeTargetVelocity() * Modifiers.Velocity.OutsideOptimalRange.Positive;
         }
 
-        if (TargetDistance < Modifiers.Velocity.TooCloseDistanceM)
+        if (distance < Modifiers.Velocity.TooCloseDistanceM)
         {
             return MaxVelocity;
         }
@@ -582,7 +580,6 @@ public class BehaviorContext(
 
     private static class DynamicProperties
     {
-        public const byte TargetMovePosition = 1;
         public const byte WaypointList = 4;
         public const byte WaypointListInitialized = 5;
     }
