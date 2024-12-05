@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
+using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
@@ -29,11 +30,15 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
         var random = context.ServiceProvider.GetRequiredService<IRandomProvider>().GetRandom();
         var orleans = context.ServiceProvider.GetOrleans();
         var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
+        var featureService = context.ServiceProvider.GetRequiredService<IFeatureReaderService>();
+
+        var sectorAsteroidDeleteHours = await featureService
+            .GetIntValueAsync("SectorAsteroidDeleteHours", 4);
 
         if (!actionItem.Properties.TryGetValue("File", out var file) || file == null)
         {
             logger.LogError("File not found on script properties");
-            
+
             return ScriptActionResult.Failed();
         }
 
@@ -58,7 +63,7 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
             y = offset * direction.y,
             z = offset * direction.z
         };
-        
+
         var asteroidId = await asteroidManagerGrain.SpawnAsteroid(
             5,
             $"{file}",
@@ -68,24 +73,24 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
 
         var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
         var info = await constructService.GetConstructInfoAsync(asteroidId);
-        
+
         await taskQueueService.EnqueueScript(
             new ScriptActionItem
             {
                 Type = "delete-asteroid",
                 ConstructId = asteroidId
             },
-            DateTime.UtcNow + TimeSpan.FromHours(6)
+            DateTime.UtcNow + TimeSpan.FromHours(sectorAsteroidDeleteHours)
         );
 
         if (info.Info != null)
         {
             var name = info.Info.rData.name
                 .Replace("A-", "T-");
-            
+
             await constructService.RenameConstruct(asteroidId, name);
         }
-        
+
         await asteroidManagerGrain.ForcePublish(asteroidId);
 
         return ScriptActionResult.Successful();
