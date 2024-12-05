@@ -7,12 +7,12 @@ public class TransportMissionTemplate(
     string title,
     string pickupMessage,
     string deliverMessage,
-    IEnumerable<ElementQuantityRef> items)
+    IEnumerable<QuestElementQuantityRef> items)
 {
     public string Title { get; } = title;
     public string PickupMessage { get; } = pickupMessage;
     public string DeliverMessage { get; } = deliverMessage;
-    public IEnumerable<ElementQuantityRef> Items { get; } = items;
+    public IEnumerable<QuestElementQuantityRef> Items { get; } = items;
 
     public const string VarPickupName = "@{FROM}";
     public const string VarDeliverName = "@{TO}";

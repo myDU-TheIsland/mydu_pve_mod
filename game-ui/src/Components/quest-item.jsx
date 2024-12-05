@@ -85,6 +85,14 @@ const AcceptedPill = styled.div`
     color: rgb(180, 221, 235);
 `;
 
+const ItemList = styled.ul`
+    all: unset;
+    padding-left: 1.5em;
+`;
+const ItemListItem = styled.li`
+    margin-top: 0.5em;
+`;
+
 const QuestItem = ({
                        questId,
                        title,
@@ -107,11 +115,30 @@ const QuestItem = ({
         window.modApi.setWaypoint(pos);
     };
 
+    const renderItem = (item, index) => {
+        return (<ItemListItem key={index}>{item.quantity}x {item.name}</ItemListItem>);
+    };
+
+    const renderItems = (items) => {
+        if (!items) return null;
+
+        return (
+            <ItemList>
+                {items.map((r, i) => {
+                    return renderItem(r, i);
+                })}
+            </ItemList>
+        );
+    };
+
     const tasksRender = tasks
         .map((t, i) => <Task key={i}>
                 <ItemContainer>
                     <ItemIcon><CheckIcon checked={t.status === 'completed'}/></ItemIcon>
                     <ItemText>{t.title}</ItemText><TargetButton onClick={() => setWaypoint(t.position)}/>
+                </ItemContainer>
+                <ItemContainer>
+                    {renderItems(t.items)}
                 </ItemContainer>
             </Task>
         );

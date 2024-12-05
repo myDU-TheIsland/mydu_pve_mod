@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Backend;
 using Backend.Scenegraph;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
-using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Data;
 using Mod.DynamicEncounters.Features.Quests.Interfaces;
@@ -28,6 +27,8 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
 
     private readonly IConstructService _constructService =
         provider.GetRequiredService<IConstructService>();
+    
+    private readonly IGameplayBank _bank = provider.GetGameplayBank();
 
     public async Task<ProceduralQuestOutcome> GenerateAsync(
         PlayerId playerId,
@@ -42,7 +43,7 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
             {nameof(factionId), factionId},
             {nameof(territoryId), territoryId},
         });
-        
+
         var factionRepository = provider.GetRequiredService<IFactionRepository>();
         var faction = await factionRepository.FindAsync(factionId);
 
@@ -165,6 +166,7 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
                 questSeed,
                 missionTemplate.Title,
                 isSafe,
+                DistanceHelpers.OneSuInMeters / 4d,
                 new ProceduralQuestProperties
                 {
                     RewardTextList =
@@ -240,7 +242,8 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
                         new DeliverItemTaskDefinition(
                             dropContainer,
                             missionTemplate.Items
-                                .Select(x => new ElementQuantityRef(
+                                .Select(x => new QuestElementQuantityRef(
+                                    _bank,
                                     x.ElementId,
                                     x.ElementTypeName, 
                                     -x.Quantity

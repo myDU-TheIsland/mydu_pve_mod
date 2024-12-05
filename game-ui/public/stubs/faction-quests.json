@@ -13,7 +13,25 @@
         },
         {
           "title": "Deliver items to: Pirate Hideout Omega",
-          "position": "::pos{0,0,37737092.8441533, 3664629.5466028643, 24616956.154136393}"
+          "position": "::pos{0,0,37737092.8441533, 3664629.5466028643, 24616956.154136393}",
+          "items": [
+            {
+              "quantity": 104.0,
+              "name": "Basic Optical Sensor S"
+            },
+            {
+              "quantity": 171.0,
+              "name": "Basic Robotic Arm XS"
+            },
+            {
+              "quantity": 14.0,
+              "name": "Uncommon Core System XS"
+            },
+            {
+              "quantity": 180.0,
+              "name": "Basic Robotic Arm S"
+            }
+          ]
         }
       ],
       "rewards": [

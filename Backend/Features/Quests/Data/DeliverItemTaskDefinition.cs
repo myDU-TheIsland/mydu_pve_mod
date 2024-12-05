@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
@@ -11,7 +12,7 @@ namespace Mod.DynamicEncounters.Features.Quests.Data;
 
 public class DeliverItemTaskDefinition(
     TerritoryContainerItem container,
-    IEnumerable<ElementQuantityRef> deliveryItems
+    IEnumerable<QuestElementQuantityRef> deliveryItems
 ) : TransportItemTaskDefinition(container, deliveryItems)
 {
     public override bool IsMatchedBy(QuestInteractionContext context)
@@ -45,7 +46,7 @@ public class DeliverItemTaskDefinition(
         await itemSpawner.GiveTakeItemsWithCallback(
             new GiveTakePlayerItemsWithCallbackCommand(
                 context.PlayerId,
-                Items,
+                Items.Select(x => new ElementQuantityRef(x.ElementId, x.ElementTypeName, x.Quantity)),
                 new EntityId { organizationId = factionItem.OrganizationId ?? 0 },
                 new Dictionary<string, PropertyValue>
                 {

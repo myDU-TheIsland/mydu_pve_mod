@@ -10,7 +10,6 @@ using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
-using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Market.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Data;
@@ -74,7 +73,8 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
             new LootGenerationArgs
             {
                 Tags = ["quest", $"tier-{tier}"],
-                MaxBudget = random.Next(10, 1000)
+                MaxBudget = random.Next(10, 1000),
+                Seed = questSeed
             });
 
         if (!lootItems.GetEntries().Any())
@@ -88,11 +88,12 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
         entries = entries.Take(10).ToArray();
 
         long totalPrice = 0;
-        var questItems = new List<ElementQuantityRef>();
+        var questItems = new List<QuestElementQuantityRef>();
 
         foreach (var entry in entries)
         {
-            questItems.Add(new ElementQuantityRef(
+            questItems.Add(new QuestElementQuantityRef(
+                _bank,
                 _bank.IdFor(entry.ItemName),
                 entry.ItemName,
                 entry.Quantity.GetRawQuantity()
@@ -100,7 +101,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
             if (priceMap.TryGetValue(entry.ItemName, out var recipeValue))
             {
-                totalPrice += recipeValue.Quanta.Value;
+                totalPrice += entry.Quantity.GetRawQuantity() * recipeValue.Quanta.Value;
             }
         }
 
@@ -110,7 +111,8 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
             new LootGenerationArgs
             {
                 Tags = [$"tier-{tier}-reward"],
-                MaxBudget = random.Next(10, 1000)
+                MaxBudget = random.Next(10, 1000),
+                Seed = random.Next()
             });
 
         var factionTerritoryRepository = provider.GetRequiredService<IFactionTerritoryRepository>();
@@ -161,6 +163,17 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var dropInSafeZone = await _constructService.IsInSafeZone(dropConstructInfo.Info.rData.constructId);
 
+        var lootRewardTextItems = new List<string> { $"{quantaReward / 100:N2}h" };
+
+        foreach (var reward in lootReward.GetEntries())
+        {
+            var definition = _bank.GetDefinition(reward.ItemName);
+            if (definition == null) continue;
+            var baseObj = definition.BaseObject;
+            
+            lootRewardTextItems.Add($"{reward.Quantity.GetRawQuantity()}x {baseObj.DisplayName}");
+        }
+        
         return ProceduralQuestOutcome.Created(
             new ProceduralQuestItem(
                 questGuid,
@@ -169,11 +182,10 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                 questSeed,
                 "Production Order",
                 dropInSafeZone,
+                -1,
                 new ProceduralQuestProperties
                 {
-                    RewardTextList =
-                    [
-                    ],
+                    RewardTextList = lootRewardTextItems,
                     QuantaReward = (long)quantaReward,
                     InfluenceReward =
                     {
@@ -192,7 +204,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                             questGuid,
                             Guid.NewGuid()
                         ),
-                        "TODO Deliver Message",
+                        "Deliver the items",
                         QuestTaskItemType.Deliver,
                         QuestTaskItemStatus.InProgress,
                         deliveryPos,

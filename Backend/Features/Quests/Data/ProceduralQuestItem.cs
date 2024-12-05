@@ -13,6 +13,7 @@ public class ProceduralQuestItem(
     int seed,
     string title,
     bool safe,
+    double minDistance,
     ProceduralQuestProperties properties,
     IEnumerable<QuestTaskItem> taskItems
 )
@@ -26,7 +27,10 @@ public class ProceduralQuestItem(
     public ProceduralQuestProperties Properties { get; } = properties;
     public IEnumerable<QuestTaskItem> TaskItems { get; } = taskItems;
     public double Distance => CalculateTotalDistance();
+    public double MinDistance { get; } = minDistance;
 
+    public bool IsVisible() => Distance > MinDistance;
+    
     public double CalculateTotalDistance()
     {
         var tasks = TaskItems.ToList();
