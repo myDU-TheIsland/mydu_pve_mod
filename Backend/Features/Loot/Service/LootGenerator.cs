@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Backend;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Extensions;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
@@ -15,14 +14,13 @@ namespace Mod.DynamicEncounters.Features.Loot.Service;
 
 public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorService
 {
-    private readonly IRandomProvider _randomProvider = provider.GetRandomProvider();
     private readonly ILootDefinitionRepository _repository = provider.GetRequiredService<ILootDefinitionRepository>();
     private readonly IGameplayBank _bank = provider.GetGameplayBank();
     private readonly ILogger<LootGeneratorService> _logger = provider.CreateLogger<LootGeneratorService>();
 
     public async Task<ItemBagData> GenerateAsync(LootGenerationArgs args)
     {
-        var random = _randomProvider.GetRandom();
+        var random = new Random(args.Seed);
 
         var lootDefinitionItems = (await _repository.GetAllActiveByTagsAsync(args.Tags))
             .ToArray();

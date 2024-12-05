@@ -369,6 +369,7 @@ public class QuestController : Controller
         public string Type { get; set; }
         public bool Accepted { get; set; }
         public bool Safe { get; set; }
+        public long QuantaReward { get; set; }
 
         public IEnumerable<QuestTaskViewModel> Tasks { get; set; }
         public IEnumerable<string> Rewards { get; set; }
@@ -382,6 +383,7 @@ public class QuestController : Controller
             Rewards = item.Properties.RewardTextList;
             Accepted = accepted;
             Safe = item.Safe;
+            QuantaReward = item.Properties.QuantaReward;
         }
 
         public QuestViewModel(PlayerQuestItem item)
@@ -403,6 +405,15 @@ public class QuestController : Controller
             $"::pos{{0,{questTaskItem.BaseConstruct ?? 0},{questTaskItem.Position.x}, {questTaskItem.Position.y}, {questTaskItem.Position.z}}}";
 
         public string Status { get; set; } = questTaskItem.Status;
+
+        public IEnumerable<QuestItemQuantityViewModel> Items { get; set; } = questTaskItem.Definition
+            .Items.Select(x => new QuestItemQuantityViewModel(x.Quantity, x.DisplayName));
+    }
+
+    public class QuestItemQuantityViewModel(double quantity, string name)
+    {
+        public double Quantity { get; } = quantity;
+        public string Name { get; } = name;
     }
 
     public class GenerateQuestsRequest

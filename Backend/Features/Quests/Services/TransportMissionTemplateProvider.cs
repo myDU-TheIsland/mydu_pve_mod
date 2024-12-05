@@ -12,12 +12,13 @@ namespace Mod.DynamicEncounters.Features.Quests.Services;
 /// <summary>
 /// TODO to the Database and maybe add Faction Specific stuff
 /// </summary>
-public class TransportMissionTemplateProvider : ITransportMissionTemplateProvider
+public class TransportMissionTemplateProvider(IServiceProvider provider) : ITransportMissionTemplateProvider
 {
     public async Task<TransportMissionTemplate> GetMissionTemplate(int seed)
     {
         await Task.Yield();
 
+        var bank = provider.GetGameplayBank();
         var random = new Random(seed);
         
         var titles = new List<string>
@@ -35,7 +36,8 @@ public class TransportMissionTemplateProvider : ITransportMissionTemplateProvide
             pickupMessage,
             deliverMessage,
             [
-                new ElementQuantityRef(
+                new QuestElementQuantityRef(
+                    bank,
                     new ElementId{elementId = (ulong)random.NextInt64(0, long.MaxValue)},
                     new ElementTypeName("FactionSealedContainer"),
                     1
