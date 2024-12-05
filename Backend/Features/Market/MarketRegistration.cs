@@ -12,6 +12,7 @@ public static class MarketRegistration
     {
         services.AddSingleton<IMarketOrderRepository, MarketOrderRepository>();
         services.AddSingleton<IOrePriceReader, OrePriceReader>();
-        services.AddSingleton<IRecipePriceCalculator, RecipePriceCalculator>();
+        services.AddSingleton<IRecipePriceCalculator>(p =>
+            new CachedRecipePriceCalculator(new RecipePriceCalculator(p)));
     }
 }
