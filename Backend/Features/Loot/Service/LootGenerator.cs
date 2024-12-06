@@ -28,6 +28,14 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
         random.Shuffle(lootDefinitionItems);
 
         var itemBag = new ItemBagData(args.MaxBudget);
+        
+        if (lootDefinitionItems.Length == 0)
+        {
+            return itemBag;
+        }
+
+        var randomLootDefItem = random.PickOneAtRandom(lootDefinitionItems);
+        itemBag.Name = randomLootDefItem.Name;
 
         var allItemRules = lootDefinitionItems
             .SelectMany(x => x.ItemRules)

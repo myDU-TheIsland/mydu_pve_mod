@@ -182,7 +182,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                 factionId,
                 questType,
                 questSeed,
-                $"Production Order for {dropConstructInfo.Info.rData.name}",
+                $"Order of {lootItems.Name} for {dropConstructInfo.Info.rData.name}",
                 dropInSafeZone,
                 -1,
                 new ProceduralQuestProperties
