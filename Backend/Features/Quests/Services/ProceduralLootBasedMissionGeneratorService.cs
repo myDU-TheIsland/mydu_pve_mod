@@ -10,6 +10,7 @@ using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
+using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Market.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Data;
@@ -74,17 +75,18 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
             {
                 Tags = ["quest", $"tier-{tier}"],
                 MaxBudget = random.Next(10, 1000),
-                Seed = questSeed
+                Seed = questSeed,
+                Operator = TagOperator.AllTags
             });
 
         if (!lootItems.GetEntries().Any())
         {
             return ProceduralQuestOutcome.Failed($"No loot items tagged ['quest', 'tier-{tier}']");
         }
-        
+
         var entries = lootItems.GetEntries().ToArray();
         random.Shuffle(entries);
-        
+
         entries = entries.Take(10).ToArray();
 
         long totalPrice = 0;
@@ -104,13 +106,11 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
             }
         }
 
-        var quantaReward = totalPrice * 1.1d;
-        
         var lootReward = await _lootGeneratorService.GenerateAsync(
             new LootGenerationArgs
             {
                 Tags = [$"tier-{tier}-reward"],
-                MaxBudget = random.Next(10, 1000),
+                MaxBudget = random.Next(50, 100),
                 Seed = random.Next()
             });
 
@@ -129,13 +129,14 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
         }
 
         var territoryContainerRepository = provider.GetRequiredService<ITerritoryContainerRepository>();
-        
+
         var dropContainerTerritory = random.PickOneAtRandom(territoryMap.Keys);
         var dropContainerList = (await territoryContainerRepository.GetAll(dropContainerTerritory)).ToList();
 
         if (dropContainerList.Count == 0)
         {
-            return ProceduralQuestOutcome.Failed($"No drop containers available for order mission '{dropContainerTerritory}'");
+            return ProceduralQuestOutcome.Failed(
+                $"No drop containers available for order mission '{dropContainerTerritory}'");
         }
 
         var dropContainer = random.PickOneAtRandom(dropContainerList);
@@ -162,6 +163,8 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var dropInSafeZone = await _constructService.IsInSafeZone(dropConstructInfo.Info.rData.constructId);
 
+        var quantaReward = totalPrice * (dropInSafeZone ? 1.1d : 1.9d);
+
         var lootRewardTextItems = new List<string> { $"{quantaReward / 100:N2}h" };
 
         foreach (var reward in lootReward.GetEntries())
@@ -169,10 +172,10 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
             var definition = _bank.GetDefinition(reward.ItemName);
             if (definition == null) continue;
             var baseObj = definition.BaseObject;
-            
+
             lootRewardTextItems.Add($"{reward.Quantity.GetRawQuantity()}x {baseObj.DisplayName}");
         }
-        
+
         return ProceduralQuestOutcome.Created(
             new ProceduralQuestItem(
                 questGuid,

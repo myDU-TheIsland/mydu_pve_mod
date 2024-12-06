@@ -15,7 +15,7 @@ public class LootDefinitionRepository(IServiceProvider provider) : ILootDefiniti
 {
     private readonly IPostgresConnectionFactory _factory = provider.GetRequiredService<IPostgresConnectionFactory>();
     
-    public async Task<IEnumerable<LootDefinitionItem>> GetAllActiveByTagsAsync(IEnumerable<string> tags)
+    public async Task<IEnumerable<LootDefinitionItem>> GetAllActiveByAnyTagsAsync(IEnumerable<string> tags)
     {
         using var db = _factory.Create();
         db.Open();
@@ -36,6 +36,42 @@ public class LootDefinitionRepository(IServiceProvider provider) : ILootDefiniti
         }
 
         return result.Select(MapToModel);
+    }
+    
+    public async Task<IEnumerable<LootDefinitionItem>> GetAllActiveByAllTagsAsync(IEnumerable<string> tags)
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        var tagQuery = JsonConvert.SerializeObject(tags)
+            .Replace("\"", "'");
+        
+        var result = (await db.QueryAsync<DbRow>(
+            $"""
+             SELECT * FROM mod_loot_def WHERE active = true AND
+             tags ?& array{tagQuery}
+             """
+        )).ToList();
+
+        if (result.Count == 0)
+        {
+            return [];
+        }
+
+        return result.Select(MapToModel);
+    }
+
+    public Task<IEnumerable<LootDefinitionItem>> GetAllActiveTagsAsync(TagOperator tagOperator, IEnumerable<string> tags)
+    {
+        switch (tagOperator)
+        {
+            case TagOperator.AllTags:
+                return GetAllActiveByAllTagsAsync(tags);
+            case TagOperator.AnyTags:
+                return GetAllActiveByAnyTagsAsync(tags);
+            default:
+                throw new NotImplementedException();
+        }
     }
 
     private LootDefinitionItem MapToModel(DbRow row)

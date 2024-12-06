@@ -22,7 +22,7 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
     {
         var random = new Random(args.Seed);
 
-        var lootDefinitionItems = (await _repository.GetAllActiveByTagsAsync(args.Tags))
+        var lootDefinitionItems = (await _repository.GetAllActiveTagsAsync(args.Operator, args.Tags))
             .ToArray();
 
         random.Shuffle(lootDefinitionItems);
