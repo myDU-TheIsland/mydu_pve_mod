@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Backend;
 using Backend.Scenegraph;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Data;
@@ -22,14 +20,9 @@ namespace Mod.DynamicEncounters.Features.Quests.Services;
 public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider provider)
     : IProceduralReverseTransportMissionGeneratorService
 {
-    private readonly ILogger<ProceduralQuestGeneratorService> _logger =
-        provider.CreateLogger<ProceduralQuestGeneratorService>();
-    
     private readonly IConstructService _constructService =
         provider.GetRequiredService<IConstructService>();
     
-    private readonly IGameplayBank _bank = provider.GetGameplayBank();
-
     public async Task<ProceduralQuestOutcome> GenerateAsync(
         PlayerId playerId,
         FactionId factionId,
@@ -236,7 +229,6 @@ public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider 
                             deliveryContainer,
                             missionTemplate.Items
                                 .Select(x => new QuestElementQuantityRef(
-                                    _bank,
                                     x.ElementId,
                                     x.ElementTypeName, 
                                     -x.Quantity

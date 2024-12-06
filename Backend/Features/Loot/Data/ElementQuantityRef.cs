@@ -7,4 +7,5 @@ public readonly struct ElementQuantityRef(ElementId? elementId, ElementTypeName 
     public ElementId? ElementId { get; } = elementId;
     public ElementTypeName ElementTypeName { get; } = elementTypeName;
     public long Quantity { get; } = quantity;
+    public bool IsValid() => ElementTypeName.IsValid();
 }

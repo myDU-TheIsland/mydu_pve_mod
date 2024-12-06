@@ -1,5 +1,5 @@
-using Backend;
 using Mod.DynamicEncounters.Features.Loot.Data;
+using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQutils.Def;
 
@@ -7,11 +7,13 @@ namespace Mod.DynamicEncounters.Features.Quests.Data;
 
 public readonly struct QuestElementQuantityRef
 {
-    public QuestElementQuantityRef(IGameplayBank bank,
+    public QuestElementQuantityRef(
         ElementId? elementId, 
         ElementTypeName elementTypeName,
         long quantity)
     {
+        var bank = ModBase.ServiceProvider.GetGameplayBank();
+        
         var def = bank.GetDefinition(elementTypeName);
         var baseObj = def?.BaseObject;
         var displayName = baseObj?.DisplayName ?? string.Empty;

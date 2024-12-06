@@ -81,6 +81,11 @@ public class ItemSpawnerService(IServiceProvider provider) : IItemSpawnerService
 
     public async Task GiveTakeItemsWithCallback(GiveTakePlayerItemsWithCallbackCommand command)
     {
+        if (command.Items.Any(x => !x.IsValid()))
+        {
+            throw new Exception("Invalid items to Give / Take");
+        }
+        
         var modManagerGrain = _orleans.GetModManagerGrain();
         var itemOperation = new ItemOperation
         {

@@ -70,8 +70,7 @@ public class QuestController : Controller
                 request.PlayerId,
                 request.FactionId,
                 request.TerritoryId,
-                request.Seed,
-                10
+                request.Seed
             );
 
         var questMap = quests.QuestList
@@ -203,8 +202,7 @@ public class QuestController : Controller
                 request.PlayerId,
                 request.FactionId,
                 request.TerritoryId,
-                request.Seed,
-                20
+                request.Seed
             );
 
         return Ok(

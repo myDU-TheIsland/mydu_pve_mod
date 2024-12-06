@@ -326,6 +326,8 @@ public partial class PlayerQuestRepository(IServiceProvider provider) : IPlayerQ
                 return JsonConvert.DeserializeObject<DeliverItemTaskDefinition>(properties);
             case QuestTaskItemType.Pickup:
                 return JsonConvert.DeserializeObject<PickupItemTaskItemDefinition>(properties);
+            case QuestTaskItemType.DeliverUnrestricted:
+                return JsonConvert.DeserializeObject<DeliverItemsUnrestrictedTaskDefinition>(properties);
             default:
                 throw new NotImplementedException();
         }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Backend;
 using Backend.Scenegraph;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,8 +27,6 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
     private readonly IConstructService _constructService =
         provider.GetRequiredService<IConstructService>();
     
-    private readonly IGameplayBank _bank = provider.GetGameplayBank();
-
     public async Task<ProceduralQuestOutcome> GenerateAsync(
         PlayerId playerId,
         FactionId factionId,
@@ -243,7 +240,6 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
                             dropContainer,
                             missionTemplate.Items
                                 .Select(x => new QuestElementQuantityRef(
-                                    _bank,
                                     x.ElementId,
                                     x.ElementTypeName, 
                                     -x.Quantity

@@ -29,7 +29,12 @@ public class ProceduralQuestItem(
     public double Distance => CalculateTotalDistance();
     public double MinDistance { get; } = minDistance;
 
+#if DEBUG
+    public bool IsVisible() => true;
+#else
     public bool IsVisible() => Distance > MinDistance;
+#endif
+    
     
     public double CalculateTotalDistance()
     {

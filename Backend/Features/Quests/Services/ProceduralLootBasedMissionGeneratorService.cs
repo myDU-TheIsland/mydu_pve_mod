@@ -93,7 +93,6 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
         foreach (var entry in entries)
         {
             questItems.Add(new QuestElementQuantityRef(
-                _bank,
                 _bank.IdFor(entry.ItemName),
                 entry.ItemName,
                 -entry.Quantity.GetRawQuantity()
@@ -205,7 +204,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                             Guid.NewGuid()
                         ),
                         $"Deliver items to {dropConstructInfo.Info.rData.name}",
-                        QuestTaskItemType.Deliver,
+                        QuestTaskItemType.DeliverUnrestricted,
                         QuestTaskItemStatus.InProgress,
                         deliveryPos,
                         null,
@@ -221,7 +220,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                                 { "questTaskId", dropGuid }
                             }
                         },
-                        new DeliverItemTaskDefinition(
+                        new DeliverItemsUnrestrictedTaskDefinition(
                             dropContainer,
                             questItems
                         )
