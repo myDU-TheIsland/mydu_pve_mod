@@ -412,7 +412,7 @@ public class QuestController : Controller
 
     public class QuestItemQuantityViewModel(double quantity, string name)
     {
-        public double Quantity { get; } = quantity;
+        public double Quantity { get; } = Math.Abs(quantity);
         public string Name { get; } = name;
     }
 

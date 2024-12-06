@@ -96,7 +96,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                 _bank,
                 _bank.IdFor(entry.ItemName),
                 entry.ItemName,
-                entry.Quantity.GetRawQuantity()
+                -entry.Quantity.GetRawQuantity()
             ));
 
             if (priceMap.TryGetValue(entry.ItemName, out var recipeValue))

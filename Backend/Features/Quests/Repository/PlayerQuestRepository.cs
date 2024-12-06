@@ -136,6 +136,25 @@ public partial class PlayerQuestRepository(IServiceProvider provider) : IPlayerQ
         return item;
     }
 
+    public async Task<bool> OriginalQuestAlreadyAccepted(Guid proceduralQuestId)
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        var count = await db.ExecuteScalarAsync<int>(
+            """
+            SELECT COUNT(0) FROM public.mod_player_quest_task PQT
+            WHERE quest_id = @questId AND completed_at IS NULL
+            """,
+            new
+            {
+                questId = proceduralQuestId,
+            }
+        );
+
+        return count > 0;
+    }
+
     public async Task<IEnumerable<PlayerQuestItem>> GetAllByStatusAsync(PlayerId playerId, string[] statusList)
     {
         using var db = _factory.Create();

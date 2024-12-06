@@ -11,6 +11,7 @@ public interface IPlayerQuestRepository
     Task AddAsync(PlayerQuestItem item);
     Task UpdateAsync(PlayerQuestItem item);
     Task<PlayerQuestItem?> GetAsync(QuestId id);
+    Task<bool> OriginalQuestAlreadyAccepted(Guid proceduralQuestId);
     Task<IEnumerable<PlayerQuestItem>> GetAllByStatusAsync(PlayerId playerId, string[] statusList);
     Task DeleteAsync(PlayerId playerId, Guid id);
     Task CompleteTaskAsync(QuestTaskId questTaskId);

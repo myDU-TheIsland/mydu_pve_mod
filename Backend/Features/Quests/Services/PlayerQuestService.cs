@@ -59,6 +59,13 @@ public class PlayerQuestService(IServiceProvider provider) : IPlayerQuestService
             new ScriptActionItem()
         );
 
+        var alreadyAccepted = await _repository.OriginalQuestAlreadyAccepted(proceduralQuestItem.Id);
+
+        if (alreadyAccepted)
+        {
+            return PlayerAcceptQuestOutcome.AlreadyAccepted();
+        }
+        
         await _repository.AddAsync(item);
 
         return PlayerAcceptQuestOutcome.Accepted();
