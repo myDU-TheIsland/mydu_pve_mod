@@ -87,8 +87,6 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
         var entries = lootItems.GetEntries().ToArray();
         random.Shuffle(entries);
 
-        entries = entries.Take(10).ToArray();
-
         long totalPrice = 0;
         var questItems = new List<QuestElementQuantityRef>();
 
