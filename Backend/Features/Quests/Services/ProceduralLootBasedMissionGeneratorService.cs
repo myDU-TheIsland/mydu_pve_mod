@@ -142,7 +142,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var dropGuid = GuidUtility.Create(
             territoryId,
-            $"{playerId}-{QuestTaskItemType.Deliver}-{factionId.Id}-{dropContainerTerritory}-{timeFactor}"
+            $"{playerId}-{QuestTaskItemType.DeliverUnrestricted}-{factionId.Id}-{territoryId.Id}-{timeFactor}"
         );
         var questGuid = GuidUtility.Create(
             territoryId,
