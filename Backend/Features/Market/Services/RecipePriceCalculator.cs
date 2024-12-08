@@ -61,8 +61,7 @@ public class RecipePriceCalculator(IServiceProvider provider) : IRecipePriceCalc
             var output = CalculateRecipeCostV2(
                 priceMap,
                 productRecipeMap,
-                kvp.Value,
-                kvp.Value.Products.First().Quantity
+                kvp.Value
             );
 
             priceMap.TryAdd(kvp.Key, output.GetTotalCost());
@@ -81,8 +80,7 @@ public class RecipePriceCalculator(IServiceProvider provider) : IRecipePriceCalc
     private static CostCalculationResult CalculateRecipeCostV2(
         Dictionary<string, Quanta> priceMap,
         Dictionary<string, RecipeDefinition> recipeMap,
-        RecipeDefinition recipe,
-        IItemQuantity neededQuantity
+        RecipeDefinition recipe
     )
     {
         var mainProduct = recipe.Products.First();
@@ -96,8 +94,7 @@ public class RecipePriceCalculator(IServiceProvider provider) : IRecipePriceCalc
                 var result = CalculateRecipeCostV2(
                     priceMap,
                     recipeMap,
-                    ingredientRecipe,
-                    ingredient.Quantity
+                    ingredientRecipe
                 );
 
                 // 100 Ore - 65 Pure - Cost 3000

@@ -7,4 +7,6 @@ public readonly struct RecipeOutputData
 {
     public IItemQuantity Quantity { get; init; }
     public Quanta Quanta { get; init; }
+
+    public Quanta GetUnitPrice() => Quanta.Value / Quantity.Value;
 }

@@ -101,7 +101,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
             if (priceMap.TryGetValue(entry.ItemName, out var recipeValue))
             {
-                totalPrice += entry.Quantity.GetRawQuantity() * recipeValue.Quanta.Value;
+                totalPrice += entry.Quantity.GetRawQuantity() * recipeValue.GetUnitPrice();
             }
         }
 
