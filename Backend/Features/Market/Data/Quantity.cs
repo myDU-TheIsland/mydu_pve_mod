@@ -6,7 +6,7 @@ public class Quantity(long value) : IItemQuantity
 {
     public long Value { get; } = value;
     
-    public long GetReadableValue() => Value;
+    public double GetReadableValue() => Value;
     
     public override string ToString()
     {

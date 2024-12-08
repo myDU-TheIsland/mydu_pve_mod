@@ -70,7 +70,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var tier = random.Next(1, 4);
 
-        var lootItems = await _lootGeneratorService.GenerateAsync(
+        var lootItems = await _lootGeneratorService.GenerateGrouped(
             new LootGenerationArgs
             {
                 Tags = ["quest", $"tier-{tier}"],
@@ -79,16 +79,18 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                 Operator = TagOperator.AllTags
             });
 
-        if (!lootItems.GetEntries().Any())
+        if (lootItems.Count == 0)
         {
             return ProceduralQuestOutcome.Failed($"No loot items tagged ['quest', 'tier-{tier}']");
         }
 
-        var entries = lootItems.GetEntries().ToArray();
+        var (lootName, lootItem) = random.PickOneAtRandom(lootItems);
+
+        var entries = lootItem.GetEntries().ToArray();
         random.Shuffle(entries);
         entries = entries.Take(10).ToArray();
 
-        long totalPrice = 0;
+        double totalPrice = 0;
         var questItems = new List<QuestElementQuantityRef>();
 
         foreach (var entry in entries)
@@ -181,7 +183,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                 factionId,
                 questType,
                 questSeed,
-                $"Order of {lootItems.Name} for {dropConstructInfo.Info.rData.name}",
+                $"Order of {lootName} for {dropConstructInfo.Info.rData.name}",
                 dropInSafeZone,
                 -1,
                 new ProceduralQuestProperties

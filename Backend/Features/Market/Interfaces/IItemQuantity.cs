@@ -4,5 +4,5 @@ public interface IItemQuantity
 {
     long Value { get; }
 
-    long GetReadableValue();
+    double GetReadableValue();
 }

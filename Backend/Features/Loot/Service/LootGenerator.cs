@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Backend;
@@ -117,5 +118,104 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
         }
         
         return itemBag;
+    }
+
+    public async Task<Dictionary<string, ItemBagData>> GenerateGrouped(LootGenerationArgs args)
+    {
+        var result = new Dictionary<string, ItemBagData>();
+        
+        var random = new Random(args.Seed);
+
+        var lootDefinitionItems = (await _repository.GetAllActiveTagsAsync(args.Operator, args.Tags))
+            .ToArray();
+
+        random.Shuffle(lootDefinitionItems);
+        
+        if (lootDefinitionItems.Length == 0)
+        {
+            return result;
+        }
+
+        var randomLootDefItem = random.PickOneAtRandom(lootDefinitionItems);
+        
+        foreach (var definitionItem in lootDefinitionItems)
+        {
+            var itemBag = new ItemBagData(args.MaxBudget)
+            {
+                Name = randomLootDefItem.Name
+            };
+            
+            foreach (var itemRule in definitionItem.ItemRules)
+            {
+                itemRule.Sanitize();
+
+                var itemDef = _bank.GetDefinition(itemRule.ItemName);
+
+                if (itemDef == null)
+                {
+                    _logger.LogError("Could not find Item def for {Item}", itemRule.ItemName);
+                    continue;
+                }
+
+                var item = _bank.GetBaseObject<BaseItem>(itemDef.ItemType());
+                if (item == null)
+                {
+                    _logger.LogError("Could not find BaseObject for {Item}", itemRule.ItemName);
+                    continue;
+                }
+
+                var roll100 = random.NextDouble();
+                var itemMinChanceRoll = 1 - itemRule.Chance;
+
+                if (roll100 < itemMinChanceRoll)
+                {
+                    continue;
+                }
+
+                var randomQuantity = random.NextInt64(itemRule.MinQuantity, itemRule.MaxQuantity);
+                var randomCost = random.NextInt64(itemRule.MinSpawnCost, itemRule.MaxSpawnCost);
+
+                var quantity = item.GetQuantityForElement(randomQuantity);
+
+                var stillWithinBudget = itemBag.AddEntry(
+                    randomCost,
+                    new ItemBagData.ItemAndQuantity(itemRule.ItemName, quantity)
+                );
+
+                if (!stillWithinBudget)
+                {
+                    break;
+                }
+            }
+            
+            foreach (var elementRule in definitionItem.ElementRules)
+            {
+                elementRule.Sanitize();
+            
+                var roll100 = random.NextDouble();
+                var itemMinChanceRoll = 1 - elementRule.Chance;
+            
+                if (roll100 < itemMinChanceRoll)
+                {
+                    continue;
+                }
+            
+                var randomQuantity = random.NextInt64(elementRule.MinQuantity, elementRule.MaxQuantity);
+            
+                itemBag.ElementsToReplace.Add(
+                    new ItemBagData.ElementReplace(
+                        elementRule.FindElement,
+                        elementRule.ReplaceElement,
+                        randomQuantity
+                    )
+                );
+            
+                _logger.LogInformation("Replacing {Quantity}x {Item} with {Replacement}", randomQuantity, elementRule.FindElement, elementRule.ReplaceElement);
+            }
+            
+            result.Add(definitionItem.Name, itemBag);
+        }
+        
+        return result;
     }
 }

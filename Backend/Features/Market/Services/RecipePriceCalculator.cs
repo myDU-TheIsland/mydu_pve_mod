@@ -141,7 +141,7 @@ public class RecipePriceCalculator(IServiceProvider provider) : IRecipePriceCalc
         RecipeDefinition recipe
     )
     {
-        var price = 0L;
+        var price = 0d;
 
         foreach (var ingredient in recipe.Ingredients)
         {

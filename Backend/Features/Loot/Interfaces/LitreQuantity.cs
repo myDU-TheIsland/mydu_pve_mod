@@ -12,4 +12,9 @@ public class LitreQuantity(long quantity) : IQuantity
         // Need to shift left the value
         return quantity << 24;
     }
+    
+    public override string ToString()
+    {
+        return $"Raw: {GetRawQuantity()} | {ToQuantity()}";
+    }
 }
