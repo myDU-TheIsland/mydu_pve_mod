@@ -30,7 +30,7 @@ public class OrePriceReader : IOrePriceReader
             { "NiobiumOre", 88800 },
             { "TitaniumOre", 1800000 },
             { "VanadiumOre", 700000 },
-            { "ThoramineOre", 5000000 },
+            { "ThoramineOre", 20000000 },
         };
     }
 }
