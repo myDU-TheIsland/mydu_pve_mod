@@ -12,6 +12,7 @@ using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
 using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
+using Mod.DynamicEncounters.Features.Market.Data;
 using Mod.DynamicEncounters.Features.Market.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Data;
 using Mod.DynamicEncounters.Features.Quests.Interfaces;
@@ -90,31 +91,27 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
         random.Shuffle(entries);
         entries = entries.Take(10).ToArray();
 
-        double totalPrice = 0;
-        var questItems = new List<QuestElementQuantityRef>();
-
-        foreach (var entry in entries)
-        {
-            questItems.Add(new QuestElementQuantityRef(
-                _bank.IdFor(entry.ItemName),
-                entry.ItemName,
-                -entry.Quantity.GetRawQuantity()
-            ));
-
-            if (priceMap.TryGetValue(entry.ItemName, out var recipeValue))
-            {
-                totalPrice += entry.Quantity.GetRawQuantity() * recipeValue.GetUnitPrice();
-            }
-        }
+        var calculationResult = CalculateLootPrice(priceMap, entries);
+        var totalPrice = calculationResult.TotalPrice;
+        var questItems = calculationResult.QuestItems;
 
         var lootReward = await _lootGeneratorService.GenerateAsync(
             new LootGenerationArgs
             {
-                Tags = [$"tier-{tier}-reward"],
+                Tags = lootItem.Tags,
                 MaxBudget = random.Next(50, 100),
-                Seed = random.Next()
+                Seed = random.Next(),
+                Operator = TagOperator.AllTags
             });
 
+        var rewardEntries = lootReward.GetEntries().ToArray();
+        random.Shuffle(rewardEntries);
+        rewardEntries = rewardEntries.Take(10).ToArray();
+
+        var rewardCalculationResult = CalculateLootPrice(priceMap, rewardEntries);
+        var rewardTotalPrice = rewardCalculationResult.TotalPrice;
+        var rewardQuestItems = rewardCalculationResult.QuestItems;
+        
         var factionTerritoryRepository = provider.GetRequiredService<IFactionTerritoryRepository>();
 
         var territoryMap = (await factionTerritoryRepository.GetAll())
@@ -164,7 +161,8 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var dropInSafeZone = await _constructService.IsInSafeZone(dropConstructInfo.Info.rData.constructId);
 
-        var quantaReward = totalPrice * (dropInSafeZone ? 1.1d : 1.9d);
+        var quantaReward = totalPrice * (dropInSafeZone ? 1.1d : 1.9d) - rewardTotalPrice;
+        quantaReward = Math.Clamp(quantaReward, 0, Math.Abs(quantaReward));
 
         var lootRewardTextItems = new List<string> { $"{quantaReward / 100:N2}h" };
 
@@ -232,5 +230,34 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                 }
             )
         );
+    }
+
+    private QuestLootCalculationResult CalculateLootPrice(
+        Dictionary<string, RecipeOutputData> priceMap,
+        ItemBagData.ItemAndQuantity[] entries
+    )
+    {
+        double totalPrice = 0;
+        var questItems = new List<QuestElementQuantityRef>();
+
+        foreach (var entry in entries)
+        {
+            questItems.Add(new QuestElementQuantityRef(
+                _bank.IdFor(entry.ItemName),
+                entry.ItemName,
+                -entry.Quantity.GetRawQuantity()
+            ));
+
+            if (priceMap.TryGetValue(entry.ItemName, out var recipeValue))
+            {
+                totalPrice += entry.Quantity.GetRawQuantity() * recipeValue.GetUnitPrice();
+            }
+        }
+
+        return new QuestLootCalculationResult
+        {
+            TotalPrice = totalPrice,
+            QuestItems = questItems
+        };
     }
 }

@@ -13,6 +13,7 @@ using Mod.DynamicEncounters.Features.Quests.Data;
 using Mod.DynamicEncounters.Features.Quests.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Services;
 using NQ;
+using NQutils.Def;
 using NSubstitute;
 
 namespace Mod.DynamicEncounters.Tests.Features.Quests;
@@ -26,6 +27,22 @@ public class ProceduralLootBasedMissionGeneratorServiceTests
         var services = new ServiceCollection();
         services.AddLogging();
 
+        var weaponRailgun1Definition = Substitute.For<IGameplayDefinition>();
+        weaponRailgun1Definition.BaseObject.Returns(new WeaponUnit());
+        var weaponRailgun2Definition = Substitute.For<IGameplayDefinition>();
+        weaponRailgun2Definition.BaseObject.Returns(new WeaponUnit());
+        
+        Assert.That(weaponRailgun1Definition.BaseObject, Is.Not.Null);
+        
+        var gameplayBank = Substitute.For<IGameplayBank>();
+        gameplayBank.GetDefinition("WeaponRailgun1")
+            .Returns(weaponRailgun1Definition);
+        gameplayBank.IdFor("WeaponRailgun1").Returns(1U);
+        gameplayBank.GetDefinition("WeaponRailgun2")
+            .Returns(weaponRailgun2Definition);
+        gameplayBank.IdFor("WeaponRailgun2").Returns(2U);
+        services.AddSingleton(gameplayBank);
+        
         var constructService = Substitute.For<IConstructService>();
         constructService.GetConstructInfoAsync(Arg.Any<ulong>())
             .Returns(new ConstructInfoOutcome(true, new ConstructInfo()));
@@ -33,17 +50,29 @@ public class ProceduralLootBasedMissionGeneratorServiceTests
             .Returns(false);
         services.AddSingleton(constructService);
 
+        var weaponRailgun1ItemBag = new ItemBagData
+        {
+            MaxBudget = 1000,
+            CurrentCost = 1,
+            Entries =
+            [
+                new ItemBagData.ItemAndQuantity("WeaponRailgun1",
+                    new DefaultQuantity(1)),
+                new ItemBagData.ItemAndQuantity("WeaponRailgun2",
+                    new DefaultQuantity(2)),
+            ],
+            ElementsToReplace = [],
+            Name = string.Empty,
+            Tags = [],
+        };
+        
         var lootGeneratorService = Substitute.For<ILootGeneratorService>();
         lootGeneratorService.GenerateAsync(Arg.Any<LootGenerationArgs>())
-            .Returns(new ItemBagData(1000)
+            .Returns(weaponRailgun1ItemBag);
+        lootGeneratorService.GenerateGrouped(Arg.Any<LootGenerationArgs>())
+            .Returns(new Dictionary<string, ItemBagData>
             {
-                CurrentCost = 1,
-                Entries =
-                [
-                    new ItemBagData.ItemAndQuantity("WeaponRailgun1", new DefaultQuantity(1)),
-                    new ItemBagData.ItemAndQuantity("WeaponRailgun2", new DefaultQuantity(2)),
-                ],
-                ElementsToReplace = [],
+                { "Loot1", weaponRailgun1ItemBag }
             });
         services.AddSingleton(lootGeneratorService);
 
@@ -80,15 +109,13 @@ public class ProceduralLootBasedMissionGeneratorServiceTests
             });
         services.AddSingleton(territoryContainerRepository);
         
-        var bank = Substitute.For<IGameplayBank>();
-        services.AddSingleton(bank);
-
         var sceneGraph = Substitute.For<IScenegraph>();
         sceneGraph.GetConstructCenterWorldPosition(Arg.Any<ConstructId>())
             .Returns(new Vec3());
         services.AddSingleton(sceneGraph);
         
         var provider = services.BuildServiceProvider();
+        ModBase.ServiceProvider = provider;
 
         var generator = new ProceduralLootBasedMissionGeneratorService(provider);
 

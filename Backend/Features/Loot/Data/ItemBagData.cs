@@ -3,13 +3,14 @@ using Mod.DynamicEncounters.Features.Loot.Interfaces;
 
 namespace Mod.DynamicEncounters.Features.Loot.Data;
 
-public class ItemBagData(double maxBudget)
+public class ItemBagData
 {
-    public string Name { get; set; } = string.Empty;
-    public double MaxBudget { get; set; } = maxBudget;
+    public required string Name { get; set; } = string.Empty;
+    public required double MaxBudget { get; set; }
     public double CurrentCost { get; set; } = 0;
     public IList<ItemAndQuantity> Entries { get; init; } = [];
     public IList<ElementReplace> ElementsToReplace { get; set; } = [];
+    public required IEnumerable<string> Tags { get; set; }
 
     public readonly struct ElementReplace(string elementName, string replaceElementName, long quantity)
     {

@@ -28,15 +28,23 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
 
         random.Shuffle(lootDefinitionItems);
 
-        var itemBag = new ItemBagData(args.MaxBudget);
-        
         if (lootDefinitionItems.Length == 0)
         {
-            return itemBag;
+            return new ItemBagData
+            {
+                MaxBudget = args.MaxBudget,
+                Tags = [],
+                Name = string.Empty
+            };
         }
 
         var randomLootDefItem = random.PickOneAtRandom(lootDefinitionItems);
-        itemBag.Name = randomLootDefItem.Name;
+        var itemBag = new ItemBagData
+        {
+            MaxBudget = args.MaxBudget,
+            Tags = randomLootDefItem.ExtraTags,
+            Name = randomLootDefItem.Name
+        };
 
         var allItemRules = lootDefinitionItems
             .SelectMany(x => x.ItemRules)
@@ -49,7 +57,7 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
             itemRule.Sanitize();
 
             var itemDef = _bank.GetDefinition(itemRule.ItemName);
-            
+
             if (itemDef == null)
             {
                 _logger.LogError("Could not find Item def for {Item}", itemRule.ItemName);
@@ -65,7 +73,7 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
 
             var roll100 = random.NextDouble();
             var itemMinChanceRoll = 1 - itemRule.Chance;
-            
+
             if (roll100 < itemMinChanceRoll)
             {
                 continue;
@@ -95,17 +103,17 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
         foreach (var elementRule in allElementRules)
         {
             elementRule.Sanitize();
-            
+
             var roll100 = random.NextDouble();
             var itemMinChanceRoll = 1 - elementRule.Chance;
-            
+
             if (roll100 < itemMinChanceRoll)
             {
                 continue;
             }
-            
+
             var randomQuantity = random.NextInt64(elementRule.MinQuantity, elementRule.MaxQuantity);
-            
+
             itemBag.ElementsToReplace.Add(
                 new ItemBagData.ElementReplace(
                     elementRule.FindElement,
@@ -113,38 +121,41 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
                     randomQuantity
                 )
             );
-            
-            _logger.LogInformation("Replacing {Quantity}x {Item} with {Replacement}", randomQuantity, elementRule.FindElement, elementRule.ReplaceElement);
+
+            _logger.LogInformation("Replacing {Quantity}x {Item} with {Replacement}", randomQuantity,
+                elementRule.FindElement, elementRule.ReplaceElement);
         }
-        
+
         return itemBag;
     }
 
     public async Task<Dictionary<string, ItemBagData>> GenerateGrouped(LootGenerationArgs args)
     {
         var result = new Dictionary<string, ItemBagData>();
-        
+
         var random = new Random(args.Seed);
 
         var lootDefinitionItems = (await _repository.GetAllActiveTagsAsync(args.Operator, args.Tags))
             .ToArray();
 
         random.Shuffle(lootDefinitionItems);
-        
+
         if (lootDefinitionItems.Length == 0)
         {
             return result;
         }
 
         var randomLootDefItem = random.PickOneAtRandom(lootDefinitionItems);
-        
+
         foreach (var definitionItem in lootDefinitionItems)
         {
-            var itemBag = new ItemBagData(args.MaxBudget)
+            var itemBag = new ItemBagData
             {
-                Name = randomLootDefItem.Name
+                MaxBudget = args.MaxBudget,
+                Name = randomLootDefItem.Name,
+                Tags = definitionItem.ExtraTags
             };
-            
+
             foreach (var itemRule in definitionItem.ItemRules)
             {
                 itemRule.Sanitize();
@@ -187,21 +198,21 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
                     break;
                 }
             }
-            
+
             foreach (var elementRule in definitionItem.ElementRules)
             {
                 elementRule.Sanitize();
-            
+
                 var roll100 = random.NextDouble();
                 var itemMinChanceRoll = 1 - elementRule.Chance;
-            
+
                 if (roll100 < itemMinChanceRoll)
                 {
                     continue;
                 }
-            
+
                 var randomQuantity = random.NextInt64(elementRule.MinQuantity, elementRule.MaxQuantity);
-            
+
                 itemBag.ElementsToReplace.Add(
                     new ItemBagData.ElementReplace(
                         elementRule.FindElement,
@@ -209,13 +220,14 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
                         randomQuantity
                     )
                 );
-            
-                _logger.LogInformation("Replacing {Quantity}x {Item} with {Replacement}", randomQuantity, elementRule.FindElement, elementRule.ReplaceElement);
+
+                _logger.LogInformation("Replacing {Quantity}x {Item} with {Replacement}", randomQuantity,
+                    elementRule.FindElement, elementRule.ReplaceElement);
             }
-            
+
             result.Add(definitionItem.Name, itemBag);
         }
-        
+
         return result;
     }
 }
