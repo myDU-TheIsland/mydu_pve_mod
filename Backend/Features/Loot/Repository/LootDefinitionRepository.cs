@@ -17,6 +17,11 @@ public class LootDefinitionRepository(IServiceProvider provider) : ILootDefiniti
     
     public async Task<IEnumerable<LootDefinitionItem>> GetAllActiveByAnyTagsAsync(IEnumerable<string> tags)
     {
+        if (!tags.Any())
+        {
+            return [];
+        }
+        
         using var db = _factory.Create();
         db.Open();
 
@@ -40,6 +45,11 @@ public class LootDefinitionRepository(IServiceProvider provider) : ILootDefiniti
     
     public async Task<IEnumerable<LootDefinitionItem>> GetAllActiveByAllTagsAsync(IEnumerable<string> tags)
     {
+        if (!tags.Any())
+        {
+            return [];
+        }
+        
         using var db = _factory.Create();
         db.Open();
 
