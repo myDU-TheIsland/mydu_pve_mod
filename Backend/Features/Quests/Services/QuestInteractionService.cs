@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Common.Services;
+using Mod.DynamicEncounters.Features.Faction.Interfaces;
 using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Data;
@@ -97,6 +98,16 @@ public class QuestInteractionService(IServiceProvider provider) : IQuestInteract
 
         if (questItem.Properties.ItemRewardMap.Count > 0)
         {
+            var factionRepository = provider.GetRequiredService<IFactionRepository>();
+            var factionItem = await factionRepository.FindAsync(questItem.FactionId);
+
+            var rewardEntityId = new EntityId { playerId = playerId };
+
+            if (factionItem is { OrganizationId: not null })
+            {
+                rewardEntityId = new EntityId { organizationId = factionItem.OrganizationId.Value };
+            }
+            
             await itemSpawner.GiveTakeItemsWithCallback(
                 new GiveTakePlayerItemsWithCallbackCommand(
                     playerId,
@@ -107,7 +118,7 @@ public class QuestInteractionService(IServiceProvider provider) : IQuestInteract
                             x.Value
                         )
                     ),
-                    new EntityId { playerId = playerId },
+                    rewardEntityId,
                     new Dictionary<string, PropertyValue>(),
                     string.Empty,
                     string.Empty
