@@ -161,7 +161,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var dropInSafeZone = await _constructService.IsInSafeZone(dropConstructInfo.Info.rData.constructId);
 
-        var quantaReward = totalPrice * (dropInSafeZone ? 1.1d : 1.9d) - rewardTotalPrice;
+        var quantaReward = totalPrice * (dropInSafeZone ? 0.8d : 1.5d) - rewardTotalPrice;
         quantaReward = Math.Clamp(quantaReward, 0, Math.Abs(quantaReward));
 
         var lootRewardTextItems = new List<string> { $"{quantaReward / 100:N2}h" };

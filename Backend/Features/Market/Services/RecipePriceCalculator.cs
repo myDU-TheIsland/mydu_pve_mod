@@ -20,8 +20,8 @@ public class RecipePriceCalculator(IServiceProvider provider) : IRecipePriceCalc
         var bank = provider.GetGameplayBank();
         var recipes = provider.GetRequiredService<IRecipes>();
         var allRecipes = await recipes.GetAllRecipes();
-        var orePriceReader = provider.GetRequiredService<IOrePriceReader>();
-        var priceMap = orePriceReader.GetOrePrices();
+        var orePriceReader = provider.GetRequiredService<IOrePriceRepository>();
+        var priceMap = await orePriceReader.GetOrePrices();
         var recipeOutputMap = new Dictionary<string, RecipeOutputData>();
 
         var productRecipeMap = new Dictionary<string, RecipeDefinition>();
