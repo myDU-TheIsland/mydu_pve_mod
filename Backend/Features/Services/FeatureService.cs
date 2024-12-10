@@ -51,6 +51,18 @@ public class FeatureService(IServiceProvider provider) : IFeatureReaderService, 
         return @default;
     }
 
+    public async Task<double> GetDoubleValueAsync(string name, double defaultValue)
+    {
+        var stringValue = await GetStringValueAsync(name, $"{defaultValue}");
+
+        if (double.TryParse(stringValue, out var val))
+        {
+            return val;
+        }
+
+        return defaultValue;
+    }
+
     public async Task<string> GetStringValueAsync(string name, string @default)
     {
         try

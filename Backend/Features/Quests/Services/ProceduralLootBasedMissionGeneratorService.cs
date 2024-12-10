@@ -10,6 +10,7 @@ using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
+using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Market.Data;
@@ -36,6 +37,9 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
     private readonly IRecipePriceCalculator _recipePriceCalculator =
         provider.GetRequiredService<IRecipePriceCalculator>();
+
+    private readonly IFeatureReaderService _featureReaderService =
+        provider.GetRequiredService<IFeatureReaderService>();
 
     private readonly IGameplayBank _bank = provider.GetGameplayBank();
 
@@ -161,7 +165,10 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var dropInSafeZone = await _constructService.IsInSafeZone(dropConstructInfo.Info.rData.constructId);
 
-        var quantaReward = totalPrice * (dropInSafeZone ? 0.8d : 1.5d) - rewardTotalPrice;
+        var safeMultiplier = await _featureReaderService.GetDoubleValueAsync("OrderMissionSafeMultiplier", 0.8d);
+        var pvpMultiplier = await _featureReaderService.GetDoubleValueAsync("OrderMissionPvpMultiplier", 1.5d);
+        
+        var quantaReward = totalPrice * (dropInSafeZone ? safeMultiplier : pvpMultiplier) - rewardTotalPrice;
         quantaReward = Math.Clamp(quantaReward, 0, Math.Abs(quantaReward));
 
         var lootRewardTextItems = new List<string> { $"{quantaReward / 100:N2}h" };
