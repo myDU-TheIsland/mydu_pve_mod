@@ -35,25 +35,32 @@ public class CommandHandlerLoop(IThreadManager threadManager, CancellationToken 
             
             try
             {
-                if (commandItem.Message.StartsWith("@g"))
+                if (commandItem.Message.StartsWith("@g", StringComparison.OrdinalIgnoreCase))
                 {
                     var playerPartyCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<IPlayerPartyCommandHandler>();
                     await playerPartyCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
                 }
 
-                if (commandItem.Message.StartsWith("@kills npc"))
+                if (commandItem.Message.StartsWith("@kills npc", StringComparison.OrdinalIgnoreCase))
                 {
                     var npcKillsCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<INpcKillsCommandHandler>();
                     await npcKillsCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
                 }
 
-                if (commandItem.Message.StartsWith("@wac"))
+                if (commandItem.Message.StartsWith("@wac", StringComparison.OrdinalIgnoreCase))
                 {
                     var warpAnchorCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<IWarpAnchorCommandHandler>();
                     await warpAnchorCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                }
+
+                if (commandItem.Message.StartsWith("@m", StringComparison.OrdinalIgnoreCase))
+                {
+                    var openPlayerBoardCommandHandler =
+                        ModBase.ServiceProvider.GetRequiredService<IOpenPlayerBoardCommandHandler>();
+                    await openPlayerBoardCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
                 }
             }
             catch (Exception e)

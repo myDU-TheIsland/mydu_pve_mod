@@ -14,6 +14,9 @@ using NQ;
 using NQ.Interfaces;
 using NQutils.Def;
 using Swashbuckle.AspNetCore.Annotations;
+using ConstructAppear = NQ.ConstructAppear;
+using ConstructDisappear = NQutils.Messages.ConstructDisappear;
+using ElementPropertyUpdate = NQ.ElementPropertyUpdate;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
 
@@ -22,16 +25,80 @@ public class ConstructController : Controller
 {
     [HttpPost]
     [Route("{constructId:long}/replace/{elementTypeName}/with/{replaceElementTypeName}")]
-    public async Task<IActionResult> ReplaceElement(long constructId, string elementTypeName, string replaceElementTypeName)
+    public async Task<IActionResult> ReplaceElement(long constructId, string elementTypeName,
+        string replaceElementTypeName)
     {
         var provider = ModBase.ServiceProvider;
         var elementReplacerService = provider.GetRequiredService<IElementReplacerService>();
 
-        await elementReplacerService.ReplaceSingleElementAsync((ulong)constructId, elementTypeName, replaceElementTypeName);
+        await elementReplacerService.ReplaceSingleElementAsync((ulong)constructId, elementTypeName,
+            replaceElementTypeName);
 
         return Ok();
     }
-    
+
+    [HttpPost]
+    [Route("{constructId:long}/target/{targetConstructId:long}")]
+    public async Task<IActionResult> JamTarget(ulong constructId, ulong targetConstructId)
+    {
+        var provider = ModBase.ServiceProvider;
+        var orleans = provider.GetOrleans();
+        var pub = provider.GetRequiredService<IPub>();
+
+        var constructElementsGrain = orleans.GetConstructElementsGrain(targetConstructId);
+        var radars = await constructElementsGrain.GetElementsOfType<RadarPVPUnit>();
+
+        var targetConstructGrain = orleans.GetConstructGrain(targetConstructId);
+        var pilot = await targetConstructGrain.GetPilot();
+
+        var constructInfoGrain = orleans.GetConstructInfoGrain(constructId);
+        var info = await constructInfoGrain.Get();
+
+        if (!pilot.HasValue)
+        {
+            return BadRequest("No Target Construct Pilot");
+        }
+
+        foreach (var radar in radars)
+        {
+            var element = await constructElementsGrain.GetElement(radar.elementId);
+            var seat = element.links.FirstOrDefault(x => x.plugType == PlugType.PLUG_CONTROL);
+
+            var radarGrain = orleans.GetRadarGrain(radar);
+            await radarGrain.IdentifyStop(pilot.Value, new RadarIdentifyTarget
+            {
+                targetConstructId = constructId,
+                playerId = pilot.Value,
+                sourceConstructId = targetConstructId,
+                sourceRadarElementId = radar.elementId,
+                sourceSeatElementId = seat?.fromElementId ?? 0
+            });
+
+            await targetConstructGrain.ConstructEndIdentifying(targetConstructId, radar);
+
+            var radarCamera = new CameraId { id = radar.elementId, kind = CameraKind.Radar };
+            await pub.NotifyPlayer(pilot.Value, new ConstructDisappear(
+                new NQ.ConstructDisappear
+                {
+                    constructId = constructId,
+                    camera = radarCamera
+                }));
+
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                await pub.NotifyPlayer(pilot.Value, new NQutils.Messages.ConstructAppear(
+                    new ConstructAppear
+                    {
+                        camera = radarCamera,
+                        info = info
+                    }));
+            });
+        }
+
+        return Ok();
+    }
+
     [HttpGet]
     [Route("{constructId:long}")]
     public async Task<IActionResult> Get(long constructId)
@@ -73,13 +140,13 @@ public class ConstructController : Controller
 
         var constructHandleRepository = provider.GetRequiredService<IConstructHandleRepository>();
         await constructHandleRepository.DeleteByConstructId(constructId);
-        
+
         var gcGrain = orleans.GetConstructGCGrain();
         await gcGrain.DeleteConstruct(constructId);
 
         return Ok();
     }
-    
+
     [HttpDelete]
     [Route("batch")]
     public async Task<IActionResult> Delete([FromBody] ulong[] constructIds)
@@ -104,7 +171,7 @@ public class ConstructController : Controller
         var provider = ModBase.ServiceProvider;
         var constructService = provider.GetRequiredService<IConstructService>();
         var result = await constructService.TryVentShieldsAsync((ulong)constructId);
-        
+
         return Ok(result);
     }
 
@@ -137,11 +204,12 @@ public class ConstructController : Controller
                     v => v.Value.value
                 )
             });
-        
+
         return Ok(elementInfos);
     }
 
-    [SwaggerOperation("Remove a construct's buffs, by resetting their properties back to the original values on the BO")]
+    [SwaggerOperation(
+        "Remove a construct's buffs, by resetting their properties back to the original values on the BO")]
     [Route("{constructId:long}/sanitize")]
     [HttpPost]
     public async Task<IActionResult> Sanitize(ulong constructId)
@@ -149,12 +217,12 @@ public class ConstructController : Controller
         var provider = ModBase.ServiceProvider;
         var orleans = provider.GetOrleans();
         var bank = provider.GetGameplayBank();
-        
+
         var constructElementsGrain = orleans.GetConstructElementsGrain(constructId);
         var elementIds = await constructElementsGrain.GetElementsOfType<Element>();
 
         var report = new List<string>();
-        
+
         foreach (var elementId in elementIds)
         {
             var element = await constructElementsGrain.GetElement(elementId);
@@ -165,7 +233,7 @@ public class ConstructController : Controller
                 report.Add($"Definition for {elementId} was null");
                 continue;
             }
-            
+
             foreach (var dynamicProperty in def.GetDynamicProperties())
             {
                 var propName = dynamicProperty.Name;
@@ -186,8 +254,9 @@ public class ConstructController : Controller
                         timePoint = TimePoint.Now()
                     }
                 );
-                
-                report.Add($"Updated {elementId} | {def.ItemType().itemType} | {def.Name} | {propName} = {propertyValue.value}");
+
+                report.Add(
+                    $"Updated {elementId} | {def.ItemType().itemType} | {def.Name} | {propName} = {propertyValue.value}");
             }
         }
 
@@ -205,7 +274,7 @@ public class ConstructController : Controller
         var info = await constructService.GetConstructInfoAsync(constructId);
         var quat = info.Info!.rData.rotation.ToQuat();
         var pos = await scenegraph.GetConstructCenterWorldPosition(constructId);
-        
+
         var forward = Vector3.Transform(Vector3.UnitY, quat);
 
         var aheadPos = pos.ToVector3() + forward * 1000;
@@ -233,7 +302,7 @@ public class ConstructController : Controller
         }
 
         var missionItems = new List<object>();
-        
+
         foreach (var elementId in containers)
         {
             var containerGrain = orleans.GetContainerGrain(elementId);
@@ -247,7 +316,7 @@ public class ConstructController : Controller
                 {
                     return BadRequest($"{slot.content.type} Not Found");
                 }
-                
+
                 if (missionItemDef.Id == def.Id)
                 {
                     missionItems.Add(slot.content);

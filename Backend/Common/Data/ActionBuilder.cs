@@ -46,6 +46,13 @@ public class ActionBuilder
         return this;
     }
 
+    public ActionBuilder OpenPlayerBoardApp()
+    {
+        _action.actionId = 1000004;
+        
+        return this;
+    }
+    
     public ActionBuilder GiveTakeContainer()
     {
         _action.actionId = 115;

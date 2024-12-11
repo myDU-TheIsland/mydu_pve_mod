@@ -12,5 +12,6 @@ public static class CommandsRegistration
         services.AddSingleton<IPendingCommandRepository, PendingCommandRepository>();
         services.AddSingleton<INpcKillsCommandHandler, NpcKillsCommandHandler>();
         services.AddSingleton<IWarpAnchorCommandHandler, WarpAnchorCommandHandler>();
+        services.AddSingleton<IOpenPlayerBoardCommandHandler, OpenPlayerBoardCommandHandler>();
     }
 }
