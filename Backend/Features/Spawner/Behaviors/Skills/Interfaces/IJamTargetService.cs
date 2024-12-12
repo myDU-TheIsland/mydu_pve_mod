@@ -5,5 +5,5 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 
 public interface IJamTargetService
 {
-    Task<JamTargetOutcome> JamAsync(ulong constructId, ulong targetConstructId);
+    Task<JamTargetOutcome> JamAsync(JamConstructCommand command);
 }

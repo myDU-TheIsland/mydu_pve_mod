@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 
@@ -26,8 +27,12 @@ public class JamTargetSkill : ISkill
     public async Task Use(BehaviorContext context)
     {
         if (!context.TargetConstructId.HasValue) return;
-        
-        await JamTargetService.JamAsync(context.ConstructId, context.TargetConstructId.Value);
+
+        await JamTargetService.JamAsync(new JamConstructCommand
+        {
+            InstigatorConstructId = context.ConstructId,
+            TargetConstructId = context.TargetConstructId.Value
+        });
         context.Effects.Activate<CooldownEffect>(Cooldown);
     }
 

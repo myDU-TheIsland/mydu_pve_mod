@@ -15,11 +15,14 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
 public class JamTargetService(IServiceProvider provider) : IJamTargetService
 {
-    public async Task<JamTargetOutcome> JamAsync(ulong constructId, ulong targetConstructId)
+    public async Task<JamTargetOutcome> JamAsync(JamConstructCommand command)
     {
         var orleans = provider.GetOrleans();
         var pub = provider.GetRequiredService<IPub>();
         var alertService = provider.GetRequiredService<IPlayerAlertService>();
+
+        var instigatorConstructId = command.InstigatorConstructId;
+        var targetConstructId = command.TargetConstructId;
 
         var constructElementsGrain = orleans.GetConstructElementsGrain(targetConstructId);
         var radars = await constructElementsGrain.GetElementsOfType<RadarPVPUnit>();
@@ -27,7 +30,7 @@ public class JamTargetService(IServiceProvider provider) : IJamTargetService
         var targetConstructGrain = orleans.GetConstructGrain(targetConstructId);
         var pilot = await targetConstructGrain.GetPilot();
 
-        var constructInfoGrain = orleans.GetConstructInfoGrain(constructId);
+        var constructInfoGrain = orleans.GetConstructInfoGrain(instigatorConstructId);
         var info = await constructInfoGrain.Get();
 
         if (!pilot.HasValue)
@@ -41,13 +44,13 @@ public class JamTargetService(IServiceProvider provider) : IJamTargetService
             await pub.NotifyPlayer(pilot.Value, new ConstructDisappear(
                 new global::NQ.ConstructDisappear
                 {
-                    constructId = constructId,
+                    constructId = instigatorConstructId,
                     camera = radarCamera
                 }));
 
             _ = Task.Run(async () =>
             {
-                await Task.Delay(1000);
+                await Task.Delay(TimeSpan.FromSeconds(command.DurationSeconds));
                 await pub.NotifyPlayer(pilot.Value, new NQutils.Messages.ConstructAppear(
                     new ConstructAppear
                     {
@@ -57,7 +60,10 @@ public class JamTargetService(IServiceProvider provider) : IJamTargetService
             });
         }
 
-        await alertService.SendErrorAlert(pilot.Value, "You are being jammed");
+        if (command.SendAlert)
+        {
+            await alertService.SendErrorAlert(pilot.Value, "You are being jammed");
+        }
 
         return JamTargetOutcome.Jammed();
     }
