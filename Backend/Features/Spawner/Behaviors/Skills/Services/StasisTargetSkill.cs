@@ -14,8 +14,9 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
 public class StasisTargetSkill : ISkill
 {
+    public required string? ItemTypeName { get; set; }
     public required TimeSpan Cooldown { get; set; }
-    
+
     public bool CanUse(BehaviorContext context)
     {
         return !context.Effects.IsEffectActive<CooldownEffect>();
@@ -35,8 +36,8 @@ public class StasisTargetSkill : ISkill
 
         var speedConfig = bank.GetBaseObject<ConstructSpeedConfig>();
         var totalMass = await constructService.GetConstructTotalMass(context.TargetConstructId.Value);
-        
-        var stasis = bank.GetDefinition("StasisWeaponMedium");
+
+        var stasis = bank.GetDefinition(ItemTypeName ?? "StasisWeaponMedium");
 
         if (stasis?.BaseObject is not StasisWeaponUnit stasisWeaponUnit)
         {
@@ -45,7 +46,7 @@ public class StasisTargetSkill : ISkill
 
         var maxRange = stasisWeaponUnit.RangeMax;
         var distance = context.TargetDistance;
-        
+
         if (totalMass <= speedConfig.heavyConstructMass)
         {
             var num2 = (stasisWeaponUnit.RangeMin - stasisWeaponUnit.RangeMax) /
@@ -53,7 +54,7 @@ public class StasisTargetSkill : ISkill
             maxRange = stasisWeaponUnit.RangeMin - num2 +
                        num2 / (stasisWeaponUnit.RangeCurvature * totalMass / speedConfig.heavyConstructMass + 1.0);
         }
-        
+
         context.Effects.Activate<CooldownEffect>(Cooldown);
 
         if (distance > maxRange * 3.0)
@@ -61,7 +62,7 @@ public class StasisTargetSkill : ISkill
             // miss
             return;
         }
-        
+
         var strength = Math.Pow(0.5, Math.Max(distance - maxRange, 0.0) / maxRange) * stasisWeaponUnit.effectStrength;
         var duration = stasisWeaponUnit.effectDuration;
 
@@ -77,8 +78,9 @@ public class StasisTargetSkill : ISkill
         return new StasisTargetSkill
         {
             Cooldown = TimeSpan.FromSeconds(item.CooldownSeconds),
+            ItemTypeName = item.ItemTypeName
         };
     }
-    
+
     public class CooldownEffect : IEffect;
 }
