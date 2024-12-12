@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
@@ -33,6 +32,7 @@ public class JamTargetSkill : ISkill
             InstigatorConstructId = context.ConstructId,
             TargetConstructId = context.TargetConstructId.Value
         });
+
         context.Effects.Activate<CooldownEffect>(Cooldown);
     }
 

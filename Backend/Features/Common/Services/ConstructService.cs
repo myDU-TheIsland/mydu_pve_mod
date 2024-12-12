@@ -345,4 +345,22 @@ public class ConstructService(IServiceProvider provider) : IConstructService
             id = (long)constructId
         });
     }
+
+    public Task ApplyStasisEffect(ulong constructId, double strength, double duration)
+    {
+        return _orleans.GetConstructGrain(constructId)
+            .UpdateConstructInfo(new ConstructInfoUpdate
+            {
+                additionalMaxSpeedDebuf = new MaxSpeedDebuf
+                {
+                    until = DateTime.UtcNow.AddSeconds(duration).ToNQTimePoint(),
+                    value = strength
+                }
+            });
+    }
+
+    public Task<double> GetConstructTotalMass(ulong constructId)
+    {
+        return _orleans.GetConstructGrain(constructId).GetTotalMass();
+    }
 }

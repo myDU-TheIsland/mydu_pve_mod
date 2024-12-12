@@ -26,4 +26,6 @@ public interface IConstructService
     Task SendIdentificationNotification(ulong constructId, TargetingConstructData targeting);
     Task SendAttackingNotification(ulong constructId, TargetingConstructData targeting);
     Task RenameConstruct(ulong constructId, string name);
+    Task ApplyStasisEffect(ulong constructId, double strength, double duration);
+    Task<double> GetConstructTotalMass(ulong constructId);
 }

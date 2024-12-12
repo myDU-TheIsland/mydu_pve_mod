@@ -143,4 +143,14 @@ public class CachedConstructService(
     {
         return service.RenameConstruct(constructId, name);
     }
+
+    public Task ApplyStasisEffect(ulong constructId, double strength, double duration)
+    {
+        return service.ApplyStasisEffect(constructId, strength, duration);
+    }
+
+    public Task<double> GetConstructTotalMass(ulong constructId)
+    {
+        return service.GetConstructTotalMass(constructId);
+    }
 }

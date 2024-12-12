@@ -12,6 +12,8 @@ public class SkillFactory(IServiceProvider provider) : ISkillFactory
         {
             case "jammer":
                 return JamTargetSkill.Create(provider, item);
+            case "stasis":
+                return StasisTargetSkill.Create(item);
             default:
                 return new NullSkill();
         }
