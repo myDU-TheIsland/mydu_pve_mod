@@ -1,5 +1,5 @@
 ﻿using System;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;

@@ -1,4 +1,4 @@
-﻿using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
+﻿using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 

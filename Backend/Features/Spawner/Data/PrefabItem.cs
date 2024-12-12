@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Newtonsoft.Json;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Data;
