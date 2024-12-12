@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.Vector.Helpers;
@@ -21,10 +24,12 @@ public class BehaviorContext(
     long factionId,
     Guid? territoryId,
     Vec3 sector,
-    IServiceProvider serviceProvider,
+    IServiceProvider provider,
     IPrefab prefab
 ) : BaseContext
 {
+    private static ISkillFactory SkillFactory => ModBase.ServiceProvider.GetRequiredService<ISkillFactory>();
+
     private double _deltaTime;
 
     public double DeltaTime
@@ -65,6 +70,10 @@ public class BehaviorContext(
 
     public ConcurrentBag<ScanContact> Contacts { get; private set; }
     public ConcurrentBag<DamageDealtData> DamageHistory { get; private set; } = [];
+
+    public IList<ISkill> Skills { get; set; } = prefab.DefinitionItem.Skills
+        .Select(s => SkillFactory.Create(s))
+        .ToList();
 
     public bool BoosterActive { get; set; } = false;
     public double AccelerationG { get; set; } = prefab.DefinitionItem.AccelerationG;
@@ -148,10 +157,10 @@ public class BehaviorContext(
     public ConstructDamageData DamageData { get; set; } = new([]);
     public Dictionary<string, List<WeaponEffectivenessData>> WeaponEffectivenessData { get; set; } = new();
     public ConcurrentDictionary<ulong, ConstructDamageData> TargetDamageData { get; set; } = new();
-    public IServiceProvider ServiceProvider { get; init; } = serviceProvider;
+    public IServiceProvider Provider { get; init; } = provider;
     public readonly ConcurrentDictionary<string, bool> PublishedEvents = [];
     public ConcurrentDictionary<string, TimerPropertyValue> PropertyOverrides { get; } = [];
-    public IEffectHandler Effects { get; set; } = new EffectHandler(serviceProvider);
+    public IEffectHandler Effects { get; set; } = new EffectHandler(provider);
     public BehaviorModifiers Modifiers { get; set; } = prefab.DefinitionItem.Mods;
 
     [Newtonsoft.Json.JsonIgnore]
@@ -224,7 +233,7 @@ public class BehaviorContext(
 
         return (functionalCount, totalCount);
     }
-    
+
     public WeaponItem? GetBestFunctionalWeaponByTargetDistance(double targetDistance)
     {
         var availableWeapons = GetAvailableWeapons()

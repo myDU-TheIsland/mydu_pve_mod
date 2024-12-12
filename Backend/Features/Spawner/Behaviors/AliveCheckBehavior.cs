@@ -30,7 +30,7 @@ public class AliveCheckBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
     public async Task InitializeAsync(BehaviorContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = context.Provider;
 
         _handleRepository = provider.GetRequiredService<IConstructHandleRepository>();
         _constructService = provider.GetRequiredService<IConstructService>();

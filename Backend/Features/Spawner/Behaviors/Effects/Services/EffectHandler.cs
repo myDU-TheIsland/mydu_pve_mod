@@ -40,6 +40,11 @@ public class EffectHandler : IEffectHandler
         return default;
     }
 
+    public bool IsEffectActive<T>() where T : IEffect
+    {
+        return GetOrNull<T>() != null;
+    }
+
     public void Activate<T>(T effect, TimeSpan duration)
     {
         if (effect == null)
@@ -52,6 +57,13 @@ public class EffectHandler : IEffectHandler
         {
             Effects[typeof(T)] = entry;
         }
+    }
+
+    public void Activate<T>(TimeSpan duration) where T : IEffect, new()
+    {
+        var effect = new T();
+
+        Activate(effect, duration);
     }
 
     public void Deactivate<T>()

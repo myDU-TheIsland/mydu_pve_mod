@@ -41,7 +41,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
 
     public async Task InitializeAsync(BehaviorContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = context.Provider;
         _orleans = provider.GetOrleans();
 
         _constructElementsService = provider.GetRequiredService<IConstructElementsService>();
@@ -71,7 +71,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
             return;
         }
 
-        var provider = context.ServiceProvider;
+        var provider = context.Provider;
 
         var npcShotGrain = _orleans.GetNpcShotGrain();
 
@@ -208,7 +208,7 @@ public class AggressiveBehavior(ulong constructId, IPrefab prefab) : IConstructB
         context.QuantityModifier = functionalCount;
         context.QuantityModifier = Math.Clamp(context.QuantityModifier, 0, prefab.DefinitionItem.MaxWeaponCount);
 
-        var random = context.BehaviorContext.ServiceProvider.GetRequiredService<IRandomProvider>()
+        var random = context.BehaviorContext.Provider.GetRequiredService<IRandomProvider>()
             .GetRandom();
 
         var totalDeltaTime = GetShootTotalDeltaTime(context.BehaviorContext);

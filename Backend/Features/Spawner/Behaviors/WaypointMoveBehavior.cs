@@ -26,7 +26,7 @@ public class WaypointMoveBehavior(ulong constructId, IPrefab prefab) : IConstruc
     {
         await Task.Yield();
 
-        var provider = context.ServiceProvider;
+        var provider = context.Provider;
 
         _constructService = provider.GetRequiredService<IConstructService>();
         _constructHandleService = provider.GetRequiredService<IConstructHandleRepository>();

@@ -31,7 +31,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
     public Task InitializeAsync(BehaviorContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = context.Provider;
 
         _logger = provider.CreateLogger<FollowTargetBehaviorV2>();
         _constructService = provider.GetRequiredService<IConstructService>();
@@ -186,7 +186,7 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                     var sw = new Stopwatch();
                     sw.Start();
 
-                    var modManagerGrain = context.ServiceProvider.GetOrleans()
+                    var modManagerGrain = context.Provider.GetOrleans()
                         .GetModManagerGrain();
                     await modManagerGrain.TriggerModAction(
                         ModBase.Bot.PlayerId,

@@ -41,7 +41,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
 
     public Task InitializeAsync(BehaviorContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = context.Provider;
 
         _orleans = provider.GetOrleans();
         _logger = provider.CreateLogger<SelectTargetBehavior>();

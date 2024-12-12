@@ -36,7 +36,7 @@ public class NotifierBehavior(ulong constructId, IPrefab prefab) : IConstructBeh
 
     public async Task InitializeAsync(BehaviorContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = context.Provider;
         _orleans = provider.GetOrleans();
 
         _constructElementsGrain = _orleans.GetConstructElementsGrain(constructId);
@@ -64,6 +64,14 @@ public class NotifierBehavior(ulong constructId, IPrefab prefab) : IConstructBeh
         // TODO consider a better place for this in the future
         context.ClearExpiredTimerProperties();
         context.Effects.CleanupExpired();
+
+        foreach (var skill in context.Skills)
+        {
+            if (!skill.CanUse(context)) continue;
+            if (!skill.ShouldUse(context)) continue;
+            
+            await skill.Use(context);
+        }
 
         try
         {

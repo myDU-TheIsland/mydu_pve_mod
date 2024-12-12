@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
 using Newtonsoft.Json;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Data;
@@ -37,6 +38,8 @@ public class PrefabItem
     public double SectorExpirationSeconds { get; set; } = 60 * 30;
 
     public PrefabEvents Events { get; set; } = new();
+
+    public IEnumerable<SkillItem> Skills { get; set; } = [];
 
     public class ServerPropertiesItem
     {

@@ -114,7 +114,7 @@ public class AggressiveBehaviorTests
         var behavior = new AggressiveBehavior(1, prefab);
         var context = new BehaviorContext(1, 1, null, new Vec3(), provider, prefab)
         {
-            ServiceProvider = provider,
+            Provider = provider,
             TargetConstructId = 2,
             DamageData = new ConstructDamageData([
                 WeaponItemStubFactory.RareLargeDefenseRailgun(),

@@ -24,7 +24,7 @@ public static class BehaviorContextNotificationExtensions
 
         await context.Prefab.Events.OnShieldHalfAction.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.ServiceProvider,
+                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 eventArgs.Context.PlayerIds,
                 eventArgs.Context.Sector,
@@ -47,7 +47,7 @@ public static class BehaviorContextNotificationExtensions
 
         await context.Prefab.Events.OnShieldLowAction.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.ServiceProvider,
+                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 eventArgs.Context.PlayerIds,
                 eventArgs.Context.Sector,
@@ -70,7 +70,7 @@ public static class BehaviorContextNotificationExtensions
 
         await context.Prefab.Events.OnShieldDownAction.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.ServiceProvider,
+                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 eventArgs.Context.PlayerIds,
                 eventArgs.Context.Sector,
@@ -93,7 +93,7 @@ public static class BehaviorContextNotificationExtensions
 
         await context.Prefab.Events.OnCoreStressHigh.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.ServiceProvider,
+                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 eventArgs.Context.PlayerIds.ToHashSet(),
                 eventArgs.Context.Sector,
@@ -114,17 +114,17 @@ public static class BehaviorContextNotificationExtensions
             return;
         }
 
-        var eventService = context.ServiceProvider.GetRequiredService<IEventService>();
+        var eventService = context.Provider.GetRequiredService<IEventService>();
 
         var taskList = new List<Task>();
 
         // send event for all players piloting constructs
         // TODO #limitation = not considering gunners and boarders
-        var logger = eventArgs.Context.ServiceProvider.CreateLogger<BehaviorContext>();
+        var logger = eventArgs.Context.Provider.CreateLogger<BehaviorContext>();
 
         var targetConstructId = eventArgs.Context.GetTargetConstructId();
 
-        var constructService = eventArgs.Context.ServiceProvider
+        var constructService = eventArgs.Context.Provider
             .GetRequiredService<IConstructService>();
 
         try
@@ -211,7 +211,7 @@ public static class BehaviorContextNotificationExtensions
 
         var scriptExecutionTask = context.Prefab.Events.OnDestruction.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.ServiceProvider,
+                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 playerIds,
                 eventArgs.Context.Sector,

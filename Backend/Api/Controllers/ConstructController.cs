@@ -9,13 +9,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQ.Interfaces;
 using NQutils.Def;
 using Swashbuckle.AspNetCore.Annotations;
-using ConstructAppear = NQ.ConstructAppear;
-using ConstructDisappear = NQutils.Messages.ConstructDisappear;
 using ElementPropertyUpdate = NQ.ElementPropertyUpdate;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
@@ -42,59 +41,61 @@ public class ConstructController : Controller
     public async Task<IActionResult> JamTarget(ulong constructId, ulong targetConstructId)
     {
         var provider = ModBase.ServiceProvider;
-        var orleans = provider.GetOrleans();
-        var pub = provider.GetRequiredService<IPub>();
-
-        var constructElementsGrain = orleans.GetConstructElementsGrain(targetConstructId);
-        var radars = await constructElementsGrain.GetElementsOfType<RadarPVPUnit>();
-
-        var targetConstructGrain = orleans.GetConstructGrain(targetConstructId);
-        var pilot = await targetConstructGrain.GetPilot();
-
-        var constructInfoGrain = orleans.GetConstructInfoGrain(constructId);
-        var info = await constructInfoGrain.Get();
-
-        if (!pilot.HasValue)
-        {
-            return BadRequest("No Target Construct Pilot");
-        }
-
-        foreach (var radar in radars)
-        {
-            var element = await constructElementsGrain.GetElement(radar.elementId);
-            var seat = element.links.FirstOrDefault(x => x.plugType == PlugType.PLUG_CONTROL);
-
-            var radarGrain = orleans.GetRadarGrain(radar);
-            await radarGrain.IdentifyStop(pilot.Value, new RadarIdentifyTarget
-            {
-                targetConstructId = constructId,
-                playerId = pilot.Value,
-                sourceConstructId = targetConstructId,
-                sourceRadarElementId = radar.elementId,
-                sourceSeatElementId = seat?.fromElementId ?? 0
-            });
-
-            await targetConstructGrain.ConstructEndIdentifying(targetConstructId, radar);
-
-            var radarCamera = new CameraId { id = radar.elementId, kind = CameraKind.Radar };
-            await pub.NotifyPlayer(pilot.Value, new ConstructDisappear(
-                new NQ.ConstructDisappear
-                {
-                    constructId = constructId,
-                    camera = radarCamera
-                }));
-
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(1000);
-                await pub.NotifyPlayer(pilot.Value, new NQutils.Messages.ConstructAppear(
-                    new ConstructAppear
-                    {
-                        camera = radarCamera,
-                        info = info
-                    }));
-            });
-        }
+        await provider.GetRequiredService<IJamTargetService>()
+            .JamAsync(constructId, targetConstructId);
+        // var orleans = provider.GetOrleans();
+        // var pub = provider.GetRequiredService<IPub>();
+        //
+        // var constructElementsGrain = orleans.GetConstructElementsGrain(targetConstructId);
+        // var radars = await constructElementsGrain.GetElementsOfType<RadarPVPUnit>();
+        //
+        // var targetConstructGrain = orleans.GetConstructGrain(targetConstructId);
+        // var pilot = await targetConstructGrain.GetPilot();
+        //
+        // var constructInfoGrain = orleans.GetConstructInfoGrain(constructId);
+        // var info = await constructInfoGrain.Get();
+        //
+        // if (!pilot.HasValue)
+        // {
+        //     return BadRequest("No Target Construct Pilot");
+        // }
+        //
+        // foreach (var radar in radars)
+        // {
+        //     var element = await constructElementsGrain.GetElement(radar.elementId);
+        //     var seat = element.links.FirstOrDefault(x => x.plugType == PlugType.PLUG_CONTROL);
+        //
+        //     var radarGrain = orleans.GetRadarGrain(radar);
+        //     await radarGrain.IdentifyStop(pilot.Value, new RadarIdentifyTarget
+        //     {
+        //         targetConstructId = constructId,
+        //         playerId = pilot.Value,
+        //         sourceConstructId = targetConstructId,
+        //         sourceRadarElementId = radar.elementId,
+        //         sourceSeatElementId = seat?.fromElementId ?? 0
+        //     });
+        //
+        //     await targetConstructGrain.ConstructEndIdentifying(targetConstructId, radar);
+        //
+        //     var radarCamera = new CameraId { id = radar.elementId, kind = CameraKind.Radar };
+        //     await pub.NotifyPlayer(pilot.Value, new ConstructDisappear(
+        //         new NQ.ConstructDisappear
+        //         {
+        //             constructId = constructId,
+        //             camera = radarCamera
+        //         }));
+        //
+        //     _ = Task.Run(async () =>
+        //     {
+        //         await Task.Delay(1000);
+        //         await pub.NotifyPlayer(pilot.Value, new NQutils.Messages.ConstructAppear(
+        //             new ConstructAppear
+        //             {
+        //                 camera = radarCamera,
+        //                 info = info
+        //             }));
+        //     });
+        // }
 
         return Ok();
     }

@@ -6,9 +6,12 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Repository;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Features.Scripts.Validators;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Repository;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Services;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.Spawner.Validators;
 
@@ -31,5 +34,7 @@ public static class SpawnerRegistration
         services.AddSingleton<IScriptActionItemRepository, ScriptActionItemDatabaseRepository>();
         services.AddSingleton<IPrefabItemRepository, PrefabItemDatabaseRepository>();
         services.AddSingleton<IConstructHandleRepository, ConstructHandleDatabaseRepository>();
+        services.AddSingleton<ISkillFactory, SkillFactory>();
+        services.AddSingleton<IJamTargetService, JamTargetService>();
     }
 }

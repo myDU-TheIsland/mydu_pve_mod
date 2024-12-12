@@ -19,7 +19,7 @@ public class RetreatBehavior(ulong constructId, IPrefab prefab) : IConstructBeha
 
     public Task InitializeAsync(BehaviorContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = context.Provider;
         _constructService = provider.GetRequiredService<IConstructService>();
 
         return Task.CompletedTask;

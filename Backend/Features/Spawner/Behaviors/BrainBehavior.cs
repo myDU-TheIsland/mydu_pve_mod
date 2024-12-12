@@ -19,7 +19,7 @@ public class BrainBehavior(ulong constructId, IPrefab prefab) : IConstructBehavi
 
     public Task InitializeAsync(BehaviorContext context)
     {
-        _logger = context.ServiceProvider.CreateLogger<BrainBehavior>();
+        _logger = context.Provider.CreateLogger<BrainBehavior>();
         
         return Task.CompletedTask;
     }
