@@ -12,5 +12,5 @@ public interface IProceduralQuestGeneratorService
         FactionId factionId,
         TerritoryId territoryId,
         int seed,
-        int quantity = 20);
+        int quantity = 40);
 }
