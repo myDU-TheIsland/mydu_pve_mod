@@ -67,7 +67,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
         }
 
         var timeFactor =
-            TimeUtility.GetTimeSnapped(DateTimeOffset.UtcNow, MissionProceduralGenerationConfig.TimeFactor);
+            TimeUtility.GetTimeSnapped(DateTimeOffset.UtcNow, MissionProceduralGenerationConfig.OrderMissionTimeFactor);
         var random = new Random(seed);
 
         var questSeed = random.Next();

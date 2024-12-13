@@ -49,7 +49,7 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
             return ProceduralQuestOutcome.Failed($"Faction {factionId.Id} not found");
         }
 
-        var timeFactor = TimeUtility.GetTimeSnapped(DateTimeOffset.UtcNow, MissionProceduralGenerationConfig.TimeFactor);
+        var timeFactor = TimeUtility.GetTimeSnapped(DateTimeOffset.UtcNow, MissionProceduralGenerationConfig.TransportMissionTimeFactor);
         var random = new Random(seed);
 
         var questSeed = random.Next();
