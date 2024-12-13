@@ -56,19 +56,21 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
         {
             itemRule.Sanitize();
 
+            var randomQuantity = random.NextInt64(itemRule.MinQuantity, itemRule.MaxQuantity);
+            var randomCost = random.NextInt64(itemRule.MinSpawnCost, itemRule.MaxSpawnCost);
+            
             var itemDef = _bank.GetDefinition(itemRule.ItemName);
 
-            if (itemDef == null)
-            {
-                _logger.LogError("Could not find Item def for {Item}", itemRule.ItemName);
-                continue;
-            }
+            var item = new BaseItem();
 
-            var item = _bank.GetBaseObject<BaseItem>(itemDef.ItemType());
-            if (item == null)
+            if (itemDef != null)
             {
-                _logger.LogError("Could not find BaseObject for {Item}", itemRule.ItemName);
-                continue;
+                item = _bank.GetBaseObject<BaseItem>(itemDef.ItemType());
+                if (item == null)
+                {
+                    _logger.LogError("Could not find BaseObject for {Item}", itemRule.ItemName);
+                    item = new BaseItem();
+                }
             }
 
             var roll100 = random.NextDouble();
@@ -78,9 +80,6 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
             {
                 continue;
             }
-
-            var randomQuantity = random.NextInt64(itemRule.MinQuantity, itemRule.MaxQuantity);
-            var randomCost = random.NextInt64(itemRule.MinSpawnCost, itemRule.MaxSpawnCost);
 
             var quantity = item.GetQuantityForElement(randomQuantity);
 
