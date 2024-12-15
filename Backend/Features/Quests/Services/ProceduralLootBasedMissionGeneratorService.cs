@@ -73,12 +73,10 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
         var questSeed = random.Next();
         const string questType = QuestTypes.Order;
 
-        var tier = random.Next(1, 4);
-
         var lootItems = await _lootGeneratorService.GenerateGrouped(
             new LootGenerationArgs
             {
-                Tags = ["quest", $"tier-{tier}"],
+                Tags = ["quest"],
                 MaxBudget = random.Next(10, 1000),
                 Seed = questSeed,
                 Operator = TagOperator.AllTags
@@ -86,7 +84,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         if (lootItems.Count == 0)
         {
-            return ProceduralQuestOutcome.Failed($"No loot items tagged ['quest', 'tier-{tier}']");
+            return ProceduralQuestOutcome.Failed("No loot items tagged ['quest']");
         }
 
         var (lootName, lootItem) = random.PickOneAtRandom(lootItems);
@@ -149,7 +147,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
         );
         var questGuid = GuidUtility.Create(
             territoryId,
-            $"{questType}-{tier}-{factionId.Id}-{territoryId.Id}-{dropGuid}-{timeFactor}"
+            $"{questType}-{lootName}-{factionId.Id}-{territoryId.Id}-{dropGuid}-{timeFactor}"
         );
 
         var constructService = provider.GetRequiredService<IConstructService>();
