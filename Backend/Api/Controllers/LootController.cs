@@ -40,7 +40,8 @@ public class LootController : Controller
             new LootGenerationArgs
             {
                 Tags = tags.Split(","),
-                MaxBudget = budget
+                MaxBudget = budget,
+                Operator = TagOperator.AllTags
             }
         );
 
@@ -69,7 +70,8 @@ public class LootController : Controller
             new LootGenerationArgs
             {
                 Tags = tags.Split(","),
-                MaxBudget = budget
+                MaxBudget = budget,
+                Operator = TagOperator.AllTags
             }
         );
 
