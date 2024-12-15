@@ -73,6 +73,18 @@ public class RecipePriceCalculator(IServiceProvider provider) : IRecipePriceCalc
             recipeOutputMap.TryAdd(kvp.Key,
                 new RecipeOutputData { Quanta = output.GetTotalCost(), Quantity = quantityMap[kvp.Key] });
         }
+        
+        foreach (var kvp in priceMap)
+        {
+            recipeOutputMap.Add(
+                kvp.Key,
+                new RecipeOutputData
+                {
+                    Quanta = kvp.Value,
+                    Quantity = new Quantity(1)
+                }
+            );
+        }
 
         return recipeOutputMap;
     }
