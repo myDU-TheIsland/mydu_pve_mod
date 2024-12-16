@@ -14,12 +14,24 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
 public class StasisTargetSkill : ISkill
 {
+    private static double MagazineVolume => 1500D;
+    private static double AmmoUnitVolume => 100D;
+    private static long TotalAmmoCount => (long)(MagazineVolume / AmmoUnitVolume);
+    public long CurrentAmmo { get; set; }
+
     public required string? ItemTypeName { get; set; }
     public required TimeSpan Cooldown { get; set; }
+    public TimeSpan ReloadCooldown { get; set; } = TimeSpan.FromSeconds(30);
+
+    public StasisTargetSkill()
+    {
+        CurrentAmmo = TotalAmmoCount;
+    }
 
     public bool CanUse(BehaviorContext context)
     {
-        return !context.Effects.IsEffectActive<CooldownEffect>();
+        return !context.Effects.IsEffectActive<CooldownEffect>() ||
+               !context.Effects.IsEffectActive<ReloadEffect>();
     }
 
     public bool ShouldUse(BehaviorContext context)
@@ -37,7 +49,7 @@ public class StasisTargetSkill : ISkill
         var speedConfig = bank.GetBaseObject<ConstructSpeedConfig>();
         var totalMass = await constructService.GetConstructTotalMass(context.TargetConstructId.Value);
 
-        var stasis = bank.GetDefinition(ItemTypeName ?? "StasisWeaponMedium");
+        var stasis = bank.GetDefinition(ItemTypeName ?? "StasisWeaponSmall");
 
         if (stasis?.BaseObject is not StasisWeaponUnit stasisWeaponUnit)
         {
@@ -46,6 +58,11 @@ public class StasisTargetSkill : ISkill
 
         var maxRange = stasisWeaponUnit.RangeMax;
         var distance = context.TargetDistance;
+
+        if (distance > maxRange)
+        {
+            return;
+        }
 
         if (totalMass <= speedConfig.heavyConstructMass)
         {
@@ -57,6 +74,15 @@ public class StasisTargetSkill : ISkill
 
         context.Effects.Activate<CooldownEffect>(Cooldown);
 
+        CurrentAmmo--;
+        
+        if (CurrentAmmo <= 0)
+        {
+            CurrentAmmo = TotalAmmoCount;
+            context.Effects.Activate<ReloadEffect>(ReloadCooldown);
+            return;
+        }
+        
         if (distance > maxRange * 3.0)
         {
             // miss
@@ -83,4 +109,5 @@ public class StasisTargetSkill : ISkill
     }
 
     public class CooldownEffect : IEffect;
+    public class ReloadEffect : IEffect;
 }
