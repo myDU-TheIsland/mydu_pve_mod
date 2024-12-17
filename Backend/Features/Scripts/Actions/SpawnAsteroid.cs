@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Backend;
+using Backend.Scenegraph;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
@@ -30,6 +31,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
         var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
         var bank = context.ServiceProvider.GetGameplayBank();
+        var sceneGraph = context.ServiceProvider.GetRequiredService<IScenegraph>();
 
         var number = random.Next(1, 100);
         var properties = JObject.FromObject(actionItem.Properties).ToObject<Properties>();
@@ -76,11 +78,13 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                 }
             });
 
+            var asteroidCenterPos = await sceneGraph.GetConstructCenterWorldPosition(asteroidId);
+
             var spawnContext = new ScriptContext(
                 context.ServiceProvider,
                 context.FactionId,
                 context.PlayerIds,
-                position,
+                asteroidCenterPos,
                 context.TerritoryId)
             {
                 Properties = context.Properties
