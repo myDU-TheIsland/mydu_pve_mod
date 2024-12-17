@@ -28,16 +28,15 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
 
         var number = random.Next(1, 100);
-        var minTier = actionItem.Properties.GetValueOrDefault("MinTier", 4)
-            .SafeCastOrDefault(4);
-        var maxTier = actionItem.Properties.GetValueOrDefault("MaxTier", 5)
-            .SafeCastOrDefault(5);
+        var minTier = (int)(long)actionItem.Properties.GetValueOrDefault("MinTier", 4);
+        var maxTier = (int)(long)actionItem.Properties.GetValueOrDefault("MaxTier", 5);
 
         var isPublished = actionItem.Properties.GetValueOrDefault("Published", false)
             .SafeCastOrDefault(false);
 
         var centerJObject = actionItem.Properties.GetValueOrDefault("Center", JObject.FromObject(context.Sector))
             .SafeCastOrDefault(JObject.FromObject(context.Sector));
+        
         var center = centerJObject.ToObject<Vec3>();
 
         var tier = random.Next(minTier, maxTier);
