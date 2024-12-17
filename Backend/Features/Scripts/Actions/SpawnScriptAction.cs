@@ -160,10 +160,11 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
             spawnPosition);
 
         var isWreck = constructDef.DefinitionItem.ServerProperties.IsDynamicWreck;
+        var cannotTarget = constructDef.DefinitionItem.IsUntargetable;
 
         var behaviorList = new List<string>();
 
-        if (!isWreck)
+        if (!isWreck && !cannotTarget)
         {
             behaviorList.AddRange(["alive", "select-target", "notifier"]);
             behaviorList.AddRange(constructDefItem.InitialBehaviors);
