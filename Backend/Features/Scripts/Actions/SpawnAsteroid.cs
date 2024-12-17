@@ -7,6 +7,8 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Helpers;
+using Newtonsoft.Json.Linq;
+using NQ;
 using NQ.Interfaces;
 
 namespace Mod.DynamicEncounters.Features.Scripts.Actions;
@@ -34,10 +36,14 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         var isPublished = actionItem.Properties.GetValueOrDefault("Published", false)
             .SafeCastOrDefault(false);
 
+        var centerJObject = actionItem.Properties.GetValueOrDefault("Center", JObject.FromObject(context.Sector))
+            .SafeCastOrDefault(JObject.FromObject(context.Sector));
+        var center = centerJObject.ToObject<Vec3>();
+
         var tier = random.Next(minTier, maxTier);
 
         var pointGenerator = pointGeneratorFactory.Create(actionItem.Area);
-        var position = context.Sector + pointGenerator.NextPoint(random);
+        var position = center + pointGenerator.NextPoint(random);
 
         var asteroidId = await asteroidManagerGrain.SpawnAsteroid(
             tier,
