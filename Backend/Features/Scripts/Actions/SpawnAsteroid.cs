@@ -76,23 +76,24 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                 }
             });
 
-            var spawnResult = await spawnScriptAction.ExecuteAsync(
-                new ScriptContext(
-                    context.ServiceProvider,
-                    context.FactionId,
-                    context.PlayerIds,
-                    position,
-                    context.TerritoryId)
-                {
-                    Properties = context.Properties
-                });
+            var spawnContext = new ScriptContext(
+                context.ServiceProvider,
+                context.FactionId,
+                context.PlayerIds,
+                position,
+                context.TerritoryId)
+            {
+                Properties = context.Properties
+            };
+            
+            var spawnResult = await spawnScriptAction.ExecuteAsync(spawnContext);
 
             if (!spawnResult.Success)
             {
                 return spawnResult;
             }
 
-            if (!context.ConstructId.HasValue)
+            if (!spawnContext.ConstructId.HasValue)
             {
                 return spawnResult;
             }
@@ -101,7 +102,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
             var deletePoiTimeSpan = properties.DeletePointOfInterestTimeSpan ?? TimeSpan.FromDays(asteroidManagerConfig.lifetimeDays);
 
             await constructService.SetAutoDeleteFromNowAsync(
-                context.ConstructId.Value,
+                spawnContext.ConstructId.Value,
                 deletePoiTimeSpan
             );
         }
