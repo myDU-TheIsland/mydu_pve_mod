@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
@@ -27,8 +26,10 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
 
         var number = random.Next(1, 100);
-        var minTier = (int)(long)actionItem.Properties.GetValueOrDefault("MinTier", 4);
-        var maxTier = (int)(long)actionItem.Properties.GetValueOrDefault("MaxTier", 5);
+        var minTier = actionItem.Properties.GetValueOrDefault("MinTier", 4)
+            .SafeCastOrDefault(4);
+        var maxTier = actionItem.Properties.GetValueOrDefault("MaxTier", 5)
+            .SafeCastOrDefault(5);
 
         var tier = random.Next(minTier, maxTier);
 
@@ -48,7 +49,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         if (info.Info != null)
         {
             var name = info.Info.rData.name
-                .Replace("R-", "T-");
+                .Replace("A-", "R-");
 
             await constructService.RenameConstruct(asteroidId, name);
         }

@@ -27,13 +27,14 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
         await db.ExecuteAsync(
             """
             INSERT INTO public.mod_sector_instance (id, name, faction_id, sector_x, sector_y, sector_z, expires_at, on_load_script, on_sector_enter_script, force_expire_at, territory_id, json_properties)
-            VALUES (@Id, @Name, @FactionId, @PosX, @PosY, @PosZ, @ExpiresAt, @OnLoadScript, @OnSectorEnterScript, NOW() + INTERVAL '6 hours', @TerritoryId, @json_properties::jsonb);
+            VALUES (@Id, @Name, @FactionId, @PosX, @PosY, @PosZ, @ExpiresAt, @OnLoadScript, @OnSectorEnterScript, @ForceExpiresAt, @TerritoryId, @json_properties::jsonb);
             """,
             new
             {
                 item.Id,
                 item.Name,
                 item.FactionId,
+                item.ForceExpiresAt,
                 PosX = item.Sector.x,
                 PosY = item.Sector.y,
                 PosZ = item.Sector.z,

@@ -117,6 +117,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow + encounter.Properties.ExpirationTimeSpan +
                             TimeSpan.FromMinutes(randomMinutes * i),
+                ForceExpiresAt = DateTime.UtcNow + (encounter.Properties.ForcedExpirationTimeSpan ?? TimeSpan.FromHours(6)),
                 TerritoryId = args.TerritoryId,
                 OnLoadScript = encounter.OnLoadScript,
                 OnSectorEnterScript = encounter.OnSectorEnterScript,
