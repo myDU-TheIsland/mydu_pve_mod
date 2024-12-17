@@ -69,7 +69,6 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
 
             var spawnScriptAction = new SpawnScriptAction(new ScriptActionItem
             {
-                Position = position,
                 Prefab = properties.PointOfInterestPrefabName,
                 Override = new ScriptActionOverrides
                 {
