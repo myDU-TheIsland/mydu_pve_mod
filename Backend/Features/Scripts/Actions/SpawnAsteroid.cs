@@ -29,7 +29,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
 
         var number = random.Next(1, 100);
         var minTier = (int)(long)actionItem.Properties.GetValueOrDefault("MinTier", 4);
-        var maxTier = (int)(long)actionItem.Properties.GetValueOrDefault("MaxTier", 5);
+        var maxTier = (int)(long)actionItem.Properties.GetValueOrDefault("MaxTier", 5) + 1;
 
         var isPublished = actionItem.Properties.GetValueOrDefault("Published", false)
             .SafeCastOrDefault(false);
