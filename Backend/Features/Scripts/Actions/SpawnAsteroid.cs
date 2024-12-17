@@ -31,6 +31,9 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         var maxTier = actionItem.Properties.GetValueOrDefault("MaxTier", 5)
             .SafeCastOrDefault(5);
 
+        var isPublished = actionItem.Properties.GetValueOrDefault("Published", false)
+            .SafeCastOrDefault(false);
+
         var tier = random.Next(minTier, maxTier);
 
         var pointGenerator = pointGeneratorFactory.Create(actionItem.Area);
@@ -52,6 +55,11 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                 .Replace("A-", "R-");
 
             await constructService.RenameConstruct(asteroidId, name);
+        }
+
+        if (isPublished)
+        {
+            await asteroidManagerGrain.ForcePublish(asteroidId);
         }
 
         return ScriptActionResult.Successful();
