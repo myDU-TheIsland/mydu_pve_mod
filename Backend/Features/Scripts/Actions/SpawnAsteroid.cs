@@ -110,6 +110,14 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                 spawnContext.ConstructId.Value,
                 deletePoiTimeSpan
             );
+            
+            await context.ServiceProvider.GetRequiredService<ITaskQueueService>()
+                .EnqueueScript(new ScriptActionItem
+                    {
+                        Type = "delete",
+                        ConstructId = spawnContext.ConstructId.Value
+                    },
+                    DateTime.UtcNow + deletePoiTimeSpan);
         }
 
         if (properties.HiddenFromDsat)
