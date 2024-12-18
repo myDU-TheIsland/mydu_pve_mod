@@ -6,6 +6,7 @@ using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
+using Newtonsoft.Json;
 
 namespace Mod.DynamicEncounters.Features.Scripts.Actions;
 
@@ -16,6 +17,7 @@ public class RandomChanceScriptAction(ScriptActionItem actionItem) : IScriptActi
     public string GetKey() => Name;
 
     public string Name => ActionName;
+
     public Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
         var provider = context.ServiceProvider;
@@ -36,14 +38,14 @@ public class RandomChanceScriptAction(ScriptActionItem actionItem) : IScriptActi
         {
             return Task.FromResult(ScriptActionResult.Successful());
         }
-        
+
         var defaultAction = scriptActionFactory.Create(properties.DefaultActions);
         return defaultAction.ExecuteAsync(context);
     }
 
     public class Properties
     {
-        public float GreaterThan { get; set; } = 0.5f;
-        public IEnumerable<ScriptActionItem> DefaultActions { get; set; } = [];
+        [JsonProperty] public float GreaterThan { get; set; } = 0.5f;
+        [JsonProperty] public IEnumerable<ScriptActionItem> DefaultActions { get; set; } = [];
     }
 }
