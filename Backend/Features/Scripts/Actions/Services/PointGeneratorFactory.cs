@@ -16,7 +16,7 @@ public class PointGeneratorFactory : IPointGeneratorFactory
                 item.Height,
                 item.Rotation.ToQuaternion()
             ),
-            _ => new SpherePointGenerator(0, 100000)
+            _ => new NullPointGenerator()
         };
     }
 }

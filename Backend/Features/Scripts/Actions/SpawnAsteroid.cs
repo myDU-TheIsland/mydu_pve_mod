@@ -76,14 +76,16 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         {
             await asteroidManagerGrain.ForcePublish(asteroidId);
 
-            var spawnScriptAction = new SpawnScriptAction(new ScriptActionItem
-            {
-                Prefab = properties.PointOfInterestPrefabName,
-                Override = new ScriptActionOverrides
+            var spawnScriptAction = new SpawnScriptAction(
+                new ScriptActionItem
                 {
-                    ConstructName = name,
-                }
-            });
+                    Area = new ScriptActionAreaItem { Type = "null" },
+                    Prefab = properties.PointOfInterestPrefabName,
+                    Override = new ScriptActionOverrides
+                    {
+                        ConstructName = name,
+                    }
+                });
 
             var spawnContext = new ScriptContext(
                 context.ServiceProvider,
@@ -111,7 +113,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                 spawnContext.ConstructId.Value,
                 deletePoiTimeSpan
             );
-            
+
             await context.ServiceProvider.GetRequiredService<ITaskQueueService>()
                 .EnqueueScript(new ScriptActionItem
                     {
@@ -165,10 +167,11 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         [JsonProperty] public string FileNamePrefix { get; set; } = "basic";
         [JsonProperty] public ulong PlanetId { get; set; } = 2;
         [JsonProperty] public TimeSpan? AutoDeleteTimeSpan { get; set; }
-        
+
         /// <summary>
         /// Does not show on DSAT but deletes automatically.
         /// </summary>
-        [JsonProperty] public bool HiddenFromDsat { get; set; }
+        [JsonProperty]
+        public bool HiddenFromDsat { get; set; }
     }
 }
