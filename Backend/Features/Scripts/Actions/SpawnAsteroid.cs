@@ -149,18 +149,20 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
 
         var actionResult = await action.ExecuteAsync(actionContext);
 
+        await Task.Delay(500);
+
         return actionResult;
     }
 
     public class Properties
     {
-        public int MinTier { get; set; } = 4;
-        public int MaxTier { get; set; } = 5;
-        public bool Published { get; set; } = true;
+        public int MinTier { get; set; }
+        public int MaxTier { get; set; }
+        public bool Published { get; set; }
         public Vec3? Center { get; set; }
         public string PointOfInterestPrefabName { get; set; } = "poi-asteroid";
         public string FileNamePrefix { get; set; } = "basic";
-        public ulong PlanetId { get; set; } = 2U;
+        public ulong PlanetId { get; set; } = 2;
         public TimeSpan? AutoDeleteTimeSpan { get; set; }
         
         /// <summary>

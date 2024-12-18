@@ -9,14 +9,14 @@ public class PointGeneratorFactory : IPointGeneratorFactory
     {
         return item.Type switch
         {
-            "sphere" => new SpherePointGenerator(item.Radius),
+            "sphere" => new SpherePointGenerator(item.MinRadius, item.Radius),
             "ring" => new RingPointGenerator(
                 item.MinRadius,
                 item.Radius,
                 item.Height,
                 item.Rotation.ToQuaternion()
             ),
-            _ => new SpherePointGenerator(100000)
+            _ => new SpherePointGenerator(0, 100000)
         };
     }
 }

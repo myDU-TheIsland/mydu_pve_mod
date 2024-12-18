@@ -7,6 +7,16 @@ namespace Mod.DynamicEncounters.Helpers;
 
 public static class RandomHelpers
 {
+    public static float NextFloat(this Random random, float min, float max)
+    {
+        if (min >= max)
+        {
+            max = min;
+        }
+
+        return (float)(min + random.NextDouble() * (max - min));
+    }
+
     public static Vec3 RandomDirectionVec3(this Random random)
     {
         var theta = random.NextDouble() * 2 * Math.PI;
