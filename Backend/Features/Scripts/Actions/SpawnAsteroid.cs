@@ -10,6 +10,7 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using Newtonsoft.Json;
 using NQ;
 using NQ.Interfaces;
 using NQutils.Def;
@@ -156,18 +157,18 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
 
     public class Properties
     {
-        public int MinTier { get; set; }
-        public int MaxTier { get; set; }
-        public bool Published { get; set; }
-        public Vec3? Center { get; set; }
-        public string PointOfInterestPrefabName { get; set; } = "poi-asteroid";
-        public string FileNamePrefix { get; set; } = "basic";
-        public ulong PlanetId { get; set; } = 2;
-        public TimeSpan? AutoDeleteTimeSpan { get; set; }
+        [JsonProperty] public int MinTier { get; set; }
+        [JsonProperty] public int MaxTier { get; set; }
+        [JsonProperty] public bool Published { get; set; }
+        [JsonProperty] public Vec3? Center { get; set; }
+        [JsonProperty] public string PointOfInterestPrefabName { get; set; } = "poi-asteroid";
+        [JsonProperty] public string FileNamePrefix { get; set; } = "basic";
+        [JsonProperty] public ulong PlanetId { get; set; } = 2;
+        [JsonProperty] public TimeSpan? AutoDeleteTimeSpan { get; set; }
         
         /// <summary>
         /// Does not show on DSAT but deletes automatically.
         /// </summary>
-        public bool HiddenFromDsat { get; set; } = false;
+        [JsonProperty] public bool HiddenFromDsat { get; set; }
     }
 }
