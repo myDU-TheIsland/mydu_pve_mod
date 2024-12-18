@@ -9,7 +9,6 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Helpers;
-using Newtonsoft.Json.Linq;
 using NQ;
 using NQ.Interfaces;
 using NQutils.Def;
@@ -34,7 +33,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         var sceneGraph = context.ServiceProvider.GetRequiredService<IScenegraph>();
 
         var number = random.Next(1, 100);
-        var properties = JObject.FromObject(actionItem.Properties).ToObject<Properties>();
+        var properties = actionItem.GetProperties<Properties>();
 
         var minTier = properties.MinTier;
         var maxTier = properties.MaxTier + 1;
@@ -48,9 +47,9 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
 
         var asteroidId = await asteroidManagerGrain.SpawnAsteroid(
             tier,
-            $"basic_{tier}_{number}.json",
+            $"{properties.FileNamePrefix}_{tier}_{number}.json",
             position,
-            2
+            properties.PlanetId
         );
 
         var info = await constructService.GetConstructInfoAsync(asteroidId);
@@ -65,6 +64,8 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
 
         await constructService.RenameConstruct(asteroidId, name);
 
+        var asteroidCenterPos = await sceneGraph.GetConstructCenterWorldPosition(asteroidId);
+        
         if (isPublished)
         {
             await asteroidManagerGrain.ForcePublish(asteroidId);
@@ -77,8 +78,6 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                     ConstructName = name,
                 }
             });
-
-            var asteroidCenterPos = await sceneGraph.GetConstructCenterWorldPosition(asteroidId);
 
             var spawnContext = new ScriptContext(
                 context.ServiceProvider,
@@ -111,7 +110,28 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
             );
         }
 
-        return ScriptActionResult.Successful();
+        if (properties.HiddenFromDsat)
+        {
+            await context.ServiceProvider.GetRequiredService<IAsteroidService>()
+                .HideFromDsatListAsync(asteroidId);
+        }
+
+        var scriptActionFactory = context.ServiceProvider.GetRequiredService<IScriptActionFactory>();
+        var action = scriptActionFactory.Create(actionItem.Actions);
+
+        var actionContext = new ScriptContext(
+            context.ServiceProvider,
+            context.FactionId,
+            context.PlayerIds,
+            asteroidCenterPos,
+            context.TerritoryId)
+        {
+            Properties = context.Properties
+        };
+        
+        var actionResult = await action.ExecuteAsync(actionContext);
+
+        return actionResult;
     }
 
     public class Properties
@@ -121,6 +141,9 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         public bool Published { get; set; } = true;
         public Vec3? Center { get; set; }
         public string PointOfInterestPrefabName { get; set; } = "poi-asteroid";
+        public string FileNamePrefix { get; set; } = "basic";
+        public ulong PlanetId { get; set; } = 2U;
         public TimeSpan? DeletePointOfInterestTimeSpan { get; set; }
+        public bool HiddenFromDsat { get; set; } = false;
     }
 }

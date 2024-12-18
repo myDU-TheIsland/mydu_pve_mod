@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Scripts.Actions.Data;
@@ -50,4 +51,9 @@ public class ScriptActionItem
     public ScriptActionEvents Events { get; set; } = new();
 
     public Dictionary<string, object> Properties { get; set; } = new();
+    
+    public T GetProperties<T>()
+    {
+        return JObject.FromObject(Properties).ToObject<T>();
+    }
 }

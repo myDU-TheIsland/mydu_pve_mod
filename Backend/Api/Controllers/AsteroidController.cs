@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Backend.Scenegraph;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Common.Interfaces;
@@ -26,16 +27,16 @@ public class AsteroidController : Controller
     {
         var provider = ModBase.ServiceProvider;
         var orleans = provider.GetOrleans();
+        var sceneGraph = provider.GetRequiredService<IScenegraph>();
 
         if (!request.Position.HasValue && request.ConstructId.HasValue)
         {
-            var constructInfoGrain = orleans.GetConstructInfoGrain(request.ConstructId.Value);
-            var constructInfo = await constructInfoGrain.Get();
-
+            var constructPos = await sceneGraph.GetConstructCenterWorldPosition(request.ConstructId.Value);
+            
             var random = provider.GetRequiredService<IRandomProvider>().GetRandom();
 
-            var offset = random.RandomDirectionVec3() * 2000;
-            var pos = offset + constructInfo.rData.position;
+            var offset = random.RandomDirectionVec3() * 200;
+            var pos = offset + constructPos;
             
             request.Position = pos;
         }

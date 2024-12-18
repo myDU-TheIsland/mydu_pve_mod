@@ -18,6 +18,7 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Helpers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NQ;
 using NQ.Interfaces;
 using NQutils.Config;
@@ -170,35 +171,40 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
             behaviorList.AddRange(constructDefItem.InitialBehaviors);
         }
 
-        await constructHandleRepo.AddAsync(
-            new ConstructHandleItem
-            {
-                ConstructId = constructId,
-                ConstructDefinitionId = constructDef.Id,
-                Id = Guid.NewGuid(),
-                Sector = context.Sector,
-                ConstructDefinitionItem = constructDef.DefinitionItem,
-                OriginalOwnerPlayerId = constructDef.DefinitionItem.OwnerId,
-                OriginalOrganizationId = 0,
-                FactionId = context.FactionId ?? 1,
-                JsonProperties = new ConstructHandleProperties
-                {
-                    ConstructName = resultName,
-                    Tags = actionItem.Tags,
-                    Behaviors = behaviorList,
-                    Context = context.Properties
-                        .ToDictionary(
-                            k => k.Key,
-                            v => v.Value
-                        )
-                },
-                OnCleanupScript = constructDef.DefinitionItem.ServerProperties.IsDynamicWreck
-                    ? "despawn-wreck"
-                    : "despawn"
-            }
-        );
+        var properties = context.GetProperties<Properties>();
 
-        _logger.LogInformation("Created Handle for {ConstructId} on {Sector}", constructId, context.Sector);
+        if (properties.AddConstructHandle)
+        {
+            await constructHandleRepo.AddAsync(
+                new ConstructHandleItem
+                {
+                    ConstructId = constructId,
+                    ConstructDefinitionId = constructDef.Id,
+                    Id = Guid.NewGuid(),
+                    Sector = context.Sector,
+                    ConstructDefinitionItem = constructDef.DefinitionItem,
+                    OriginalOwnerPlayerId = constructDef.DefinitionItem.OwnerId,
+                    OriginalOrganizationId = 0,
+                    FactionId = context.FactionId ?? 1,
+                    JsonProperties = new ConstructHandleProperties
+                    {
+                        ConstructName = resultName,
+                        Tags = actionItem.Tags,
+                        Behaviors = behaviorList,
+                        Context = context.Properties
+                            .ToDictionary(
+                                k => k.Key,
+                                v => v.Value
+                            )
+                    },
+                    OnCleanupScript = constructDef.DefinitionItem.ServerProperties.IsDynamicWreck
+                        ? "despawn-wreck"
+                        : "despawn"
+                }
+            );
+            
+            _logger.LogInformation("Created Handle for {ConstructId} on {Sector}", constructId, context.Sector);
+        }
 
         try
         {
@@ -260,4 +266,9 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
     }
 
     public string GetKey() => Name;
+    
+    public class Properties
+    {
+        public bool AddConstructHandle { get; set; } = true;
+    }
 }

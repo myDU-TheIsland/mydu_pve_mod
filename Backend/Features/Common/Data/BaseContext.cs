@@ -11,6 +11,11 @@ public abstract class BaseContext
 {
     public ConcurrentDictionary<string, object> Properties { get; init; } = new();
 
+    public T GetProperties<T>()
+    {
+        return JObject.FromObject(Properties).ToObject<T>();
+    }
+
     public bool TryGetProperty<T>(string name, out T value, T defaultValue)
     {
         if (Properties.TryGetValue(name, out var objVal))
