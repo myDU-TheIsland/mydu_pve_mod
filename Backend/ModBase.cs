@@ -101,8 +101,8 @@ public class ModBase
     {
         JsonConvert.DefaultSettings = () => new JsonSerializerSettings
         {
-            NullValueHandling = NullValueHandling.Ignore,
-            DefaultValueHandling = DefaultValueHandling.Ignore
+            NullValueHandling = NullValueHandling.Include,
+            DefaultValueHandling = DefaultValueHandling.Include
         };
 
         //services.RegisterCoreServices();
