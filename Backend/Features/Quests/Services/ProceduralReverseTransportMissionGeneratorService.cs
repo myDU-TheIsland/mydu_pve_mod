@@ -166,7 +166,7 @@ public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider 
                     {
                         { factionId, influenceReward }
                     },
-                    ExpiresAt = DateTime.Now + TimeSpan.FromHours(3),
+                    ExpiresAt = DateTime.UtcNow + TimeSpan.FromHours(3),
                     ItemRewardMap =
                     {
                         {"Kergon1", kergonQuantity.ToQuantity()}

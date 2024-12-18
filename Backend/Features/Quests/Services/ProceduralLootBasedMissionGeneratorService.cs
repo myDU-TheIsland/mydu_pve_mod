@@ -197,7 +197,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
                     {
                         { factionId, 1000 }
                     },
-                    ExpiresAt = DateTime.Now + TimeSpan.FromHours(3),
+                    ExpiresAt = DateTime.UtcNow + TimeSpan.FromHours(3),
                     ItemRewardMap = lootReward.GetEntries()
                         .ToDictionary(k => k.ItemName, v => v.Quantity.ToQuantity()),
                     DistanceMeters = 0,

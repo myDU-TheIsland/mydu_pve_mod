@@ -148,7 +148,7 @@ public class ShotSpawnController : Controller
         {
             additionalMaxSpeedDebuf = new MaxSpeedDebuf
             {
-                until = (DateTime.Now + request.DurationSpan).ToNQTimePoint(),
+                until = (DateTime.UtcNow + request.DurationSpan).ToNQTimePoint(),
                 value = Math.Clamp(request.Value, 0d, 1d)
             }
         });

@@ -8,6 +8,7 @@ using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
+using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQ.Interfaces;
@@ -65,7 +66,11 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         await constructService.RenameConstruct(asteroidId, name);
 
         var asteroidCenterPos = await sceneGraph.GetConstructCenterWorldPosition(asteroidId);
-        
+
+        var asteroidManagerConfig = bank.GetBaseObject<AsteroidManagerConfig>();
+        var deletePoiTimeSpan = properties.AutoDeleteTimeSpan ??
+                                TimeSpan.FromDays(asteroidManagerConfig.lifetimeDays);
+
         if (isPublished)
         {
             await asteroidManagerGrain.ForcePublish(asteroidId);
@@ -88,7 +93,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
             {
                 Properties = context.Properties
             };
-            
+
             var spawnResult = await spawnScriptAction.ExecuteAsync(spawnContext);
 
             if (!spawnResult.Success)
@@ -101,9 +106,6 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                 return spawnResult;
             }
 
-            var asteroidManagerConfig = bank.GetBaseObject<AsteroidManagerConfig>();
-            var deletePoiTimeSpan = properties.DeletePointOfInterestTimeSpan ?? TimeSpan.FromDays(asteroidManagerConfig.lifetimeDays);
-
             await constructService.SetAutoDeleteFromNowAsync(
                 spawnContext.ConstructId.Value,
                 deletePoiTimeSpan
@@ -114,6 +116,14 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         {
             await context.ServiceProvider.GetRequiredService<IAsteroidService>()
                 .HideFromDsatListAsync(asteroidId);
+
+            await context.ServiceProvider.GetRequiredService<ITaskQueueService>()
+                .EnqueueScript(new ScriptActionItem
+                    {
+                        Type = "delete-asteroid",
+                        ConstructId = asteroidId
+                    },
+                    DateTime.UtcNow + deletePoiTimeSpan);
         }
 
         var scriptActionFactory = context.ServiceProvider.GetRequiredService<IScriptActionFactory>();
@@ -128,7 +138,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         {
             Properties = context.Properties
         };
-        
+
         var actionResult = await action.ExecuteAsync(actionContext);
 
         return actionResult;
@@ -143,7 +153,11 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         public string PointOfInterestPrefabName { get; set; } = "poi-asteroid";
         public string FileNamePrefix { get; set; } = "basic";
         public ulong PlanetId { get; set; } = 2U;
-        public TimeSpan? DeletePointOfInterestTimeSpan { get; set; }
+        public TimeSpan? AutoDeleteTimeSpan { get; set; }
+        
+        /// <summary>
+        /// Does not show on DSAT but deletes automatically.
+        /// </summary>
         public bool HiddenFromDsat { get; set; } = false;
     }
 }
