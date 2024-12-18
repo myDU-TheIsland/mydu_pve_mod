@@ -27,7 +27,7 @@ public class AsteroidController : Controller
 
     [HttpDelete]
     [Route("")]
-    public async Task<IActionResult> DeleteAsteroidAround(DeleteAsteroidsAroundRequest request)
+    public async Task<IActionResult> DeleteAsteroidAround([FromBody] DeleteAsteroidsAroundRequest request)
     {
         var provider = ModBase.ServiceProvider;
         var areaScanService = provider.GetRequiredService<IAreaScanService>();
