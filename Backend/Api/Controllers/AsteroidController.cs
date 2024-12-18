@@ -1,9 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Backend.Scenegraph;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Common.Interfaces;
+using Mod.DynamicEncounters.Features.Common.Interfaces;
+using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
+using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using Newtonsoft.Json;
 using NQ;
 using NQ.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -19,7 +24,32 @@ public class AsteroidController : Controller
         public string File { get; set; }
         public Vec3? Position { get; set; }
     }
-    
+
+    [HttpDelete]
+    [Route("")]
+    public async Task<IActionResult> DeleteAsteroidAround(DeleteAsteroidsAroundRequest request)
+    {
+        var provider = ModBase.ServiceProvider;
+        var areaScanService = provider.GetRequiredService<IAreaScanService>();
+        var sceneGraph = provider.GetRequiredService<IScenegraph>();
+        var taskQueueService = provider.GetRequiredService<ITaskQueueService>();
+
+        var pos = await sceneGraph.GetConstructCenterWorldPosition(request.ConstructId);
+
+        var result = await areaScanService.ScanForAsteroids(pos, request.Radius);
+
+        foreach (var contact in result)
+        {
+            await taskQueueService.EnqueueScript(new ScriptActionItem
+            {
+                Type = "delete-asteroid",
+                ConstructId = contact.ConstructId
+            }, DateTime.UtcNow);
+        }
+
+        return Ok();
+    }
+
     [SwaggerOperation("Spawns an Asteroid at a position or around a construct")]
     [HttpPost]
     [Route("spawn")]
@@ -32,12 +62,12 @@ public class AsteroidController : Controller
         if (!request.Position.HasValue && request.ConstructId.HasValue)
         {
             var constructPos = await sceneGraph.GetConstructCenterWorldPosition(request.ConstructId.Value);
-            
+
             var random = provider.GetRequiredService<IRandomProvider>().GetRandom();
 
             var offset = random.RandomDirectionVec3() * 200;
             var pos = offset + constructPos;
-            
+
             request.Position = pos;
         }
         else if (!request.Position.HasValue)
@@ -51,7 +81,13 @@ public class AsteroidController : Controller
         );
 
         await asteroidManagerGrain.ForcePublish(asteroidId);
-        
+
         return Ok(asteroidId);
+    }
+
+    public class DeleteAsteroidsAroundRequest
+    {
+        [JsonProperty] public ulong ConstructId { get; set; }
+        [JsonProperty] public double Radius { get; set; } = DistanceHelpers.OneSuInMeters * 5;
     }
 }
