@@ -34,6 +34,7 @@ public class GiveTakePlayerItemsAction(IServiceProvider provider) : IModActionHa
         if (isInVr)
         {
             await Notifications.ErrorNotification(provider, playerId, "Cannot use this in VR");
+            return;
         }
 
         var itemOperation = JsonConvert.DeserializeObject<ItemOperation>(action.payload);
@@ -81,7 +82,7 @@ public class GiveTakePlayerItemsAction(IServiceProvider provider) : IModActionHa
                     Reason = StorageReserveReason.RESERVE_EXACT,
                     User = itemOperation.Owner,
                     Requester = playerId,
-                    BypassLock = true,
+                    BypassLock = false,
                 }
             );
 
@@ -98,9 +99,6 @@ public class GiveTakePlayerItemsAction(IServiceProvider provider) : IModActionHa
             {
                 switch (bex.error.code)
                 {
-                    case ErrorCode.InternalError:
-                        logger.LogError(e.InnerException, "Internal Error");
-                        break;
                     case ErrorCode.InventoryFull:
                     case ErrorCode.InventoryOperationError:
                     case ErrorCode.InventoryOverVolume:
@@ -113,6 +111,9 @@ public class GiveTakePlayerItemsAction(IServiceProvider provider) : IModActionHa
                     case ErrorCode.InventoryNotEnough:
                         await Notifications.ErrorNotification(provider, playerId,
                             "You do not have the necessary items");
+                        break;
+                    default:
+                        logger.LogError(e, "{Code}. Error: {Error}", bex.error.code, bex.error.message);
                         break;
                 }
             }
