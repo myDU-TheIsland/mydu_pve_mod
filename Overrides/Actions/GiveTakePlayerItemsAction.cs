@@ -35,12 +35,12 @@ public class GiveTakePlayerItemsAction(IServiceProvider provider) : IModActionHa
         {
             await Notifications.ErrorNotification(provider, playerId, "Cannot use this in VR");
         }
-        
+
         var itemOperation = JsonConvert.DeserializeObject<ItemOperation>(action.payload);
         var callback = JsonConvert.DeserializeObject<CallbackData>(action.payload);
 
         var transaction = await itemStorage.MakeTransaction(Tag.HttpCall("items"));
-        
+
         try
         {
             var itemQuantList = new List<ItemAndQuantity>();
@@ -87,36 +87,43 @@ public class GiveTakePlayerItemsAction(IServiceProvider provider) : IModActionHa
 
             await Notifications.SimpleNotificationToPlayer(provider, playerId, "Inventory operation successful");
             await DynamicEncountersCallback.ExecuteCallback(provider, callback.OnSuccessCallbackUrl);
-            
+
             await transaction.Commit();
         }
         catch (Exception e)
         {
             await transaction.Rollback();
-            
+
             if (e is BusinessException bex)
             {
                 switch (bex.error.code)
                 {
+                    case ErrorCode.InternalError:
+                        logger.LogError(e.InnerException, "Internal Error");
+                        break;
                     case ErrorCode.InventoryFull:
                     case ErrorCode.InventoryOperationError:
                     case ErrorCode.InventoryOverVolume:
                     case ErrorCode.InventoryNoSuchContainer:
                     case ErrorCode.InventoryInvalidItemType:
                     case ErrorCode.InventoryNotEmptySlot:
-                        await Notifications.ErrorNotification(provider, playerId, "Failed. Check if your inventory is full");
+                        await Notifications.ErrorNotification(provider, playerId,
+                            "Failed. Check if your inventory is full");
                         break;
                     case ErrorCode.InventoryNotEnough:
-                        await Notifications.ErrorNotification(provider, playerId, "You do not have the necessary items");
+                        await Notifications.ErrorNotification(provider, playerId,
+                            "You do not have the necessary items");
                         break;
-                }    
+                }
             }
             else
             {
-                await Notifications.ErrorNotification(provider, playerId, "Unknown Failure. Report to the admins this error");
+                await Notifications.ErrorNotification(provider, playerId,
+                    "Unknown Failure. Report to the admins this error");
             }
-            
-            logger.LogError(e, "Failed to Give or Take Items for {Player}. Action: {Action}. Payload: {Payload}", playerId, action, action.payload);
+
+            logger.LogError(e, "Failed to Give or Take Items for {Player}. Action: {Action}. Payload: {Payload}",
+                playerId, action, action.payload);
 
             await DynamicEncountersCallback.ExecuteCallback(provider, callback.OnFailCallbackUrl);
         }
