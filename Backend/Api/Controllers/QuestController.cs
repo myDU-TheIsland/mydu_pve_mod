@@ -151,6 +151,8 @@ public class QuestController : Controller
     {
         await Task.Yield();
         
+        _logger.LogError("Failed to complete quest / {Quest} / Task {Task}", questId, questTaskId);
+        
         return Ok();
     }
 

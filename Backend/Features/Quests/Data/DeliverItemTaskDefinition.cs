@@ -58,6 +58,6 @@ public class DeliverItemTaskDefinition(
             )
         );
 
-        return QuestInteractionOutcome.Successful("Request to Deliver items sent to Orleans");
+        return QuestInteractionOutcome.Successful(questTaskId, "Request to Deliver items sent to Orleans");
     }
 }

@@ -59,6 +59,6 @@ public class PickupItemTaskItemDefinition(
             )
         );
 
-        return QuestInteractionOutcome.Successful("Request to pickup items sent to Orleans");
+        return QuestInteractionOutcome.Successful(questTaskId, "Request to pickup items sent to Orleans");
     }
 }

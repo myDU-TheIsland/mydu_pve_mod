@@ -60,6 +60,6 @@ public class DeliverItemsUnrestrictedTaskDefinition(
             )
         );
 
-        return QuestInteractionOutcome.Successful("Request to Deliver items sent to Orleans");
+        return QuestInteractionOutcome.Successful(questTaskId, $"{questTaskId.QuestId.Id}/{questTaskId.Id} Request to Deliver items sent to Orleans");
     }
 }
