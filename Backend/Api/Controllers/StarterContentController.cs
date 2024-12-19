@@ -81,6 +81,7 @@ public class StarterContentController(IServiceProvider provider) : Controller
                     Folder = "pve",
                     Path = "Simple_POI.json",
                     OwnerId = 0,
+                    InitialBehaviors = ["wreck"],
                     ServerProperties = new PrefabItem.ServerPropertiesItem
                     {
                         Header = new PrefabItem.ServerPropertiesItem.HeaderProp
