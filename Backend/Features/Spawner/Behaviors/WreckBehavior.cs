@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 
@@ -23,6 +24,9 @@ public class WreckBehavior : IConstructBehavior
     public Task TickAsync(BehaviorContext context)
     {
         context.IsActiveWreck = true; //TODO
+        
+        Thread.Sleep(1000);
+        
         return Task.CompletedTask;
     }
 }
