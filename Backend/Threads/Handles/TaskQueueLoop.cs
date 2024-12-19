@@ -33,6 +33,8 @@ public class TaskQueueLoop(IThreadManager tm, CancellationToken ct) : ThreadHand
         {
             var logger = ModBase.ServiceProvider.CreateLogger<TaskQueueLoop>();
             logger.LogError(e, "Failed to execute {Name}", nameof(TaskQueueLoop));
+            
+            Thread.Sleep(TimeSpan.FromSeconds(5));
         }
     }
 }

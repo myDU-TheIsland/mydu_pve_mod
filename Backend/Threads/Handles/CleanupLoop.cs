@@ -71,6 +71,8 @@ public class CleanupLoop(IThreadManager tm, CancellationToken ct) : ThreadHandle
         {
             var logger = ModBase.ServiceProvider.CreateLogger<CleanupLoop>();
             logger.LogError(e, "Failed Cleanup");
+            
+            Thread.Sleep(_timeSpan);
         }
     }
 }

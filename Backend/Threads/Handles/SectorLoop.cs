@@ -39,6 +39,8 @@ public class SectorLoop(IThreadManager tm, CancellationToken ct) : ThreadHandle(
         catch (Exception e)
         {
             logger.LogError(e, "Failed to execute {Name}", nameof(SectorLoop));
+            
+            Thread.Sleep(TimeSpan.FromSeconds(10));
         }
     }
 

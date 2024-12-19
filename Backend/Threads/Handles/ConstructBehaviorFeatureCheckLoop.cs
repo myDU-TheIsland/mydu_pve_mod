@@ -28,6 +28,8 @@ public class ConstructBehaviorFeatureCheckLoop(IThreadManager tm, CancellationTo
             var logger = ModBase.ServiceProvider.CreateLogger<ConstructBehaviorFeatureCheckLoop>();
 
             logger.LogError(e, "Failed to check Feature Status");
+            
+            Thread.Sleep(TimeSpan.FromSeconds(10));
         }
     }
 }
