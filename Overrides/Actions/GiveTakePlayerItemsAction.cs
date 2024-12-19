@@ -81,7 +81,7 @@ public class GiveTakePlayerItemsAction(IServiceProvider provider) : IModActionHa
                     Reason = StorageReserveReason.RESERVE_EXACT,
                     User = itemOperation.Owner,
                     Requester = playerId,
-                    BypassLock = false,
+                    BypassLock = true,
                 }
             );
 
