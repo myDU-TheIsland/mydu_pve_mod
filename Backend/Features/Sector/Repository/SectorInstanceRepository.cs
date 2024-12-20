@@ -311,7 +311,7 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
         db.Open();
 
         var queryResult =
-            await db.QueryAsync<DbRow>("SELECT * FROM public.mod_sector_instance WHERE loaded_at IS NULL");
+            await db.QueryAsync<DbRow>("SELECT * FROM public.mod_sector_instance WHERE loaded_at IS NULL AND (publish_at IS NULL OR publish_at <= NOW())");
 
         return queryResult.Select(MapToModel);
     }
@@ -349,7 +349,10 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
             SELECT Si.* FROM public.construct C
             INNER JOIN public.mod_sector_instance SI ON (C.sector_x = SI.sector_x AND C.sector_y = SI.sector_y AND C.sector_z = SI.sector_z)
             LEFT JOIN public.ownership O ON (C.owner_entity_id = O.id)
-            WHERE Si.started_at IS NULL AND C.owner_entity_id IS NOT NULL AND (O.player_id NOT IN({StaticPlayerId.Aphelia}, {StaticPlayerId.Unknown}) OR (O.player_id IS NULL AND O.organization_id IS NOT NULL))
+            WHERE Si.started_at IS NULL AND 
+                  C.owner_entity_id IS NOT NULL AND 
+                  (SI.publish_at IS NULL OR SI.publish_at <= NOW()) AND
+                  (O.player_id NOT IN({StaticPlayerId.Aphelia}, {StaticPlayerId.Unknown}) OR (O.player_id IS NULL AND O.organization_id IS NOT NULL))
             """
         );
 

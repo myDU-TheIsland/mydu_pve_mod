@@ -9,6 +9,7 @@ public class SectorInstance
     public required string Name { get; set; }
     public Vec3 Sector { get; set; }
     public long FactionId { get; set; }
+    public DateTime? PublishAt { get; set; }
     public DateTime ExpiresAt { get; set; }
     public DateTime? ForceExpiresAt { get; set; }
     public DateTime? StartedAt { get; set; }
