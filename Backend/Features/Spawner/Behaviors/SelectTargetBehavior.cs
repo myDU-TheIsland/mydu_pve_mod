@@ -114,7 +114,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
 
         if (!context.HasAnyRadarContact())
         {
-            context.SetAutoTargetMovePosition(context.Sector);
+            context.SetAutoTargetMovePosition(context.StartPosition ?? context.Sector);
             context.SetAutoTargetConstructId(null);
             return;
         }
