@@ -48,7 +48,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         var position = center + pointGenerator.NextPoint(random);
 
         var asteroidId = await asteroidManagerGrain.SpawnAsteroid(
-            tier,
+            properties.TierOverride ?? tier,
             $"{properties.FileNamePrefix}_{tier}_{number}.json",
             position,
             properties.PlanetId
@@ -167,6 +167,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         [JsonProperty] public string FileNamePrefix { get; set; } = "basic";
         [JsonProperty] public ulong PlanetId { get; set; } = 2;
         [JsonProperty] public TimeSpan? AutoDeleteTimeSpan { get; set; }
+        [JsonProperty] public int? TierOverride { get; set; }
 
         /// <summary>
         /// Does not show on DSAT but deletes automatically.
