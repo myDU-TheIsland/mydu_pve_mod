@@ -147,7 +147,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         var outcome = await CalculateTargetMovePosition(context);
         if (!outcome.Valid) return;
 
-        context.SetAutoTargetMovePosition(outcome.TargetMovePosition);
+        context.SetAutoTargetMovePosition(context.OverrideTargetMovePosition ?? outcome.TargetMovePosition);
 
         var targetVel = await _constructService.GetConstructVelocities(targetId);
         context.SetTargetLinearVelocity(targetVel.Linear);

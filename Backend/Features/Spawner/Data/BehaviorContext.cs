@@ -66,6 +66,7 @@ public class BehaviorContext(
     public Vec3 AccelCalcTargetVelocity { get; set; }
     public Vec3 TargetPosition { get; set; }
     public Vec3 TargetMovePosition { get; private set; }
+    public Vec3? OverrideTargetMovePosition { get; private set; }
 
     public ConcurrentBag<ScanContact> Contacts { get; private set; }
     public ConcurrentBag<DamageDealtData> DamageHistory { get; private set; } = [];
@@ -275,6 +276,11 @@ public class BehaviorContext(
     public void SetTargetMovePosition(Vec3 position)
     {
         TargetMovePosition = position;
+    }
+    
+    public void SetOverrideTargetMovePosition(Vec3? position)
+    {
+        OverrideTargetMovePosition = position;
     }
 
     public void SetTargetLinearVelocity(Vec3 linear)
