@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
@@ -121,7 +120,7 @@ public class BehaviorContext(
 
     public ulong? GetClosestTarget()
     {
-        if (Contacts.Count == 0)
+        if (Contacts.IsEmpty)
         {
             return null;
         }

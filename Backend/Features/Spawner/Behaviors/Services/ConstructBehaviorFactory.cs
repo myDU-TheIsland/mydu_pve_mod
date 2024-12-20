@@ -16,7 +16,7 @@ public class ConstructBehaviorFactory : IConstructBehaviorFactory
             case "select-target":
                 return new SelectTargetBehavior(constructId, prefab).WithErrorHandler();
             case "brain":
-                return new BrainBehavior(constructId, prefab).WithErrorHandler();
+                return new NullBehavior().WithErrorHandler();
             case "aggressive":
                 return new AggressiveBehavior(constructId, prefab).WithErrorHandler();
             case "follow-target":

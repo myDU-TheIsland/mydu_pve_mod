@@ -14,6 +14,8 @@ public class SkillFactory(IServiceProvider provider) : ISkillFactory
                 return JamTargetSkill.Create(provider, item);
             case "stasis":
                 return StasisTargetSkill.Create(item);
+            case "leash":
+                return LeashSkill.Create(item);
             default:
                 return new NullSkill();
         }
