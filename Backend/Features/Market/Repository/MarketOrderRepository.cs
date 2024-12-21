@@ -69,13 +69,13 @@ public class MarketOrderRepository(IServiceProvider provider) : IMarketOrderRepo
             INSERT INTO public.market_order (
                 buy_quantity, status, creation_date, completion_date, expiration_date, price, value_tax, item_type_id, market_id, original_buy_quantity, update_date, owner_id, flat_tax, storage_fee
             ) VALUES (
-                -@buy_quantity, 0, NOW(), NULL, NOW() + INTERVAL '30 DAYS', @price, 0, @item_type_id, @market_id, -@buy_quantity, NOW(), @owner_id, 0, 0
+                @buy_quantity, 0, NOW(), NULL, NOW() + INTERVAL '30 DAYS', @price, 0, @item_type_id, @market_id, @buy_quantity, NOW(), @owner_id, 0, 0
             )
             """,
             new
             {
-                buy_quantity = marketItem.Quantity,
-                price = marketItem.Price,
+                buy_quantity = -Math.Abs(marketItem.Quantity),
+                price = Math.Abs(marketItem.Price),
                 item_type_id = (long)marketItem.ItemTypeId,
                 market_id = (long)marketItem.MarketId,
                 owner_id = (long)marketItem.OwnerId
