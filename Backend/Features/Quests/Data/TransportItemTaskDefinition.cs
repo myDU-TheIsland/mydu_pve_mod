@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Quests.Interfaces;
+using Mod.DynamicEncounters.Features.Quests.Services;
 
 namespace Mod.DynamicEncounters.Features.Quests.Data;
 
@@ -16,4 +16,5 @@ public abstract class TransportItemTaskDefinition(
     public abstract bool IsMatchedBy(QuestInteractionContext context);
 
     public abstract Task<QuestInteractionOutcome> HandleInteractionAsync(QuestInteractionContext context);
+    public virtual IQuestTaskCompletionHandler GetCompletionHandler(QuestCompletionHandlerContext context) => new NullCompletionHandler();
 }

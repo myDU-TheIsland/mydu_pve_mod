@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 
@@ -35,9 +36,11 @@ public class PlayerQuestItem(
     public ScriptActionItem OnSuccessScript { get; } = onSuccessScript;
     public ScriptActionItem OnFailureScript { get; } = onFailureScript;
 
-    public bool IsExpired(DateTime now)
+    public bool IsExpired(DateTime now) => now > ExpiresAt;
+
+    public QuestTaskItem? GetTaskOrNull(QuestTaskId questTaskId)
     {
-        return now > ExpiresAt;
+        return TaskItems.SingleOrDefault(q => q.Id.Equals(questTaskId));
     }
 
     public class QuestProperties(string title, string description)

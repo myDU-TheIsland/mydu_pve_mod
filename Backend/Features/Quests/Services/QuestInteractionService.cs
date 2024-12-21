@@ -82,6 +82,20 @@ public class QuestInteractionService(IServiceProvider provider) : IQuestInteract
             }
         }
 
+        var task = questItem.GetTaskOrNull(questTaskId);
+        if (task != null)
+        {
+            var outcome = await task.Definition.GetCompletionHandler(
+                    new QuestCompletionHandlerContext(provider, questTaskId)
+                )
+                .HandleCompletion();
+
+            if (!outcome.Success)
+            {
+                return QuestTaskCompletionOutcome.CompletedButFailedToHandleCompletion(outcome.Message);
+            }
+        }
+
         return QuestTaskCompletionOutcome.Completed();
     }
 
@@ -107,7 +121,7 @@ public class QuestInteractionService(IServiceProvider provider) : IQuestInteract
             {
                 rewardEntityId = new EntityId { organizationId = factionItem.OrganizationId.Value };
             }
-            
+
             await itemSpawner.GiveTakeItemsWithCallback(
                 new GiveTakePlayerItemsWithCallbackCommand(
                     playerId,

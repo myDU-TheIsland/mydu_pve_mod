@@ -2,9 +2,9 @@
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Features.Interfaces;
+using Mod.DynamicEncounters.Features.Market.Data;
 using Mod.DynamicEncounters.Features.Market.Interfaces;
 
 namespace Mod.DynamicEncounters.Features.Market.Repository;
@@ -55,6 +55,30 @@ public class MarketOrderRepository(IServiceProvider provider) : IMarketOrderRepo
             new
             {
                 item_type_id = (long)itemTypeId
+            }
+        );
+    }
+
+    public async Task CreateMarketOrder(MarketItem marketItem)
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        await db.ExecuteAsync(
+            """
+            INSERT INTO public.market_order (
+                buy_quantity, status, creation_date, completion_date, expiration_date, price, value_tax, item_type_id, market_id, original_buy_quantity, update_date, owner_id, flat_tax, storage_fee
+            ) VALUES (
+                -@buy_quantity, 0, NOW(), NULL, NOW() + INTERVAL '30 DAYS', @price, 0, @item_type_id, @market_id, -@buy_quantity, NOW(), @owner_id, 0, 0
+            )
+            """,
+            new
+            {
+                buy_quantity = marketItem.Quantity,
+                price = marketItem.Price,
+                item_type_id = marketItem.ItemTypeId,
+                market_id = marketItem.MarketId,
+                owner_id = marketItem.OwnerId
             }
         );
     }

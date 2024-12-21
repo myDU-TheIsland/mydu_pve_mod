@@ -6,6 +6,7 @@ using Mod.DynamicEncounters.Features.Faction.Interfaces;
 using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Interfaces;
+using Mod.DynamicEncounters.Features.Quests.Services;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Quests.Data;
@@ -60,6 +61,15 @@ public class DeliverItemsUnrestrictedTaskDefinition(
             )
         );
 
-        return QuestInteractionOutcome.Successful(questTaskId, $"{questTaskId.QuestId.Id}/{questTaskId.Id} Request to Deliver items sent to Orleans");
+        return QuestInteractionOutcome.Successful(questTaskId,
+            $"{questTaskId.QuestId.Id}/{questTaskId.Id} Request to Deliver items sent to Orleans");
     }
+
+    public override IQuestTaskCompletionHandler GetCompletionHandler(QuestCompletionHandlerContext context)
+        => new CreateBotMarketOrderCompletionHandler(
+            new QuestCompletionHandlerContext(
+                context.Provider,
+                context.QuestTaskId
+            )
+        );
 }

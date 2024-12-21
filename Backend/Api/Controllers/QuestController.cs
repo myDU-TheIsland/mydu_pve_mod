@@ -168,15 +168,6 @@ public class QuestController : Controller
     }
 
     [HttpPost]
-    [Route("task/complete")]
-    public async Task<IActionResult> CompleteQuestTask([FromBody] CompleteQuestTaskRequest request)
-    {
-        await Task.Yield();
-
-        return Ok();
-    }
-
-    [HttpPost]
     [Route("giver")]
     public async Task<IActionResult> Generate([FromBody] GenerateQuestsRequest request)
     {
