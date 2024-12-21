@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
@@ -16,14 +18,20 @@ public class LeashSkill : ISkill
     {
         if (!context.StartPosition.HasValue) return Task.CompletedTask;
 
-        var isFar = context.Position.HasValue &&
-                    context.Position.Value.Dist(context.Sector) > DistanceHelpers.OneSuInMeters * 5;
+        var leashPos = context.Sector;
+        const long leashRange = DistanceHelpers.OneSuInMeters * 5;
+        var iAmFar = context.Position.HasValue &&
+                    context.Position.Value.Dist(leashPos) > leashRange;
+        var targetIsFar = context.GetTargetConstructId().HasValue &&
+                          context.TargetPosition.Dist(leashPos) > leashRange;
+        var isReturningCooldown = context.Effects.IsEffectActive<ReturningToSectorCooldown>();
 
-        if (isFar)
+        if (iAmFar || targetIsFar)
         {
             context.SetOverrideTargetMovePosition(context.StartPosition.Value);
+            context.Effects.Activate<ReturningToSectorCooldown>(TimeSpan.FromMinutes(2));
         }
-        else
+        else if (!isReturningCooldown)
         {
             context.SetOverrideTargetMovePosition(null);
         }
@@ -35,4 +43,6 @@ public class LeashSkill : ISkill
     {
         return new LeashSkill();
     }
+    
+    public class ReturningToSectorCooldown : IEffect;
 }

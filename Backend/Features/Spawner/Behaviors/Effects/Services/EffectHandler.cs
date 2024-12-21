@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Extensions;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Services;
 
@@ -53,10 +54,7 @@ public class EffectHandler : IEffectHandler
         }
 
         var entry = new EffectEntry(effect, DateTime.UtcNow + duration);
-        if (!Effects.TryAdd(typeof(T), entry))
-        {
-            Effects[typeof(T)] = entry;
-        }
+        Effects.Set(typeof(T), entry);
     }
 
     public void Activate<T>(TimeSpan duration) where T : IEffect, new()
