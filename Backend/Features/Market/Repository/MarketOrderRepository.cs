@@ -76,9 +76,9 @@ public class MarketOrderRepository(IServiceProvider provider) : IMarketOrderRepo
             {
                 buy_quantity = marketItem.Quantity,
                 price = marketItem.Price,
-                item_type_id = marketItem.ItemTypeId,
-                market_id = marketItem.MarketId,
-                owner_id = marketItem.OwnerId
+                item_type_id = (long)marketItem.ItemTypeId,
+                market_id = (long)marketItem.MarketId,
+                owner_id = (long)marketItem.OwnerId
             }
         );
     }
