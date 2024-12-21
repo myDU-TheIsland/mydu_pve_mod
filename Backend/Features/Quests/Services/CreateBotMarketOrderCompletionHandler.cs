@@ -36,6 +36,7 @@ public class CreateBotMarketOrderCompletionHandler(QuestCompletionHandlerContext
         var questMarketOrderOwnerId = await featureService.GetIntValueAsync("QuestMarketOrderOwnerId", 16524);
         var questSafeMarketId = await featureService.GetIntValueAsync("QuestSafeMarketId", 20);
         var questMarketMargin = await featureService.GetDoubleValueAsync("QuestMarketMargin", 2);
+        var questMarketPlayerEffectStrength = await featureService.GetDoubleValueAsync("QuestMarketPlayerEffectStrength", 10);
         var priceMap = await recipePriceCalculator.GetItemPriceMap();
         //OWNID = 16524
         //PLAYERID = 10095
@@ -53,7 +54,7 @@ public class CreateBotMarketOrderCompletionHandler(QuestCompletionHandlerContext
             await marketOrderRepository.CreateMarketOrder(new MarketItem
             {
                 OwnerId = (ulong)questMarketOrderOwnerId,
-                Quantity = item.Quantity,
+                Quantity = (long)(item.Quantity * questMarketPlayerEffectStrength),
                 MarketId = (ulong)questSafeMarketId,
                 ItemTypeId = bank.IdFor(item.ElementTypeName),
                 Price = (long)(recipeOutputData.GetUnitPrice() * questMarketMargin)
