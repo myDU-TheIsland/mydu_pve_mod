@@ -15,7 +15,7 @@ public class AreaScanController : Controller
 {
     [Route("players")]
     [HttpPost]
-    public async Task<IActionResult> PlayerScan(AreaScanRequest request)
+    public async Task<IActionResult> PlayerScan([FromBody] AreaScanRequest request)
     {
         var provider = ModBase.ServiceProvider;
         var areaScanService = provider.GetRequiredService<IAreaScanService>();
@@ -30,7 +30,7 @@ public class AreaScanController : Controller
     
     [Route("asteroids")]
     [HttpPost]
-    public async Task<IActionResult> AsteroidScan(AreaScanRequest request)
+    public async Task<IActionResult> AsteroidScan([FromBody] AreaScanRequest request)
     {
         var provider = ModBase.ServiceProvider;
         var areaScanService = provider.GetRequiredService<IAreaScanService>();
@@ -45,7 +45,9 @@ public class AreaScanController : Controller
     
     [Route("npc")]
     [HttpPost]
-    public async Task<IActionResult> NpcScan(AreaScanRequest request)
+    public async Task<IActionResult> NpcScan([FromBody] 
+        
+        AreaScanRequest request)
     {
         var provider = ModBase.ServiceProvider;
         var areaScanService = provider.GetRequiredService<IAreaScanService>();
