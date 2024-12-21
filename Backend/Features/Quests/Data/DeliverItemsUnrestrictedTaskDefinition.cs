@@ -53,7 +53,7 @@ public class DeliverItemsUnrestrictedTaskDefinition(
             new GiveTakePlayerItemsWithCallbackCommand(
                 context.PlayerId,
                 Items.Select(x => new ElementQuantityRef(0, x.ElementTypeName, x.Quantity)),
-                null!,
+                new EntityId(),
                 new Dictionary<string, PropertyValue>(),
                 $"{pveModBaseUrl}/quest/callback/{questTaskId.QuestId.Id}/task/{questTaskId.Id}/complete",
                 $"{pveModBaseUrl}/quest/callback/{questTaskId.QuestId.Id}/task/{questTaskId.Id}/failed"
