@@ -45,7 +45,7 @@ public class BehaviorContext(
     public const string BrakingProperty = "Braking";
     public const string MoveModeProperty = "MoveMode";
 
-    public TimeSpan ActiveSectorExpirationSeconds { get; } =
+    public TimeSpan? ActiveSectorExpirationSeconds { get; } =
         TimeSpan.FromSeconds(prefab.DefinitionItem.SectorExpirationSeconds);
 
     public bool PushPositionModActionEnabled { get; } = false;
