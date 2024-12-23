@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Overrides.Actions.Data;
 using Mod.DynamicEncounters.Overrides.Common;
+using Mod.DynamicEncounters.Overrides.Common.Helper;
 using Newtonsoft.Json;
 using NQ;
 using NQ.Interfaces;
@@ -116,12 +117,7 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
         }
 
         return ShotOutcome.Miss(
-            CalculateMissImpact(
-                @params.ShotOriginWorldPosition,
-                @params.ShotImpactWorldPosition,
-                16d,
-                0.5d
-            ),
+            CalculateMissImpactSimple(),
             result
         );
     }
@@ -336,15 +332,7 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
             );
         }
 
-        var targetConstructInfoGrain = _orleans.GetConstructInfoGrain(targetConstructId);
-        var targetInfo = await targetConstructInfoGrain.Get();
-
-        var missImpact = CalculateMissImpact(
-            @params.ShotOriginWorldPosition,
-            targetPosition,
-            targetInfo.rData.geometry.size / 0.5d,
-            num - hitRatio
-        );
+        var missImpact = CalculateMissImpactSimple();
         
         var missWeaponShot = new WeaponShot
         {
@@ -423,6 +411,14 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
                                   localAngularVelocity).Length);
     }
 
+    private WeaponImpact CalculateMissImpactSimple()
+    {
+        return new WeaponImpact
+        {
+            ImpactPositionWorld = _random.RandomDirectionVec3() * 500,
+        };
+    }
+    
     private WeaponImpact CalculateMissImpact(
         Vec3 origin,
         Vec3 target,
