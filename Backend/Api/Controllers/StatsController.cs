@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Mod.DynamicEncounters.Features.Sector.Services;
@@ -15,8 +16,11 @@ public class StatsController : Controller
     [Route("")]
     public ActionResult Get()
     {
+        var process = Process.GetCurrentProcess();
+        
         return Ok(new
         {
+            ThreadCount = process.Threads.Count,
             BehaviorStats = StatsRecorder.GetStats(),
             CustomStats = StatsRecorder.GetCustomStats(),
             ConstructsPendingDelete = ConstructsPendingDelete.Data.Count,
