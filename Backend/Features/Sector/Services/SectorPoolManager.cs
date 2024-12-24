@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -291,6 +292,9 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
         List<SectorInstance> sectorsToActivate;
 
+        var sw = new Stopwatch();
+        sw.Start();
+        
         if (scanForInactiveSectorsVisitedByPlayersV2Enabled)
         {
             sectorsToActivate = (await _sectorInstanceRepository
@@ -305,6 +309,10 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 .DistinctBy(x => x.Sector)
                 .ToList();
         }
+        
+        sw.Stop();
+        
+        StatsRecorder.Record("InactiveSectorTrigger", sw.ElapsedMilliseconds);
 
         if (sectorsToActivate.Count == 0)
         {
