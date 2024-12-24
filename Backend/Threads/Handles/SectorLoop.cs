@@ -59,15 +59,16 @@ public class SectorLoop(IThreadManager tm, CancellationToken ct) : ThreadHandle(
         var factionRepository = ModBase.ServiceProvider.GetRequiredService<IFactionRepository>();
         var sectorPoolManager = ModBase.ServiceProvider.GetRequiredService<ISectorPoolManager>();
 
-        await sectorPoolManager.ExecuteSectorCleanup()
-            .OnError(exception => { logger.LogError(exception, "Failed to Execute Sector Cleanup"); });
+        sectorPoolManager.ExecuteSectorCleanup()
+            .OnError(exception => { logger.LogError(exception, "Failed to Execute Sector Cleanup"); })
+            .Wait();
 
         var factionSectorPrepTasks = (await factionRepository.GetAllAsync())
             .Select(PrepareFactionSector);
-        await Task.WhenAll(factionSectorPrepTasks);
+        Task.WhenAll(factionSectorPrepTasks).Wait();
 
-        await sectorPoolManager.LoadUnloadedSectors();
-        await sectorPoolManager.ActivateEnteredSectors();
+        sectorPoolManager.LoadUnloadedSectors().Wait();
+        sectorPoolManager.ActivateEnteredSectors().Wait();
 
         logger.LogDebug("Sector Loop Action took {Time}ms", sw.ElapsedMilliseconds);
     }
@@ -90,9 +91,11 @@ public class SectorLoop(IThreadManager tm, CancellationToken ct) : ThreadHandle(
 
         foreach (var ft in factionTerritories)
         {
-            var encounters =
-                (await sectorEncountersRepository.FindActiveByFactionTerritoryAsync(ft.FactionId, ft.TerritoryId))
-                .ToList();
+            var encountersTask =
+                sectorEncountersRepository.FindActiveByFactionTerritoryAsync(ft.FactionId, ft.TerritoryId);
+            encountersTask.Wait();
+            
+            var encounters = encountersTask.Result.ToList();
 
             if (encounters.Count == 0)
             {
@@ -112,7 +115,7 @@ public class SectorLoop(IThreadManager tm, CancellationToken ct) : ThreadHandle(
 
             try
             {
-                await sectorPoolManager.GenerateTerritorySectors(args);
+                sectorPoolManager.GenerateTerritorySectors(args).Wait();
             }
             catch (Exception e)
             {

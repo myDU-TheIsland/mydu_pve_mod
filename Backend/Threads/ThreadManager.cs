@@ -156,11 +156,6 @@ public class ThreadManager : IThreadManager
 
         switch (threadId)
         {
-            case ThreadId.Caching:
-                return CreateThread(
-                    threadId,
-                    new CachingLoop(this, cts.Token).Tick
-                );
             case ThreadId.Cleanup:
                 return CreateThread(
                     threadId,
