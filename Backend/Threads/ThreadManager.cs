@@ -21,6 +21,7 @@ public class ThreadManager : IThreadManager
     private readonly ConcurrentDictionary<ThreadId, DateTime> _heartbeatMap = new();
     private readonly ILogger<ThreadManager> _logger = ModBase.ServiceProvider.CreateLogger<ThreadManager>();
     private readonly ConcurrentDictionary<ThreadId, Thread> _threads = new();
+    private readonly ConcurrentDictionary<ThreadId, bool> _threadBlocks = new();
     private readonly ConcurrentDictionary<ThreadId, DateTime> _threadStartMap = new();
     private Timer _timer = new(TimeSpan.FromSeconds(1));
 
@@ -82,6 +83,8 @@ public class ThreadManager : IThreadManager
 
         foreach (var id in threadIds)
         {
+            if (IsCreationBlocked(id)) continue;
+            
             if (!DoesThreadExist(id))
             {
                 var thread = CreateThread(id);
@@ -235,6 +238,19 @@ public class ThreadManager : IThreadManager
         }
     }
 
+    public bool IsCreationBlocked(ThreadId threadId) 
+        => _threadBlocks.TryGetValue(threadId, out var blocked) && blocked;
+
+    public void BlockThreadCreation(ThreadId threadId)
+    {
+        _threadBlocks.TryAdd(threadId, true);
+    }
+    
+    public void UnblockThreadCreation(ThreadId threadId)
+    {
+        _threadBlocks.TryRemove(threadId, out _);
+    }
+    
     public void CancelThread(ThreadId threadId)
     {
         _logger.LogInformation("Cancel Thread {Thread}", threadId);

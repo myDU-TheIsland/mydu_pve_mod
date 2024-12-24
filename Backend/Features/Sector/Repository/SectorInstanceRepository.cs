@@ -208,6 +208,42 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
         await db.ExecuteScalarAsync("DELETE FROM public.mod_sector_instance WHERE expires_at < NOW() OR (force_expire_at IS NOT NULL AND force_expire_at < NOW())");
     }
 
+    public async Task<IEnumerable<SectorInstance>> ScanForInactiveSectorsVisitedByPlayersV2(double distance)
+    {
+        using var db = _connectionFactory.Create();
+        db.Open();
+
+        var queryResult = await db.QueryAsync<DbRow>(
+            """
+            SELECT * FROM (
+            	SELECT 
+            		SI.*,
+            		(
+            			SELECT C.id FROM construct C
+            			LEFT JOIN mod_npc_construct_handle CH ON (CH.construct_id = C.id)
+            			WHERE CH.id IS NULL AND
+            				C.deleted_at IS NULL AND
+            				(C.json_properties->>'isUntargetable' = 'false' OR C.json_properties->>'isUntargetable' IS NULL) AND
+            				(C.json_properties->>'kind' IN ('4', '5')) AND
+            				(C.owner_entity_id IS NOT NULL) AND
+            				ST_DWithin(
+            					ST_MakePoint(SI.sector_x, SI.sector_y, SI.sector_z),
+            					C.position,
+            					@distance
+            				) AND
+            				ST_3DDistance(C.position, ST_MakePoint(SI.sector_x, SI.sector_y, SI.sector_z)) <= @distance
+            			LIMIT 1
+            		) IS NOT NULL should_activate
+            	FROM mod_sector_instance SI
+            	WHERE SI.started_at IS NULL
+            ) WHERE should_activate IS TRUE
+            """,
+            new { distance }
+        );
+        
+        return queryResult.Select(MapToModel);
+    }
+
     public async Task ExpireAllAsync()
     {
         using var db = _connectionFactory.Create();
@@ -359,6 +395,7 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
         return queryResult.Select(MapToModel);
     }
     
+    // TODO Fix query. It's not performant
     public async Task<IEnumerable<SectorInstance>> ScanForInactiveSectorsVisitedByPlayers(double distance)
     {
         using var db = _connectionFactory.Create();

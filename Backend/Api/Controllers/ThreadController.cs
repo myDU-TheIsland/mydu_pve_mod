@@ -35,6 +35,26 @@ public class ThreadController : Controller
         
         return Ok();
     }
+    
+    [HttpPost]
+    [Route("block/{id}")]
+    public IActionResult BlockThread(ThreadId id)
+    {
+        ThreadManager.Instance
+            .BlockThreadCreation(id);
+        
+        return Ok();
+    }
+    
+    [HttpPost]
+    [Route("release/{id}")]
+    public IActionResult ReleaseThread(ThreadId id)
+    {
+        ThreadManager.Instance
+            .UnblockThreadCreation(id);
+        
+        return Ok();
+    }
 
     [HttpPost]
     [Route("manager/stop")]

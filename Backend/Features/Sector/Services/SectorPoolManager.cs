@@ -37,6 +37,9 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
     private readonly IConstructSpatialHashRepository _constructSpatial =
         serviceProvider.GetRequiredService<IConstructSpatialHashRepository>();
 
+    private readonly IFeatureReaderService _featureReaderService =
+        serviceProvider.GetRequiredService<IFeatureReaderService>();
+
     private readonly ILogger<SectorPoolManager> _logger = serviceProvider.CreateLogger<SectorPoolManager>();
 
     public async Task GenerateTerritorySectors(SectorGenerationArgs args)
@@ -117,7 +120,8 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 CreatedAt = DateTime.UtcNow,
                 ExpiresAt = DateTime.UtcNow + encounter.Properties.ExpirationTimeSpan +
                             TimeSpan.FromMinutes(randomMinutes * i),
-                ForceExpiresAt = DateTime.UtcNow + (encounter.Properties.ForcedExpirationTimeSpan ?? TimeSpan.FromHours(6)),
+                ForceExpiresAt = DateTime.UtcNow +
+                                 (encounter.Properties.ForcedExpirationTimeSpan ?? TimeSpan.FromHours(6)),
                 TerritoryId = args.TerritoryId,
                 OnLoadScript = encounter.OnLoadScript,
                 OnSectorEnterScript = encounter.OnSectorEnterScript,
@@ -282,12 +286,27 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
     public async Task ActivateEnteredSectors()
     {
-        var sectorsToActivate = (await _sectorInstanceRepository
-                .ScanForInactiveSectorsVisitedByPlayers(DistanceHelpers.OneSuInMeters * 10))
-            .DistinctBy(x => x.Sector)
-            .ToList();
+        var scanForInactiveSectorsVisitedByPlayersV2Enabled =
+            await _featureReaderService.GetBoolValueAsync("ScanForInactiveSectorsVisitedByPlayersV2Enabled", true);
 
-        if (!sectorsToActivate.Any())
+        List<SectorInstance> sectorsToActivate;
+
+        if (scanForInactiveSectorsVisitedByPlayersV2Enabled)
+        {
+            sectorsToActivate = (await _sectorInstanceRepository
+                    .ScanForInactiveSectorsVisitedByPlayersV2(DistanceHelpers.OneSuInMeters * 10))
+                .DistinctBy(x => x.Sector)
+                .ToList();
+        }
+        else
+        {
+            sectorsToActivate = (await _sectorInstanceRepository
+                    .ScanForInactiveSectorsVisitedByPlayers(DistanceHelpers.OneSuInMeters * 10))
+                .DistinctBy(x => x.Sector)
+                .ToList();
+        }
+
+        if (sectorsToActivate.Count == 0)
         {
             _logger.LogDebug("No sectors need startup");
             return;

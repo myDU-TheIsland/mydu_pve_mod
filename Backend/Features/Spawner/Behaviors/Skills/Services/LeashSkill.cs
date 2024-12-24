@@ -10,7 +10,7 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
 public class LeashSkill : ISkill
 {
-    public bool CanUse(BehaviorContext context) => true;
+    public bool CanUse(BehaviorContext context) => !context.Effects.IsEffectActive<LeashCooldown>();
 
     public bool ShouldUse(BehaviorContext context) => true;
 
@@ -35,6 +35,8 @@ public class LeashSkill : ISkill
         {
             context.SetOverrideTargetMovePosition(null);
         }
+        
+        context.Effects.Activate<LeashCooldown>(TimeSpan.FromSeconds(1));
 
         return Task.CompletedTask;
     }
@@ -45,4 +47,5 @@ public class LeashSkill : ISkill
     }
     
     public class ReturningToSectorCooldown : IEffect;
+    public class LeashCooldown : IEffect;
 }
