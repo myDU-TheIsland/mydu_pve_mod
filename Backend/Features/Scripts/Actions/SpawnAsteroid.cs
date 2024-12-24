@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Backend;
 using Backend.Scenegraph;
@@ -84,6 +85,10 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                     Override = new ScriptActionOverrides
                     {
                         ConstructName = name,
+                    },
+                    Properties = new Dictionary<string, object>
+                    {
+                        { "AddConstructHandle", false }
                     }
                 });
 
