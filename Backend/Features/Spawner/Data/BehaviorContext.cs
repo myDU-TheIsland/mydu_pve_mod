@@ -144,7 +144,7 @@ public class BehaviorContext(
 
     public Vec3 TargetAcceleration { get; private set; }
     public DateTime LastTargetAccelerationUpdate { get; private set; } = DateTime.UtcNow;
-    public ulong? TargetConstructId { get; set; }
+    private ulong? TargetConstructId { get; set; }
     public double TargetDistance { get; set; }
     public Vec3 TargetLinearVelocity { get; private set; }
     public double VelocityWithTargetDotProduct { get; private set; }
@@ -355,11 +355,12 @@ public class BehaviorContext(
 
     public Vec3 GetTargetMovePosition()
     {
-        return TargetMovePosition;
+        return OverrideTargetMovePosition ?? TargetMovePosition;
     }
 
     public Vec3 GetTargetPosition() => TargetPosition;
 
+    public bool HasTargetConstruct() => this.TargetConstructId.HasValue;
     public ulong? GetTargetConstructId() => this.TargetConstructId;
 
     private double GetOutsideOfOptimalRange2XTargetVelocity()

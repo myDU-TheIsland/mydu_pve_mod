@@ -36,18 +36,18 @@ public class StasisTargetSkill : ISkill
 
     public bool ShouldUse(BehaviorContext context)
     {
-        return context.TargetConstructId.HasValue;
+        return context.HasTargetConstruct();
     }
 
     public async Task Use(BehaviorContext context)
     {
-        if (!context.TargetConstructId.HasValue) return;
+        if (!context.HasTargetConstruct()) return;
 
         var constructService = context.Provider.GetRequiredService<IConstructService>();
         var bank = context.Provider.GetGameplayBank();
 
         var speedConfig = bank.GetBaseObject<ConstructSpeedConfig>();
-        var totalMass = await constructService.GetConstructTotalMass(context.TargetConstructId.Value);
+        var totalMass = await constructService.GetConstructTotalMass(context.GetTargetConstructId()!.Value);
 
         var stasis = bank.GetDefinition(ItemTypeName ?? "StasisWeaponSmall");
 
@@ -93,7 +93,7 @@ public class StasisTargetSkill : ISkill
         var duration = stasisWeaponUnit.effectDuration;
 
         await constructService.ApplyStasisEffect(
-            context.TargetConstructId.Value,
+            context.GetTargetConstructId()!.Value,
             strength,
             duration
         );

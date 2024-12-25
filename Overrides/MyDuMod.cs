@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Backend;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Overrides;
@@ -30,6 +29,7 @@ public class MyDuMod : IMod
     private readonly PlayerRateLimiter _playerRateLimiter = new(8);
     private IMyDuInjectionService _injection;
     private ICachedConstructDataService _cachedConstructDataService;
+    private ShootWeaponAction _shootWeaponAction;
 
     public string GetName()
     {
@@ -45,6 +45,7 @@ public class MyDuMod : IMod
         _injection = new MyDuInjectionService();
         _cachedConstructDataService = new CachedConstructDataService();
         _weaponGrainOverrides = new WeaponGrainOverrides(_provider, _cachedConstructDataService);
+        _shootWeaponAction = new ShootWeaponAction(_provider);
 
         var hookCallManager = provider.GetRequiredService<IHookCallManager>();
         hookCallManager.Register(
@@ -166,8 +167,7 @@ public class MyDuMod : IMod
         switch ((ActionType)action.actionId)
         {
             case ActionType.ShootWeapon:
-                var shootWeaponAction = new ShootWeaponAction(_provider);
-                await shootWeaponAction.HandleAction(playerId, action);
+                await _shootWeaponAction.HandleAction(playerId, action);
                 break;
             case ActionType.SendConstructAppear:
                 var sendConstructAppearAction = new SendConstructAppearAction(_provider);

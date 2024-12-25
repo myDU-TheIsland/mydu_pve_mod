@@ -221,6 +221,9 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
     public async Task ExecuteSectorCleanup()
     {
+        var sw = new Stopwatch();
+        sw.Start();
+        
         try
         {
             await _sectorInstanceRepository.ExpireSectorsWithDeletedConstructHandles();
@@ -235,6 +238,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
         foreach (var sector in expiredSectors)
         {
+            // TODO #perf Change to Counter
             var players = await _constructSpatial.FindPlayerLiveConstructsOnSector(sector.Sector);
             if (!sector.IsForceExpired(DateTime.UtcNow) && players.Any())
             {
@@ -252,6 +256,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         // await _constructHandleManager.CleanupConstructsThatFailedSectorCleanupAsync();
 
         _logger.LogInformation("Executed Sector Cleanup");
+        StatsRecorder.Record("ExecuteSectorCleanup", sw.ElapsedMilliseconds);
     }
 
     public async Task SetExpirationFromNow(Vec3 sector, TimeSpan span)

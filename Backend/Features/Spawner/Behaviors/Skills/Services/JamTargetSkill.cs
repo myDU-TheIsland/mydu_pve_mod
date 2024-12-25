@@ -20,17 +20,17 @@ public class JamTargetSkill : ISkill
 
     public bool ShouldUse(BehaviorContext context)
     {
-        return context.TargetConstructId.HasValue;
+        return context.HasTargetConstruct();
     }
 
     public async Task Use(BehaviorContext context)
     {
-        if (!context.TargetConstructId.HasValue) return;
+        if (!context.HasTargetConstruct()) return;
 
         await JamTargetService.JamAsync(new JamConstructCommand
         {
             InstigatorConstructId = context.ConstructId,
-            TargetConstructId = context.TargetConstructId.Value
+            TargetConstructId = context.GetTargetConstructId()!.Value
         });
 
         context.Effects.Activate<CooldownEffect>(Cooldown);

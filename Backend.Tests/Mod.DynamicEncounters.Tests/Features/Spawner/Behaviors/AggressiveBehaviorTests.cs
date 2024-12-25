@@ -115,12 +115,12 @@ public class AggressiveBehaviorTests
         var context = new BehaviorContext(1, 1, null, new Vec3(), provider, prefab)
         {
             Provider = provider,
-            TargetConstructId = 2,
             DamageData = new ConstructDamageData([
                 WeaponItemStubFactory.RareLargeDefenseRailgun(),
                 WeaponItemStubFactory.RareMediumDefenseCannon()
             ])
         };
+        context.SetTargetConstructId(2);
 
         context.SetPosition(new Vec3 { z = 200000 });
 

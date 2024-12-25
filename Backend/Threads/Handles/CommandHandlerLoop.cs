@@ -39,28 +39,28 @@ public class CommandHandlerLoop(IThreadManager threadManager, CancellationToken 
                 {
                     var playerPartyCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<IPlayerPartyCommandHandler>();
-                    await playerPartyCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                    playerPartyCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message).Wait();
                 }
 
                 if (commandItem.Message.StartsWith("@kills npc", StringComparison.OrdinalIgnoreCase))
                 {
                     var npcKillsCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<INpcKillsCommandHandler>();
-                    await npcKillsCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                    npcKillsCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message).Wait();
                 }
 
                 if (commandItem.Message.StartsWith("@wac", StringComparison.OrdinalIgnoreCase))
                 {
                     var warpAnchorCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<IWarpAnchorCommandHandler>();
-                    await warpAnchorCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                    warpAnchorCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message).Wait();
                 }
 
                 if (commandItem.Message.StartsWith("@m", StringComparison.OrdinalIgnoreCase))
                 {
                     var openPlayerBoardCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<IOpenPlayerBoardCommandHandler>();
-                    await openPlayerBoardCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                    openPlayerBoardCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message).Wait();
                 }
             }
             catch (Exception e)
@@ -70,6 +70,6 @@ public class CommandHandlerLoop(IThreadManager threadManager, CancellationToken 
         }
         
         ReportHeartbeat();
-        Thread.Sleep(150);
+        Thread.Sleep(300);
     }
 }

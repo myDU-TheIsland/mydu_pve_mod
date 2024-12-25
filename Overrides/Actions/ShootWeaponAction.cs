@@ -415,7 +415,7 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
     {
         return new WeaponImpact
         {
-            ImpactPositionWorld = _random.RandomDirectionVec3() * 500,
+            ImpactPositionWorld = _random.RandomDirectionVec3() * 2000,
         };
     }
     

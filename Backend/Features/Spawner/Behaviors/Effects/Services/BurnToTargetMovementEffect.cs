@@ -15,7 +15,7 @@ public class BurnToTargetMovementEffect : IMovementEffect
 
         var position = VelocityHelper.LinearInterpolateWithAccelerationV2(
             @params.Position,
-            context.OverrideTargetMovePosition ?? @params.TargetPosition,
+            @params.TargetPosition,
             ref velocity,
             acceleration,
             @params.MaxVelocity,

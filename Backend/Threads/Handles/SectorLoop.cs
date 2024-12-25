@@ -71,6 +71,7 @@ public class SectorLoop(IThreadManager tm, CancellationToken ct) : ThreadHandle(
         sectorPoolManager.ActivateEnteredSectors().Wait();
 
         logger.LogDebug("Sector Loop Action took {Time}ms", sw.ElapsedMilliseconds);
+        StatsRecorder.Record("SectorLoop", sw.ElapsedMilliseconds);
     }
 
     private async Task PrepareFactionSector(FactionItem faction)
