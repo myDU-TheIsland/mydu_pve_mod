@@ -24,7 +24,7 @@ public class ConstructSpatialHashRepository(IServiceProvider serviceProvider) : 
     {
         using var db = _factory.Create();
         db.Open();
-        
+
         var result = (await db.QueryAsync<ulong>(
             $"""
             SELECT C.id FROM public.construct C
@@ -33,6 +33,7 @@ public class ConstructSpatialHashRepository(IServiceProvider serviceProvider) : 
                   C.deleted_at IS NULL AND
                   (C.json_properties->>'isUntargetable' = 'false' OR C.json_properties->>'isUntargetable' IS NULL) AND
                   C.owner_entity_id IS NOT NULL AND (O.player_id NOT IN({StaticPlayerId.Aphelia}, {StaticPlayerId.Unknown}) OR (O.player_id IS NULL AND O.organization_id IS NOT NULL))
+            LIMIT 10
             """,
             new
             {
@@ -41,6 +42,32 @@ public class ConstructSpatialHashRepository(IServiceProvider serviceProvider) : 
                 sector.z,
             }
         )).ToList();
+
+        return result;
+    }
+
+    public async Task<long> FindPlayerLiveConstructsCountOnSector(Vec3 sector)
+    {
+        using var db = _factory.Create();
+        db.Open();
+        
+        var result = await db.ExecuteScalarAsync<long>(
+            $"""
+             SELECT COUNT(0) 
+             FROM public.construct C
+             LEFT JOIN public.ownership O ON (C.owner_entity_id = O.id)
+             WHERE C.sector_x = @x AND C.sector_y = @y AND C.sector_z = @z AND
+                   C.deleted_at IS NULL AND
+                   (C.json_properties->>'isUntargetable' = 'false' OR C.json_properties->>'isUntargetable' IS NULL) AND
+                   C.owner_entity_id IS NOT NULL AND (O.player_id NOT IN({StaticPlayerId.Aphelia}, {StaticPlayerId.Unknown}) OR (O.player_id IS NULL AND O.organization_id IS NOT NULL))
+             """,
+            new
+            {
+                sector.x,
+                sector.y,
+                sector.z,
+            }
+        );
 
         return result;
     }

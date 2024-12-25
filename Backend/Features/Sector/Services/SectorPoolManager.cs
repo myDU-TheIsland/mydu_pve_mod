@@ -334,7 +334,6 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
     private async Task<SectorActivationOutcome> ActivateSector(SectorInstance sectorInstance)
     {
         var spatialHashRepository = serviceProvider.GetRequiredService<IConstructSpatialHashRepository>();
-        var orleans = serviceProvider.GetOrleans();
 
         var constructs = (await spatialHashRepository.FindPlayerLiveConstructsOnSector(sectorInstance.Sector))
             .ToList();
@@ -345,23 +344,6 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         }
 
         HashSet<ulong> playerIds = [];
-
-        try
-        {
-            var queryPilotsTasks = constructs
-                .Select(x => orleans.GetConstructInfoGrain(x)).Select(x => x.Get());
-
-            playerIds = (await Task.WhenAll(queryPilotsTasks))
-                .Select(x => x.mutableData.pilot)
-                .Where(x => x.HasValue)
-                .Select(x => x.Value.id)
-                .ToHashSet();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e,
-                "Failed to query player IDS for Sector Startup. Sector will startup without that information");
-        }
 
         _logger.LogInformation(
             "Starting up sector F({Faction}) ({Sector}) encounter: '{Encounter}'",
