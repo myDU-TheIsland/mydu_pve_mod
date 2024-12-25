@@ -117,7 +117,12 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
         }
 
         return ShotOutcome.Miss(
-            CalculateMissImpactSimple(),
+            CalculateMissImpact(
+                @params.ShotOriginWorldPosition,
+                @params.ShotImpactWorldPosition,
+                16d,
+                0.5d
+            ),
             result
         );
     }
@@ -332,7 +337,15 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
             );
         }
 
-        var missImpact = CalculateMissImpactSimple();
+        var targetConstructInfoGrain = _orleans.GetConstructInfoGrain(targetConstructId);
+        var targetInfo = await targetConstructInfoGrain.Get();
+
+        var missImpact = CalculateMissImpact(
+            @params.ShotOriginWorldPosition,
+            targetPosition,
+            targetInfo.rData.geometry.size / 0.5d,
+            num - hitRatio
+        );
         
         var missWeaponShot = new WeaponShot
         {
@@ -416,6 +429,7 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
         return new WeaponImpact
         {
             ImpactPositionWorld = _random.RandomDirectionVec3() * 2000,
+            ImpactPositionLocal = _random.RandomDirectionVec3() * 2000,
         };
     }
     
@@ -432,10 +446,11 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
         var unitVector3D2 = (Math.Cos(num) * orthogonal + Math.Sin(num) * unitVector3D1).Normalize();
         var vector3D2 = size * (0.5 + _random.NextDouble() * missRange) * unitVector3D2;
         var vector3D3 = size * (0.5 + _random.NextDouble() * missRange) * vector3D1.Normalize();
-
+    
         return new WeaponImpact
         {
-            ImpactPositionWorld = (Vector3D)origin + vector3D1 + vector3D3 + vector3D2
+            ImpactPositionWorld = (Vector3D)origin + vector3D1 + vector3D3 + vector3D2,
+            ImpactPositionLocal = (Vector3D)origin + vector3D1 + vector3D3 + vector3D2
         };
     }
 
