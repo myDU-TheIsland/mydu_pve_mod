@@ -246,6 +246,18 @@ public class ConstructController : Controller
 
         return Ok(result);
     }
+    
+    [HttpGet]
+    [Route("asteroids")]
+    public async Task<IActionResult> GetAsteroids()
+    {
+        var provider = ModBase.ServiceProvider;
+        var constructRepository = provider.GetRequiredService<IConstructRepository>();
+
+        var result = await constructRepository.FindAsteroids();
+
+        return Ok(result);
+    }
 
     [HttpGet]
     [Route("{constructId:long}/player/{playerId:long}/mission-items")]

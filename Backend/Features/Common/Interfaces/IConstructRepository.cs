@@ -8,4 +8,6 @@ namespace Mod.DynamicEncounters.Features.Common.Interfaces;
 public interface IConstructRepository
 {
     Task<IEnumerable<ConstructItem>> FindByKind(ConstructKind kind);
+
+    Task<IEnumerable<ConstructItem>> FindAsteroids();
 }

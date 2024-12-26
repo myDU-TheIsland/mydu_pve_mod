@@ -29,6 +29,22 @@ public class ConstructRepository(IServiceProvider provider) : IConstructReposito
         return result.Select(MapToModel);
     }
 
+    public async Task<IEnumerable<ConstructItem>> FindAsteroids()
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        var result = (await db.QueryAsync<DbRow>(
+            """
+             SELECT C.* FROM public.construct C
+             INNER JOIN public.asteroid A ON A.construct_id = C.id
+             WHERE json_properties->>'kind' = '2' AND deleted_at IS NULL
+             """
+        )).ToList();
+
+        return result.Select(MapToModel);
+    }
+
     private static ConstructItem MapToModel(DbRow row)
     {
         return new ConstructItem
