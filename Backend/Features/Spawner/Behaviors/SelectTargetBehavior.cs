@@ -198,13 +198,16 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             _logger.LogError(e, "Failed to Identity Target");
         }
 
-        try
+        if (!context.OverridePilotTakeOver)
         {
-            await PilotingTakeOverAsync();
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Failed to Takeover Ship");
+            try
+            {
+                await PilotingTakeOverAsync();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to Takeover Ship");
+            }
         }
     }
 

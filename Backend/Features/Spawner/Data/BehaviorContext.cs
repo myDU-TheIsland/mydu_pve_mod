@@ -179,6 +179,7 @@ public class BehaviorContext(
     public bool IsShieldActive { get; set; }
     public bool IsShieldVenting { get; set; }
     public double FunctionalWeaponFactor { get; set; }
+    public bool OverridePilotTakeOver { get; set; }
 
     public void UpdateShieldState(ConstructInfo constructInfo)
     {

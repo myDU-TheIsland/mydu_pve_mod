@@ -8,8 +8,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
+using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.Vector.Helpers;
 using NQ;
+using NQ.Interfaces;
 using NQutils.Def;
 using NQutils.Sql;
 using Swashbuckle.AspNetCore.Annotations;
@@ -186,6 +188,26 @@ public class BehaviorContextController : Controller
         }
 
         context.EnableAutoSelectAttackTargetConstruct();
+
+        return Ok();
+    }
+
+    [HttpPost]
+    [Route("override-npc-control")]
+    public async Task<IActionResult> OverrideNpcControl(ulong constructId)
+    {
+        if (!ConstructBehaviorContextCache.Data.TryGetValue(constructId, out var context))
+        {
+            return NotFound();
+        }
+
+        var provider = ModBase.ServiceProvider;
+        var orleans = provider.GetOrleans();
+
+        context.OverridePilotTakeOver = true;
+
+        var cg = orleans.GetConstructGrain(constructId);
+        await cg.PilotingStop(ModBase.Bot.PlayerId);
 
         return Ok();
     }
