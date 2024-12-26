@@ -38,7 +38,6 @@ public static class FeaturesRegistration
         services.AddSingleton<IFeatureWriterService, FeatureService>();
         services.AddSingleton<IScriptLoaderService, FileSystemScriptLoaderService>();
         services.AddSingleton<IConstructSpatialHashRepository, ConstructSpatialHashRepository>();
-        services.AddSingleton<ISectorSpatialHashCacheService, SectorSpatialHashCacheServiceService>();
         services.AddSingleton<IBlueprintSpawnerService, BlueprintSpawnerService>();
         services.AddSingleton<IAsteroidService, AsteroidService>();
         services.AddSingleton<IConstructService>(p =>

@@ -100,13 +100,6 @@ public class SectorInstanceController(IServiceProvider provider) : Controller
 
         return Ok();
     }
-
-    [HttpGet]
-    [Route("grid")]
-    public IActionResult GetGrid()
-    {
-        return Ok(SectorGridConstructCache.Data);
-    }
     
     public class SectorRequest
     {
