@@ -352,6 +352,17 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
         return queryResult.Select(MapToModel);
     }
 
+    public async Task<IEnumerable<SectorInstance>> FindActiveAsync()
+    {
+        using var db = _connectionFactory.Create();
+        db.Open();
+
+        var queryResult =
+            await db.QueryAsync<DbRow>("SELECT * FROM public.mod_sector_instance WHERE started_at IS NOT NULL");
+
+        return queryResult.Select(MapToModel);
+    }
+
     public async Task SetLoadedAsync(Guid id, bool loaded)
     {
         using var db = _connectionFactory.Create();

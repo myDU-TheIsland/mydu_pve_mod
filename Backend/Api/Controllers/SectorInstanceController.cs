@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Features.Common.Services;
 using Mod.DynamicEncounters.Features.Sector.Data;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
 using NQ;
@@ -19,6 +18,13 @@ public class SectorInstanceController(IServiceProvider provider) : Controller
     public async Task<IActionResult> GetAll()
     {
         return Ok(await _repository.GetAllAsync());
+    }
+
+    [HttpGet]
+    [Route("active")]
+    public async Task<IActionResult> GetActiveSector()
+    {
+        return Ok(await _repository.FindActiveAsync());
     }
 
     [HttpPost]

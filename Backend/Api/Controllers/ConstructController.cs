@@ -236,6 +236,18 @@ public class ConstructController : Controller
     }
 
     [HttpGet]
+    [Route("kind/{kind}")]
+    public async Task<IActionResult> GetByKind(ConstructKind kind)
+    {
+        var provider = ModBase.ServiceProvider;
+        var constructRepository = provider.GetRequiredService<IConstructRepository>();
+
+        var result = await constructRepository.FindByKind(kind);
+
+        return Ok(result);
+    }
+
+    [HttpGet]
     [Route("{constructId:long}/player/{playerId:long}/mission-items")]
     public async Task<IActionResult> GetConstructMissionItems(ulong constructId, ulong playerId)
     {

@@ -40,6 +40,7 @@ public static class FeaturesRegistration
         services.AddSingleton<IConstructSpatialHashRepository, ConstructSpatialHashRepository>();
         services.AddSingleton<IBlueprintSpawnerService, BlueprintSpawnerService>();
         services.AddSingleton<IAsteroidService, AsteroidService>();
+        services.AddSingleton<IConstructRepository, ConstructRepository>();
         services.AddSingleton<IConstructService>(p =>
             new CachedConstructService(
                 new ConstructService(p),

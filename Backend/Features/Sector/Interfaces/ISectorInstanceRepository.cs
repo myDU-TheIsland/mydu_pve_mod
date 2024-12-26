@@ -15,6 +15,7 @@ public interface ISectorInstanceRepository : IRepository<SectorInstance>
     Task DeleteExpiredAsync();
     Task SetExpirationFromNowAsync(Guid id, TimeSpan span);
     Task<IEnumerable<SectorInstance>> FindUnloadedAsync();
+    Task<IEnumerable<SectorInstance>> FindActiveAsync();
     Task SetLoadedAsync(Guid id, bool loaded);
     Task TagAsStartedAsync(Guid id);
     Task<IEnumerable<SectorInstance>> FindSectorsRequiringStartupAsync();
