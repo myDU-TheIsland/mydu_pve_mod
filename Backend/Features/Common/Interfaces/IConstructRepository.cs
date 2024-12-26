@@ -10,4 +10,6 @@ public interface IConstructRepository
     Task<IEnumerable<ConstructItem>> FindByKind(ConstructKind kind);
 
     Task<IEnumerable<ConstructItem>> FindAsteroids();
+    
+    Task<IEnumerable<ConstructItem>> FindOnlinePlayerConstructs();
 }

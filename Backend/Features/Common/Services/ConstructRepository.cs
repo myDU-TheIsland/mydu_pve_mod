@@ -45,6 +45,22 @@ public class ConstructRepository(IServiceProvider provider) : IConstructReposito
         return result.Select(MapToModel);
     }
 
+    public async Task<IEnumerable<ConstructItem>> FindOnlinePlayerConstructs()
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        var result = (await db.QueryAsync<DbRow>(
+            """
+            SELECT C.* FROM player P 
+            JOIN construct C ON C.id = P.construct_id
+            WHERE P.connected = true
+            """
+        )).ToList();
+
+        return result.Select(MapToModel);
+    }
+
     private static ConstructItem MapToModel(DbRow row)
     {
         return new ConstructItem

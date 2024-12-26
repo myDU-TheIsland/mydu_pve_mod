@@ -258,6 +258,18 @@ public class ConstructController : Controller
 
         return Ok(result);
     }
+    
+    [HttpGet]
+    [Route("players")]
+    public async Task<IActionResult> GetPlayerConstructs()
+    {
+        var provider = ModBase.ServiceProvider;
+        var constructRepository = provider.GetRequiredService<IConstructRepository>();
+
+        var result = await constructRepository.FindOnlinePlayerConstructs();
+
+        return Ok(result);
+    }
 
     [HttpGet]
     [Route("{constructId:long}/player/{playerId:long}/mission-items")]
