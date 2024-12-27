@@ -39,7 +39,7 @@ public class PrefabItem
 
     public PrefabEvents Events { get; set; } = new();
 
-    public IEnumerable<SkillItem> Skills { get; set; } = [];
+    public IEnumerable<object> Skills { get; set; } = [];
 
     public class ServerPropertiesItem
     {

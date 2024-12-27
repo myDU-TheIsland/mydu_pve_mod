@@ -48,7 +48,6 @@ public class BehaviorContext(
     public TimeSpan? ActiveSectorExpirationSeconds { get; } =
         TimeSpan.FromSeconds(prefab.DefinitionItem.SectorExpirationSeconds);
 
-    public bool PushPositionModActionEnabled { get; } = false;
     public bool CustomActionShootEnabled { get; } = prefab.DefinitionItem.UsesCustomShootAction;
     public bool DamagesVoxel { get; } = prefab.DefinitionItem.DamagesVoxel;
     public DateTime StartedAt { get; } = DateTime.UtcNow;
@@ -72,7 +71,7 @@ public class BehaviorContext(
     public ConcurrentBag<DamageDealtData> DamageHistory { get; private set; } = [];
 
     public IList<ISkill> Skills { get; set; } = prefab.DefinitionItem.Skills
-        .Select(s => SkillFactory.Create(s))
+        .Select(SkillFactory.Create)
         .ToList();
 
     public bool BoosterActive { get; set; } = false;

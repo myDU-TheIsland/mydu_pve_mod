@@ -236,7 +236,7 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
             		) IS NOT NULL should_activate
             	FROM mod_sector_instance SI
             	WHERE SI.started_at IS NULL
-            ) WHERE should_activate IS TRUE
+            ) AS Q WHERE should_activate IS TRUE
             """,
             new { distance }
         );

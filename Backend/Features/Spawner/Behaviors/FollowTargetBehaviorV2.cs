@@ -178,36 +178,6 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
 
                 StatsRecorder.Record("ConstructUpdate", sw.ElapsedMilliseconds);
             });
-
-            if (context.PushPositionModActionEnabled)
-            {
-                _ = Task.Run(async () =>
-                {
-                    var sw = new Stopwatch();
-                    sw.Start();
-
-                    var modManagerGrain = context.Provider.GetOrleans()
-                        .GetModManagerGrain();
-                    await modManagerGrain.TriggerModAction(
-                        ModBase.Bot.PlayerId,
-                        new ModAction
-                        {
-                            modName = "Mod.DynamicEncounters",
-                            constructId = constructId,
-                            actionId = 114,
-                            payload = JsonConvert.SerializeObject(
-                                new
-                                {
-                                    Velocity = velocity,
-                                    Position = position
-                                }
-                            )
-                        }
-                    );
-
-                    StatsRecorder.Record("ConstructDataPush", sw.ElapsedMilliseconds);
-                });
-            }
         }
         catch (BusinessException be)
         {

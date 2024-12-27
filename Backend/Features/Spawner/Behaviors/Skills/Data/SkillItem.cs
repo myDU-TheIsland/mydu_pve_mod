@@ -3,6 +3,6 @@
 public class SkillItem
 {
     public required string Name { get; set; } = "null";
-    public required double CooldownSeconds { get; set; } = 60;
+    public required double CooldownSeconds { get; set; } = 60D;
     public required string? ItemTypeName { get; set; }
 }
