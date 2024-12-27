@@ -408,7 +408,6 @@ public class BehaviorContext(
     public double CalculateVelocityGoal(double distance)
     {
         if (!Modifiers.Velocity.Enabled) return MaxVelocity;
-        if (OverrideTargetMovePosition.HasValue) return MaxVelocity;
 
         var oppositeVector = VelocityWithTargetDotProduct < 0;
 

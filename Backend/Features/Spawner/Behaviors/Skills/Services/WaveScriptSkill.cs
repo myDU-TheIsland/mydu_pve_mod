@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
@@ -12,11 +13,14 @@ using Newtonsoft.Json.Linq;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
-public class RunScriptSkill(RunScriptSkill.RunScriptSkillItem skillItem) : ISkill
+public class WaveScriptSkill(WaveScriptSkill.WaveScriptSkillItem skillItem) : ISkill
 {
+    public int CurrentCycle { get; set; } = 0;
+
     public bool CanUse(BehaviorContext context)
     {
-        return !context.Effects.IsEffectActive<CooldownEffect>();
+        return CurrentCycle < skillItem.CycleCount &&
+               !context.Effects.IsEffectActive<CooldownEffect>();
     }
 
     public bool ShouldUse(BehaviorContext context)
@@ -27,11 +31,14 @@ public class RunScriptSkill(RunScriptSkill.RunScriptSkillItem skillItem) : ISkil
     public Task Use(BehaviorContext context)
     {
         context.Effects.Activate<CooldownEffect>(TimeSpan.FromSeconds(skillItem.CooldownSeconds));
+        CurrentCycle++;
 
-        var scriptActionFactory = context.Provider.GetRequiredService<IScriptActionFactory>();
-        var scriptAction = scriptActionFactory.Create(skillItem.Script);
+        var provider = context.Provider;
+        var actionFactory = provider.GetRequiredService<IScriptActionFactory>();
+        var scriptAction = actionFactory.Create(skillItem.Script);
+
         scriptAction.ExecuteAsync(new ScriptContext(
-            context.Provider,
+            provider,
             context.FactionId,
             context.PlayerIds,
             context.Sector,
@@ -39,19 +46,20 @@ public class RunScriptSkill(RunScriptSkill.RunScriptSkillItem skillItem) : ISkil
         {
             ConstructId = context.ConstructId
         });
-        
+
         return Task.CompletedTask;
     }
-    
-    public static RunScriptSkill Create(JObject item)
+
+    public static WaveScriptSkill Create(JObject item)
     {
-        return new RunScriptSkill(item.ToObject<RunScriptSkillItem>());
+        return new WaveScriptSkill(item.ToObject<WaveScriptSkillItem>());
     }
-    
+
     public class CooldownEffect : IEffect;
 
-    public class RunScriptSkillItem : SkillItem
+    public class WaveScriptSkillItem : SkillItem
     {
-        [JsonProperty] public ScriptActionItem Script { get; set; } = new();
+        [JsonProperty] public int CycleCount { get; set; } = 3;
+        [JsonProperty] public IEnumerable<ScriptActionItem> Script { get; set; } = [];
     }
 }

@@ -22,6 +22,10 @@ public class SkillFactory(IServiceProvider provider) : ISkillFactory
                 return LeashSkill.Create(si);
             case "script":
                 return RunScriptSkill.Create(jObj);
+            case "wave":
+                return WaveScriptSkill.Create(jObj);
+            case "waypoint":
+                return WaypointSkill.Create(jObj);
             default:
                 return new NullSkill();
         }

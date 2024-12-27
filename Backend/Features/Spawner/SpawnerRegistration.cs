@@ -30,6 +30,8 @@ public static class SpawnerRegistration
         services.AddSingleton<IPointGeneratorFactory, PointGeneratorFactory>();
         services.AddSingleton<IConstructBehaviorFactory, ConstructBehaviorFactory>();
         services.AddSingleton<IConstructInMemoryBehaviorContextRepository, ConstructInMemoryBehaviorContextRepository>();
+        services.AddSingleton<IConstructStateRepository, IConstructStateRepository>();
+        services.AddSingleton<IConstructStateService, ConstructStateService>();
         
         services.AddSingleton<IScriptActionItemRepository, ScriptActionItemDatabaseRepository>();
         services.AddSingleton<IPrefabItemRepository, PrefabItemDatabaseRepository>();
