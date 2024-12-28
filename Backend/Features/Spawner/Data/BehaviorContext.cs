@@ -283,6 +283,13 @@ public class BehaviorContext(
         OverrideTargetMovePosition = position;
     }
 
+    public double GetMovePositionDistance()
+    {
+        if (!Position.HasValue) return 0;
+
+        return OverrideTargetMovePosition?.Dist(Position.Value) ?? TargetDistance;
+    }
+
     public void SetTargetLinearVelocity(Vec3 linear)
     {
         TargetLinearVelocity = linear;
@@ -405,9 +412,23 @@ public class BehaviorContext(
         );
     }
 
+    public double CalculateOverrideMoveVelocityGoal()
+    {
+        var brakingDistance = CalculateBrakingDistance();
+        var movePositionDistance = GetMovePositionDistance();
+        
+        if (movePositionDistance <= brakingDistance * Modifiers.Velocity.BrakeDistanceFactor)
+        {
+            return 0D;
+        }
+
+        return MaxVelocity;
+    }
+
     public double CalculateVelocityGoal(double distance)
     {
         if (!Modifiers.Velocity.Enabled) return MaxVelocity;
+        if (OverrideTargetMovePosition.HasValue) return CalculateOverrideMoveVelocityGoal();
 
         var oppositeVector = VelocityWithTargetDotProduct < 0;
 

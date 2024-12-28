@@ -9,8 +9,9 @@
       <env name="BOT_LOGIN" value="bot" />
       <env name="BOT_PASSWORD" value="bot" />
       <env name="BOT_PREFIX" value="PVE" />
-      <env name="MIGRATION_VERSION" value="42" />
+      <env name="MIGRATION_VERSION" value="49" />
       <env name="QUEUEING" value="http://localhost:9630" />
+      <env name="ENVIRONMENT" value="DEV" />
     </envs>
     <option name="USE_EXTERNAL_CONSOLE" value="0" />
     <option name="USE_MONO" value="0" />

@@ -11,7 +11,7 @@ public class AddConstructGenericStateTable : Migration
     public override void Up()
     {
         Create.Table(ConstructStateTable)
-            .WithColumn("id").AsGuid().WithDefault(SystemMethods.NewGuid)
+            .WithColumn("id").AsGuid().WithDefault(SystemMethods.NewGuid).PrimaryKey()
             .WithColumn("construct_id").AsInt64().Indexed()
             .WithColumn("type").AsString()
             .WithColumn("properties").AsCustom("jsonb").NotNullable().WithDefaultValue("{}")

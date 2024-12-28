@@ -46,13 +46,13 @@ public class ConstructStateRepository(IServiceProvider provider) : IConstructSta
 
         await db.ExecuteAsync(
             """
-            INSERT INTO mod_construct_state (construct_id, type, properties) VALUES (@construct_id, @type, @properties)
+            INSERT INTO mod_construct_state (construct_id, type, properties) VALUES (@construct_id, @type, @properties::jsonb)
             """,
             new
             {
                 type = item.Type,
-                construct_id = item.ConstructId,
-                properties = item.Properties.ToString()
+                construct_id = (long)item.ConstructId,
+                properties = item.Properties?.ToString() ?? "{}"
             }
         );
     }
@@ -65,7 +65,7 @@ public class ConstructStateRepository(IServiceProvider provider) : IConstructSta
         await db.ExecuteAsync(
             """
             UPDATE mod_construct_state SET
-                properties = @properties,
+                properties = @properties::jsonb,
                 updated_at = NOW()
             WHERE type = @type AND construct_id = @construct_id
             """,
@@ -85,7 +85,7 @@ public class ConstructStateRepository(IServiceProvider provider) : IConstructSta
             Id = row.id,
             Type = row.type,
             ConstructId = row.construct_id,
-            Properties = JObject.Parse(row.properties),
+            Properties = JToken.Parse(row.properties),
             CreatedAt = row.created_at,
             UpdatedAt = row.updated_at
         };

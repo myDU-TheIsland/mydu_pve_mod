@@ -8,7 +8,7 @@ public class ConstructStateItem
     public Guid Id { get; set; }
     public ulong ConstructId { get; set; }
     public string Type { get; set; } = string.Empty;
-    public JObject Properties { get; set; } = new();
+    public JToken? Properties { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }
