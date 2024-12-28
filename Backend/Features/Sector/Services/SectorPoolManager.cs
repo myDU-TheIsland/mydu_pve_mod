@@ -19,7 +19,6 @@ using Mod.DynamicEncounters.Features.Sector.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.Vector.Helpers;
 using NQ;
-using NQ.Interfaces;
 
 namespace Mod.DynamicEncounters.Features.Sector.Services;
 
@@ -264,6 +263,30 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         var instance = await _sectorInstanceRepository.FindBySector(sector);
 
         if (instance == null)
+        {
+            return;
+        }
+
+        await _sectorInstanceRepository.SetExpirationFromNowAsync(instance.Id, span);
+
+        _logger.LogInformation(
+            "Set Sector expiration for {Sector}({Id}) to {Minutes} from now",
+            instance.Sector,
+            instance.Id,
+            span
+        );
+    }
+
+    public async Task SetExpirationFromNowIfGreater(Vec3 sector, TimeSpan span)
+    {
+        var instance = await _sectorInstanceRepository.FindBySector(sector);
+
+        if (instance == null)
+        {
+            return;
+        }
+
+        if (instance.ExpiresAt < DateTime.UtcNow + span)
         {
             return;
         }
