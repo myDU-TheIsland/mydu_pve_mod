@@ -295,11 +295,11 @@ public class ThreadManager : IThreadManager
 
     private Thread CreateThread(ThreadId threadId, Func<Task> action)
     {
-        return new Thread(ThreadStart);
+        return new Thread(Run);
 
-        async void ThreadStart()
+        void Run()
         {
-            await ThreadLoop(threadId, action);
+            ThreadLoop(threadId, action).Wait();
         }
     }
 
