@@ -26,6 +26,8 @@ public class SkillFactory(IServiceProvider provider) : ISkillFactory
                 return WaveScriptSkill.Create(jObj);
             case "waypoint":
                 return WaypointSkill.Create(jObj);
+            case "roam-asteroids":
+                return AsteroidRoamSkill.Create(jObj);
             default:
                 return new NullSkill();
         }

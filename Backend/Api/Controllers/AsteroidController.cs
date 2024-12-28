@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Backend.Scenegraph;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Data;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Newtonsoft.Json;
@@ -23,6 +26,29 @@ public class AsteroidController : Controller
         public ulong? ConstructId { get; set; }
         public string File { get; set; }
         public Vec3? Position { get; set; }
+    }
+
+    [HttpGet]
+    [Route("waypoints")]
+    public async Task<IActionResult> GetAsteroidWaypoints([FromBody] AsteroidWaypointRequest request)
+    {
+        var provider = ModBase.ServiceProvider;
+        var repository = provider.GetRequiredService<IConstructRepository>();
+        var travelRouteService = provider.GetRequiredService<ITravelRouteService>();
+
+        var asteroids = await repository.FindAsteroids();
+        var route = travelRouteService.Solve(
+            new WaypointItem
+            {
+                Position = request.FromPosition,
+            },
+            asteroids.Select(x => new WaypointItem
+            {
+                Position = x.Position,
+                Name = x.Name
+            }));
+        
+        return Ok(route);
     }
 
     [HttpDelete]
@@ -89,5 +115,10 @@ public class AsteroidController : Controller
     {
         [JsonProperty] public ulong ConstructId { get; set; }
         [JsonProperty] public double Radius { get; set; } = DistanceHelpers.OneSuInMeters * 5;
+    }
+
+    public class AsteroidWaypointRequest
+    {
+        [JsonProperty] public Vec3 FromPosition { get; set; }
     }
 }

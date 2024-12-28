@@ -10,7 +10,6 @@ using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using NQ;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
@@ -29,10 +28,10 @@ public class WaypointSkill(WaypointSkill.WaypointSkillItem skillItem) : ISkill
         return true;
     }
 
-    public async Task Use(BehaviorContext context)
+    public virtual async Task Use(BehaviorContext context)
     {
         if (!context.Position.HasValue) return;
-        
+
         if (!WaypointInitialized)
         {
             await InitializeWaypointQueue(context);
@@ -45,14 +44,14 @@ public class WaypointSkill(WaypointSkill.WaypointSkillItem skillItem) : ISkill
             context.SetOverrideTargetMovePosition(null);
             return;
         }
-        
+
         if (WaypointQueue.Count == 0)
         {
             if (skillItem.ResetWaypointOnArrival)
             {
                 WaypointQueue = new Queue<WaypointItem>(skillItem.Waypoints);
             }
-            
+
             return;
         }
 
@@ -115,12 +114,6 @@ public class WaypointSkill(WaypointSkill.WaypointSkillItem skillItem) : ISkill
         return new WaypointSkill(item.ToObject<WaypointSkillItem>());
     }
 
-    public class WaypointItem
-    {
-        public string Name { get; set; } = string.Empty;
-        public Vec3 Position { get; set; }
-    }
-    
     public class WaypointSkillItem
     {
         [JsonProperty] public IEnumerable<WaypointItem> Waypoints { get; set; } = [];
