@@ -28,7 +28,7 @@ public class AsteroidController : Controller
         public Vec3? Position { get; set; }
     }
 
-    [HttpGet]
+    [HttpPost]
     [Route("waypoints")]
     public async Task<IActionResult> GetAsteroidWaypoints([FromBody] AsteroidWaypointRequest request)
     {

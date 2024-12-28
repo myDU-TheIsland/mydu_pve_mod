@@ -120,6 +120,6 @@ public class WaypointSkill(WaypointSkill.WaypointSkillItem skillItem) : ISkill
         [JsonProperty] public double WaypointArrivalDistance { get; set; } = 50000;
         [JsonProperty] public IEnumerable<ScriptActionItem> ArrivedAtFinalDestinationScript { get; set; } = [];
         [JsonProperty] public bool InterruptWaypointNavigationOnPlayerContact { get; set; }
-        [JsonProperty] public bool ResetWaypointOnArrival { get; set; } = true;
+        [JsonProperty] public bool ResetWaypointOnArrival { get; set; }
     }
 }
