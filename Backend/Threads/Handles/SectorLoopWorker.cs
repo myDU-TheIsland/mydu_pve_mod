@@ -16,8 +16,10 @@ using Mod.DynamicEncounters.Helpers;
 
 namespace Mod.DynamicEncounters.Threads.Handles;
 
-public class SectorLoopWorker(IServiceProvider provider) : BackgroundService
+public class SectorLoopWorker : BackgroundService
 {
+    private readonly IServiceProvider _provider = ModBase.ServiceProvider;
+    
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
@@ -46,15 +48,15 @@ public class SectorLoopWorker(IServiceProvider provider) : BackgroundService
         var sw = new Stopwatch();
         sw.Start();
 
-        var logger = provider.CreateLogger<SectorLoopWorker>();
+        var logger = _provider.CreateLogger<SectorLoopWorker>();
 
         using var scope = logger.BeginScope(new Dictionary<string, object>
         {
             { "Thread", Environment.CurrentManagedThreadId }
         });
 
-        var factionRepository = provider.GetRequiredService<IFactionRepository>();
-        var sectorPoolManager = provider.GetRequiredService<ISectorPoolManager>();
+        var factionRepository = _provider.GetRequiredService<IFactionRepository>();
+        var sectorPoolManager = _provider.GetRequiredService<ISectorPoolManager>();
 
         await sectorPoolManager.ExecuteSectorCleanup()
             .OnError(exception => { logger.LogError(exception, "Failed to Execute Sector Cleanup"); })
@@ -73,19 +75,19 @@ public class SectorLoopWorker(IServiceProvider provider) : BackgroundService
 
     private async Task PrepareFactionSector(FactionItem faction)
     {
-        var logger = provider.CreateLogger<SectorLoopWorker>();
+        var logger = _provider.CreateLogger<SectorLoopWorker>();
         logger.LogDebug("Preparing Sector for {Faction}", faction.Name);
 
         // TODO sector encounters becomes tied to a territory
         // a territory has center, max and min radius
         // a territory is owned by a faction
         // a territory is a point on a map - not constructs nor DU's territories - perhaps name it differently
-        var sectorEncountersRepository = provider.GetRequiredService<ISectorEncounterRepository>();
+        var sectorEncountersRepository = _provider.GetRequiredService<ISectorEncounterRepository>();
 
-        var factionTerritoryRepository = provider.GetRequiredService<IFactionTerritoryRepository>();
+        var factionTerritoryRepository = _provider.GetRequiredService<IFactionTerritoryRepository>();
         var factionTerritories = await factionTerritoryRepository.GetAllByFactionAsync(faction.Id);
 
-        var sectorPoolManager = provider.GetRequiredService<ISectorPoolManager>();
+        var sectorPoolManager = _provider.GetRequiredService<ISectorPoolManager>();
 
         foreach (var ft in factionTerritories)
         {
