@@ -28,10 +28,12 @@ public class FacilityStrikeScenarioSkill(
         return State is null or { Finished: false } || !produceItemsSkill.Finished;
     }
 
-    public bool ShouldUse(BehaviorContext context) => true;
+    public bool ShouldUse(BehaviorContext context) => !context.Effects.IsEffectActive<UseCooldownEffect>();
 
     public async Task Use(BehaviorContext context)
     {
+        context.Effects.Activate<UseCooldownEffect>(TimeSpan.FromSeconds(skillItem.CooldownSeconds));
+        
         if (!skillItem.Waves.Any()) return;
 
         var constructStateService = context.Provider.GetRequiredService<IConstructStateService>();
@@ -41,8 +43,6 @@ public class FacilityStrikeScenarioSkill(
         {
             await produceItemsSkill.Use(context);
         }
-
-        if (context.Effects.IsEffectActive<NextWaveCooldownEffect>()) return;
 
         var waves = skillItem.Waves.ToList();
         if (waves.Count < State!.CurrentWaveIndex + 1)
@@ -59,7 +59,8 @@ public class FacilityStrikeScenarioSkill(
         }
 
         var wave = waves[State!.CurrentWaveIndex];
-
+        
+        if (context.Effects.IsEffectActive<NextWaveCooldownEffect>()) return;
         context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
         State.CurrentWaveIndex++;
 
@@ -124,11 +125,12 @@ public class FacilityStrikeScenarioSkill(
 
     public class FacilityStrikeState
     {
-        public bool Finished { get; set; }
-        public int CurrentWaveIndex { get; set; }
+        [JsonProperty] public bool Finished { get; set; }
+        [JsonProperty] public int CurrentWaveIndex { get; set; }
     }
 
     public class NextWaveCooldownEffect : IEffect;
+    public class UseCooldownEffect : IEffect;
 
     public class FacilityStrikeScenarioSkillItem : SkillItem
     {
