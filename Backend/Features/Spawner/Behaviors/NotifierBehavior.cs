@@ -25,7 +25,8 @@ public class NotifierBehavior(ulong constructId, IPrefab prefab) : IConstructBeh
     private IConstructElementsGrain _constructElementsGrain;
 
     private ElementId _coreUnitElementId;
-    
+
+    private readonly object _lock = new();
     private bool _active = true;
     private IConstructService _constructService;
     private IConstructElementsService _constructElementsService;
@@ -67,10 +68,17 @@ public class NotifierBehavior(ulong constructId, IPrefab prefab) : IConstructBeh
 
         foreach (var skill in context.Skills)
         {
-            if (!skill.CanUse(context)) continue;
-            if (!skill.ShouldUse(context)) continue;
+            Task useTask;
             
-            await skill.Use(context);
+            lock (_lock)
+            {
+                if (!skill.CanUse(context)) continue;
+                if (!skill.ShouldUse(context)) continue;
+
+                useTask = skill.Use(context);
+            }
+
+            await useTask;
         }
 
         try

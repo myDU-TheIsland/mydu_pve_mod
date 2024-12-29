@@ -52,28 +52,35 @@ public class ConstructBehaviorLoop : HighTickModLoop
             return;
         }
 
-        var taskList = new List<Task>();
-
         var sw = new Stopwatch();
         sw.Start();
 
+        List<ConstructHandleItem> constructHandleList; 
+        
         lock (ListLock)
         {
-            if (ConstructHandles.Count == 0)
+            constructHandleList = ConstructHandles.Select(x => x.Value).ToList();
+            
+            if (constructHandleList.Count == 0)
             {
                 Thread.Sleep(TimeSpan.FromMilliseconds(500));
                 ReportHeartbeat();
                 return;
             }
-            
-            foreach (var kvp in ConstructHandles)
-            {
-                var task = Task.Run(() => RunIsolatedAsync(() => TickConstructHandle(deltaTime, kvp.Value)));
-                taskList.Add(task);
-            }
-        }
 
-        await Task.WhenAll(taskList);
+            // foreach (var kvp in ConstructHandles)
+            // {
+            //     var task = Task.Run(() => RunIsolatedAsync(() => TickConstructHandle(deltaTime, kvp.Value)));
+            //     taskList.Add(task);
+            // }
+        }
+        
+        await Parallel.ForEachAsync(
+            constructHandleList, async (item, token) =>
+            {
+                if (token.IsCancellationRequested) return;
+                await RunIsolatedAsync(() => TickConstructHandle(deltaTime, item));
+            });
 
         StatsRecorder.Record(_category, sw.ElapsedMilliseconds);
         ReportHeartbeat();
