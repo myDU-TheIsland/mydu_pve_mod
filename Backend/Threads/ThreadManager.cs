@@ -5,16 +5,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.Threads.Handles;
 using ThreadState = System.Threading.ThreadState;
-using Timer = System.Timers.Timer;
 
 namespace Mod.DynamicEncounters.Threads;
 
-public class ThreadManager : IThreadManager
+public class ThreadManager : BackgroundService, IThreadManager
 {
     private static ThreadManager? _instance;
     private readonly ConcurrentDictionary<ThreadId, CancellationTokenSource> _cancellationTokenSources = new();
@@ -23,11 +23,10 @@ public class ThreadManager : IThreadManager
     private readonly ConcurrentDictionary<ThreadId, Thread> _threads = new();
     private readonly ConcurrentDictionary<ThreadId, bool> _threadBlocks = new();
     private readonly ConcurrentDictionary<ThreadId, DateTime> _threadStartMap = new();
-    private Timer _timer = new(TimeSpan.FromSeconds(1));
 
-    public static ThreadManager Instance
+    public static ThreadManager GetInstance()
     {
-        get { return _instance ??= new ThreadManager(); }
+        return _instance ??= new ThreadManager();
     }
 
     public void ReportHeartbeat(ThreadId threadId)
@@ -55,27 +54,16 @@ public class ThreadManager : IThreadManager
         }
     }
 
-    public void Pause()
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _timer.Stop();
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            OnTick(stoppingToken);
+            await Task.Delay(1000, stoppingToken);
+        }
     }
 
-    public void Resume()
-    {
-        _timer.Start();
-    }
-
-    public Task Start()
-    {
-        var taskCompletionSource = new TaskCompletionSource();
-
-        _timer.Elapsed += (_, _) => { OnTimer(); };
-        _timer.Start();
-
-        return taskCompletionSource.Task;
-    }
-
-    public void OnTimer()
+    public void OnTick(CancellationToken stoppingToken)
     {
         var sw = new Stopwatch();
         sw.Start();
@@ -83,6 +71,8 @@ public class ThreadManager : IThreadManager
 
         foreach (var id in threadIds)
         {
+            if (stoppingToken.IsCancellationRequested) break;
+            
             if (IsCreationBlocked(id)) continue;
             
             if (!DoesThreadExist(id))
@@ -115,15 +105,15 @@ public class ThreadManager : IThreadManager
                 {
                     CancelThread(id);
                 }
-                else
-                {
-                    InterruptThread(id);
-                    RemoveThread(id);
-                }
+                // else
+                // {
+                //     InterruptThread(id);
+                //     RemoveThread(id);
+                // }
             }
         }
 
-        // _logger.LogInformation("ThreadManager Timer: {Timer}ms", sw.ElapsedMilliseconds);
+        StatsRecorder.Record(nameof(ThreadManager), sw.ElapsedMilliseconds);
     }
 
     public Dictionary<ThreadId, object> GetState()

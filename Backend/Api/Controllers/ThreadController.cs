@@ -11,7 +11,7 @@ public class ThreadController : Controller
     public IActionResult GetStatus()
     {
         return Ok(
-            ThreadManager.Instance
+            ThreadManager.GetInstance()
                 .GetState()
         );
     }
@@ -20,7 +20,7 @@ public class ThreadController : Controller
     [Route("cancel/{id}")]
     public IActionResult CancelThread(ThreadId id)
     {
-        ThreadManager.Instance
+        ThreadManager.GetInstance()
             .CancelThread(id);
         
         return Ok();
@@ -30,7 +30,7 @@ public class ThreadController : Controller
     [Route("interrupt/{id}")]
     public IActionResult InterruptThread(ThreadId id)
     {
-        ThreadManager.Instance
+        ThreadManager.GetInstance()
             .CancelThread(id);
         
         return Ok();
@@ -40,7 +40,7 @@ public class ThreadController : Controller
     [Route("block/{id}")]
     public IActionResult BlockThread(ThreadId id)
     {
-        ThreadManager.Instance
+        ThreadManager.GetInstance()
             .BlockThreadCreation(id);
         
         return Ok();
@@ -50,7 +50,7 @@ public class ThreadController : Controller
     [Route("release/{id}")]
     public IActionResult ReleaseThread(ThreadId id)
     {
-        ThreadManager.Instance
+        ThreadManager.GetInstance()
             .UnblockThreadCreation(id);
         
         return Ok();
@@ -60,20 +60,8 @@ public class ThreadController : Controller
     [Route("manager/stop")]
     public IActionResult StopThreadManager()
     {
-        ThreadManager.Instance
-            .Pause();
-        ThreadManager.Instance
+        ThreadManager.GetInstance()
             .CancelAllThreads();
-
-        return Ok();
-    }
-    
-    [HttpPost]
-    [Route("manager/resume")]
-    public IActionResult ResumeThreadManager()
-    {
-        ThreadManager.Instance
-            .Resume();
 
         return Ok();
     }

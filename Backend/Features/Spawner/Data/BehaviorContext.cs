@@ -67,7 +67,7 @@ public class BehaviorContext(
     public Vec3 TargetMovePosition { get; private set; }
     public Vec3? OverrideTargetMovePosition { get; private set; }
 
-    public ConcurrentBag<ScanContact> Contacts { get; private set; }
+    public ConcurrentBag<ScanContact> Contacts { get; private set; } = [];
     public ConcurrentBag<DamageDealtData> DamageHistory { get; private set; } = [];
 
     public IList<ISkill> Skills { get; set; } = prefab.DefinitionItem.Skills

@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,35 +29,22 @@ public static class Program
             return;
         }
 
-        var apiDisabledEnvValue = Environment.GetEnvironmentVariable("API_ENABLED");
-        var apiEnabled = !string.IsNullOrEmpty(apiDisabledEnvValue) && apiDisabledEnvValue == "true"
-                         || apiDisabledEnvValue == "1";
-
         try
         {
             Config.ReadYamlFileFromArgs("mod", args);
             await ModBase.Setup(serviceCollection);
 
-            var host = CreateHostBuilder(serviceCollection, args)
-                .Build();
-
             using var scope = ModBase.ServiceProvider.CreateScope();
             ModBase.UpdateDatabase(scope);
-
-            var tm = ThreadManager.Instance;
-            var cancellationTokenSource = new CancellationTokenSource();
-            var ct = cancellationTokenSource.Token;
-
-            var taskList = new List<Task>();
             
-            if (apiEnabled)
-            {
-                taskList.Add(host.RunAsync(ct));
-            }
-            
-            taskList.Add(tm.Start());
+            var host = CreateHostBuilder(serviceCollection, args)
+                .ConfigureServices(services =>
+                {
+                    services.AddHostedService(_ => ThreadManager.GetInstance());
+                })
+                .Build();
 
-            await Task.WhenAll(taskList);
+            await host.RunAsync();
 
             Console.WriteLine("Finished Main");
         }

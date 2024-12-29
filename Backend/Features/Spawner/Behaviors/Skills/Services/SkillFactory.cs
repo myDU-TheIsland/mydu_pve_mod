@@ -28,6 +28,12 @@ public class SkillFactory(IServiceProvider provider) : ISkillFactory
                 return WaypointSkill.Create(jObj);
             case "roam-asteroids":
                 return AsteroidRoamSkill.Create(jObj);
+            case "give-take-items":
+                return GiveTakeItemSkill.Create(jObj);
+            case "produce-when-safe":
+                return ProduceItemsWhenSafeSkill.Create(jObj);
+            case "scenario-facility-strike":
+                return FacilityStrikeScenarioSkill.Create(jObj);
             default:
                 return new NullSkill();
         }
