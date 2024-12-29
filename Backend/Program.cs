@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mod.DynamicEncounters.Api;
 using Mod.DynamicEncounters.Threads;
+using Mod.DynamicEncounters.Threads.Handles;
 using NQutils.Config;
 
 namespace Mod.DynamicEncounters;
@@ -41,6 +42,7 @@ public static class Program
                 .ConfigureServices(services =>
                 {
                     services.AddHostedService(_ => ThreadManager.GetInstance());
+                    services.AddHostedService<SectorLoopWorker>();
                 })
                 .Build();
 

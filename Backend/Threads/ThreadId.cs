@@ -2,7 +2,6 @@
 
 public enum ThreadId
 {
-    Sector = 2,
     ExpirationNames = 3,
     BehaviorFeatureCheck = 4,
     ConstructHandleQuery = 5,

@@ -193,7 +193,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                     }
                 ).OnError(exception =>
                 {
-                    _logger.LogError(exception, "Failed to Execute On Load Script (Aggregate)");
+                    _logger.LogError(exception, "Failed to Execute On Load Script (Aggregate). {Script}", sector.OnLoadScript);
 
                     foreach (var e in exception.InnerExceptions)
                     {

@@ -60,7 +60,7 @@ public class AddMoreFeatureEntries : Migration
             .InSchema("public")
             .Row(new
             {
-                name = $"{nameof(SectorLoop)}Enabled",
+                name = "SectorLoopEnabled",
                 type = "bool",
                 value = "false"
             });

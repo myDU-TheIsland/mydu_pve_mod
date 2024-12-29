@@ -151,11 +151,6 @@ public class ThreadManager : BackgroundService, IThreadManager
                     threadId,
                     new CleanupLoop(this, cts.Token).Tick
                 );
-            case ThreadId.Sector:
-                return CreateThread(
-                    threadId,
-                    new SectorLoop(this, cts.Token).Tick
-                );
             case ThreadId.ExpirationNames:
                 return CreateThread(
                     threadId,

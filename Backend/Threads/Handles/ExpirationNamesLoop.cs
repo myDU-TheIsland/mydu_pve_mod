@@ -14,20 +14,20 @@ public class ExpirationNamesLoop(IThreadManager tm, CancellationToken ct) :
 {
     public override async Task Tick()
     {
-        var logger = ModBase.ServiceProvider.CreateLogger<SectorLoop>();
+        var logger = ModBase.ServiceProvider.CreateLogger<ExpirationNamesLoop>();
 
         try
         {
             var featureService = ModBase.ServiceProvider.GetRequiredService<IFeatureReaderService>();
             var sectorPoolManager = ModBase.ServiceProvider.GetRequiredService<ISectorPoolManager>();
 
-            if (await featureService.GetEnabledValue<SectorLoop>(false))
+            if (await featureService.GetEnabledValue<ExpirationNamesLoop>(false))
             {
                 await sectorPoolManager.UpdateExpirationNames();
             }
 
             ReportHeartbeat();
-            Thread.Sleep(TimeSpan.FromSeconds(5));
+            Thread.Sleep(TimeSpan.FromSeconds(10));
         }
         catch (Exception e)
         {
