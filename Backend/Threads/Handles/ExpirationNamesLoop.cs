@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 
@@ -18,13 +17,8 @@ public class ExpirationNamesLoop(IThreadManager tm, CancellationToken ct) :
 
         try
         {
-            var featureService = ModBase.ServiceProvider.GetRequiredService<IFeatureReaderService>();
             var sectorPoolManager = ModBase.ServiceProvider.GetRequiredService<ISectorPoolManager>();
-
-            if (await featureService.GetEnabledValue<ExpirationNamesLoop>(false))
-            {
-                await sectorPoolManager.UpdateExpirationNames();
-            }
+            await sectorPoolManager.UpdateExpirationNames();
 
             ReportHeartbeat();
             Thread.Sleep(TimeSpan.FromSeconds(5));
