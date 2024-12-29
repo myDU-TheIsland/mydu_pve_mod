@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Backend;
 using Backend.AWS;
+using Backend.Database;
 using Backend.Fixture;
 using Backend.Fixture.Construct;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +23,7 @@ using Newtonsoft.Json;
 using NQ;
 using NQ.Interfaces;
 using NQutils.Config;
+using NQutils.Def;
 using NQutils.Sql;
 
 namespace Mod.DynamicEncounters.Features.Scripts.Actions;
@@ -144,7 +147,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         fixture.serverProperties.isDynamicWreck = constructDef.DefinitionItem.ServerProperties.IsDynamicWreck;
         fixture.header.constructIdHint = null;
 
-        var constructId = (await ConstructFixtureImport.Import(
+        var constructId = (await ConstructImporter.Import(
             fixture,
             provider.GetRequiredService<IUserContent>(),
             provider.GetRequiredService<ISql>(),
