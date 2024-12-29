@@ -18,7 +18,6 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Helpers;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NQ;
 using NQ.Interfaces;
 using NQutils.Config;
@@ -251,7 +250,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         try
         {
             // Keep POIs hidden
-            if (!actionItem.Tags.Contains("poi"))
+            if (!actionItem.Tags.Contains("poi") || properties.Visible)
             {
                 await orleans.GetConstructParentingGrain().ReloadConstruct(constructId)
                     .WithRetry(RetryOptions.Default(_logger));
@@ -269,6 +268,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
     
     public class Properties
     {
-        public bool AddConstructHandle { get; set; } = true;
+        [JsonProperty] public bool AddConstructHandle { get; set; } = true;
+        [JsonProperty] public bool Visible { get; set; } = true;
     }
 }

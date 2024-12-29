@@ -25,7 +25,7 @@ public class FacilityStrikeScenarioSkill(
 
     public bool CanUse(BehaviorContext context)
     {
-        return State is null or { Finished: false } || !produceItemsSkill.Finished;
+        return (State is null or { Finished: false } || !produceItemsSkill.Finished) && context.IsAlive;
     }
 
     public bool ShouldUse(BehaviorContext context) => !context.Effects.IsEffectActive<UseCooldownEffect>();

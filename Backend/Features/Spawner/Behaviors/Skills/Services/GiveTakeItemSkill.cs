@@ -62,6 +62,7 @@ public class GiveTakeItemSkill(GiveTakeItemSkill.GiveTakeItemSkillItem skillItem
 
         var constructId = OverrideConstructId ?? context.ConstructId;
         
+        if (!skillItem.Items.Any()) return;
         
         // TODO change to give take operation
         var itemSpawnerService = provider.GetRequiredService<IItemSpawnerService>();
@@ -86,7 +87,7 @@ public class GiveTakeItemSkill(GiveTakeItemSkill.GiveTakeItemSkillItem skillItem
         if (!pilot.HasValue) return;
 
         var alertService = provider.GetRequiredService<IPlayerAlertService>();
-        await alertService.SendInfoAlert(pilot.Value, "Items beamed to your cargo hold");
+        await alertService.SendInfoAlert(pilot.Value, skillItem.PlayerAlertMessage);
     }
 
     public static GiveTakeItemSkill Create(JToken jObj)
@@ -99,6 +100,7 @@ public class GiveTakeItemSkill(GiveTakeItemSkill.GiveTakeItemSkillItem skillItem
     public class GiveTakeItemSkillItem : SkillItem
     {
         [JsonProperty] public bool SendPlayerAlert { get; set; } = true;
+        [JsonProperty] public string PlayerAlertMessage { get; set; } = "Items beamed to your cargo hold";
         [JsonProperty] public int MaxIterations { get; set; } = 10;
         [JsonProperty] public IEnumerable<ScriptActionItem> OnFinishedScript { get; set; } = [];
         [JsonProperty] public IEnumerable<ItemQuantity> Items { get; set; } = [];
