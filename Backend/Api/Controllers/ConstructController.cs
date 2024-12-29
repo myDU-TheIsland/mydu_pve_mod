@@ -270,6 +270,18 @@ public class ConstructController : Controller
 
         return Ok(result);
     }
+    
+    [HttpGet]
+    [Route("npc")]
+    public async Task<IActionResult> GetNpcConstructs()
+    {
+        var provider = ModBase.ServiceProvider;
+        var constructRepository = provider.GetRequiredService<IConstructRepository>();
+
+        var result = await constructRepository.FindActiveNpcConstructs();
+
+        return Ok(result);
+    }
 
     [HttpGet]
     [Route("{constructId:long}/player/{playerId:long}/mission-items")]

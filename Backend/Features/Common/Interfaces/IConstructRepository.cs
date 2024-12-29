@@ -12,4 +12,5 @@ public interface IConstructRepository
     Task<IEnumerable<ConstructItem>> FindAsteroids();
     
     Task<IEnumerable<ConstructItem>> FindOnlinePlayerConstructs();
+    Task<IEnumerable<ConstructItem>> FindActiveNpcConstructs();
 }
