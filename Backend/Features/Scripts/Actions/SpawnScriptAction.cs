@@ -250,7 +250,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         try
         {
             // Keep POIs hidden
-            if (!actionItem.Tags.Contains("poi") || properties.Visible)
+            if (!actionItem.Tags.Contains("poi") && properties.Visible)
             {
                 await orleans.GetConstructParentingGrain().ReloadConstruct(constructId)
                     .WithRetry(RetryOptions.Default(_logger));
