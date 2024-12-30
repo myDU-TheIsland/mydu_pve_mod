@@ -13,11 +13,11 @@ public class ExpirationNamesWorker : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-        var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
-        
         while (!stoppingToken.IsCancellationRequested)
         {
+            var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
+            
             await Tick(cts.Token);
             await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
         }
