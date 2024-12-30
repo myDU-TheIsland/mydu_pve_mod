@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
@@ -11,11 +12,21 @@ using Mod.DynamicEncounters.Helpers;
 
 namespace Mod.DynamicEncounters.Threads.Handles;
 
-public class CleanupLoop(IThreadManager tm, CancellationToken ct) : ThreadHandle(ThreadId.Cleanup, tm, ct)
+public class CleanupWorker : BackgroundService
 {
-    private readonly TimeSpan _timeSpan = TimeSpan.FromSeconds(5);
-
-    public override async Task Tick()
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
+            
+            await Tick(cts.Token);
+            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+        }
+    }
+    
+    public async Task Tick(CancellationToken stoppingToken)
     {
         var maxIterationsPerCycle = 50;
         var counter = 0;
@@ -25,11 +36,11 @@ public class CleanupLoop(IThreadManager tm, CancellationToken ct) : ThreadHandle
 
         try
         {
-            var logger = ModBase.ServiceProvider.CreateLogger<CleanupLoop>();
+            var logger = ModBase.ServiceProvider.CreateLogger<CleanupWorker>();
             var constructService = ModBase.ServiceProvider.GetRequiredService<IConstructService>();
             var constructHandleRepository = ModBase.ServiceProvider.GetRequiredService<IConstructHandleRepository>();
 
-            while (!ConstructsPendingDelete.Data.IsEmpty)
+            while (!stoppingToken.IsCancellationRequested && !ConstructsPendingDelete.Data.IsEmpty)
             {
                 if (counter > maxIterationsPerCycle)
                 {
@@ -59,20 +70,14 @@ public class CleanupLoop(IThreadManager tm, CancellationToken ct) : ThreadHandle
                 counter++;
             }
 
-            await constructHandleRepository.CleanupOldDeletedConstructHandles();
+            await constructHandleRepository.CleanupOldDeletedConstructHandles().WaitAsync(stoppingToken);
             
             logger.LogInformation("Cleanup Total = {Time}ms", sw.ElapsedMilliseconds);
-
-            ReportHeartbeat();
-
-            Thread.Sleep(_timeSpan);
         }
         catch (Exception e)
         {
-            var logger = ModBase.ServiceProvider.CreateLogger<CleanupLoop>();
+            var logger = ModBase.ServiceProvider.CreateLogger<CleanupWorker>();
             logger.LogError(e, "Failed Cleanup");
-            
-            Thread.Sleep(_timeSpan);
         }
     }
 }

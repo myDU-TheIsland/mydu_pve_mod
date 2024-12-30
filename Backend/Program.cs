@@ -44,6 +44,7 @@ public static class Program
                     services.AddHostedService(_ => ThreadManager.GetInstance());
                     services.AddHostedService<SectorLoopWorker>();
                     services.AddHostedService<ExpirationNamesWorker>();
+                    services.AddHostedService<CleanupWorker>();
                 })
                 .Build();
 

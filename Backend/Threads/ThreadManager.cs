@@ -146,11 +146,6 @@ public class ThreadManager : BackgroundService, IThreadManager
 
         switch (threadId)
         {
-            case ThreadId.Cleanup:
-                return CreateThread(
-                    threadId,
-                    new CleanupLoop(this, cts.Token).Tick
-                );
             case ThreadId.TaskQueue:
                 return CreateThread(
                     threadId,
