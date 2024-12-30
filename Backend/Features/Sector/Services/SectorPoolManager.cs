@@ -315,28 +315,13 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
     public async Task ActivateEnteredSectors()
     {
-        var scanForInactiveSectorsVisitedByPlayersV2Enabled =
-            await _featureReaderService.GetBoolValueAsync("ScanForInactiveSectorsVisitedByPlayersV2Enabled", true);
-
-        List<SectorInstance> sectorsToActivate;
-
         var sw = new Stopwatch();
         sw.Start();
         
-        if (scanForInactiveSectorsVisitedByPlayersV2Enabled)
-        {
-            sectorsToActivate = (await _sectorInstanceRepository
-                    .ScanForInactiveSectorsVisitedByPlayersV2(DistanceHelpers.OneSuInMeters * 10))
-                .DistinctBy(x => x.Sector)
-                .ToList();
-        }
-        else
-        {
-            sectorsToActivate = (await _sectorInstanceRepository
-                    .ScanForInactiveSectorsVisitedByPlayers(DistanceHelpers.OneSuInMeters * 10))
-                .DistinctBy(x => x.Sector)
-                .ToList();
-        }
+        var sectorsToActivate = (await _sectorInstanceRepository
+                .ScanForInactiveSectorsVisitedByPlayersV2(DistanceHelpers.OneSuInMeters * 10))
+            .DistinctBy(x => x.Sector)
+            .ToList();
         
         sw.Stop();
         
