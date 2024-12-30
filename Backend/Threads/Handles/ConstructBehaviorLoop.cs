@@ -23,7 +23,6 @@ public class ConstructBehaviorLoop : HighTickModLoop
     private readonly IConstructBehaviorFactory _behaviorFactory;
     private readonly IConstructDefinitionFactory _constructDefinitionFactory;
 
-    public static bool FeatureEnabled;
     public static readonly ConcurrentDictionary<ulong, ConstructHandleItem> ConstructHandles = [];
     public static readonly ConcurrentDictionary<ulong, DateTime> ConstructHandleHeartbeat = [];
     public static readonly object ListLock = new();
@@ -47,11 +46,6 @@ public class ConstructBehaviorLoop : HighTickModLoop
 
     public override async Task Tick(TimeSpan deltaTime)
     {
-        if (!FeatureEnabled)
-        {
-            return;
-        }
-
         var sw = new Stopwatch();
         sw.Start();
 

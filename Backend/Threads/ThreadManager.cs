@@ -151,20 +151,10 @@ public class ThreadManager : BackgroundService, IThreadManager
                     threadId,
                     new CleanupLoop(this, cts.Token).Tick
                 );
-            case ThreadId.ExpirationNames:
-                return CreateThread(
-                    threadId,
-                    new ExpirationNamesLoop(this, cts.Token).Tick
-                );
             case ThreadId.TaskQueue:
                 return CreateThread(
                     threadId,
                     new TaskQueueLoop(this, cts.Token).Tick
-                );
-            case ThreadId.BehaviorFeatureCheck:
-                return CreateThread(
-                    threadId,
-                    new ConstructBehaviorFeatureCheckLoop(this, cts.Token).Tick
                 );
             case ThreadId.ConstructHandleQuery:
                 return CreateThread(

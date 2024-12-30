@@ -2,8 +2,6 @@
 
 public enum ThreadId
 {
-    ExpirationNames = 3,
-    BehaviorFeatureCheck = 4,
     ConstructHandleQuery = 5,
     ConstructBehaviorMedium = 6,
     ConstructBehaviorHigh = 7,
