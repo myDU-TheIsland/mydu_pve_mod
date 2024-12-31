@@ -67,16 +67,7 @@ public class SendDirectMessageAction(ScriptActionItem actionItem) : IScriptActio
             }
             catch (BusinessException e)
             {
-                logger.LogError(e, "Failed to Send Chat Message. Reconnecting Bot");
-
-                try
-                {
-                    await ModBase.Bot.Reconnect();
-                }
-                catch (Exception e2)
-                {
-                    logger.LogError(e2, "Failed to Reconnect");
-                }
+                logger.LogError(e, "Failed to Send Chat Message.");
             }
         }
         

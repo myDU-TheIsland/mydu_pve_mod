@@ -53,7 +53,6 @@ public class SpawnLootForConstruct(ScriptActionItem actionItem) : IScriptAction
         var retryOptions = RetryOptions.Default(logger);
         retryOptions.ShouldRetryOnException =
             ex => ex is BusinessException bex && bex.error.code == ErrorCode.InvalidSession;
-        retryOptions.OnRetryAttempt = async _ => await ModBase.Bot.Reconnect();
 
         var elementReplacer = provider.GetRequiredService<IElementReplacerService>();
         foreach (var replace in itemBagData.ElementsToReplace)

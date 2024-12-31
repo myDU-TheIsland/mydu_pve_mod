@@ -36,6 +36,8 @@ public class ReconnectBotWorker : BackgroundService
             
             await ModBase.Bot.Reconnect();
             ConstructBehaviorContextCache.RaiseBotReconnected();
+            
+            logger.LogWarning("Reconnected Bot");
         }
         catch (Exception e)
         {
