@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using NQ;
 
 namespace Mod.DynamicEncounters.Helpers;
@@ -28,6 +29,18 @@ public static class RandomHelpers
         var z = Math.Cos(phi);
 
         return new Vec3 { x = x, y = y, z = z };
+    }
+    
+    public static Quaternion RandomQuaternion(this Random random)
+    {
+        var x = (float)(random.NextDouble() * 2.0 - 1.0);
+        var y = (float)(random.NextDouble() * 2.0 - 1.0);
+        var z = (float)(random.NextDouble() * 2.0 - 1.0);
+        var w = (float)(random.NextDouble() * 2.0 - 1.0);
+
+        var quaternion = new Quaternion(x, y, z, w);
+
+        return Quaternion.Normalize(quaternion);
     }
 
     public static T PickOneAtRandom<T>(this Random random, IEnumerable<T> items)
