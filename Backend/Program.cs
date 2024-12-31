@@ -45,6 +45,7 @@ public static class Program
                     services.AddHostedService<SectorLoopWorker>();
                     services.AddHostedService<ExpirationNamesWorker>();
                     services.AddHostedService<CleanupWorker>();
+                    services.AddHostedService<ReconnectBotWorker>();
                 })
                 .Build();
 
