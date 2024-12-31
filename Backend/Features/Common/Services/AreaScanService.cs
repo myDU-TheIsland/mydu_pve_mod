@@ -64,7 +64,7 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
             $"""
              SELECT 
                  C.id, 
-                 C.name, 
+                 FORMAT('[%s] %s', C.id, C.name) name, 
                  ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance 
              FROM public.construct C
              INNER JOIN public.ownership O ON O.id = C.owner_entity_id
