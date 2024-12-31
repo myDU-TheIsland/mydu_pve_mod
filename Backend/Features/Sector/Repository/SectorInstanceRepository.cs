@@ -107,7 +107,7 @@ public class SectorInstanceRepository(IServiceProvider provider) : ISectorInstan
         using var db = _connectionFactory.Create();
         db.Open();
 
-        var queryResult = await db.QueryAsync<DbRow>("SELECT * FROM public.mod_sector_instance");
+        var queryResult = await db.QueryAsync<DbRow>("SELECT * FROM public.mod_sector_instance ORDER BY created_at");
 
         return queryResult.Select(MapToModel);
     }
