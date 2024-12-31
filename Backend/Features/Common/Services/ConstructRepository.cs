@@ -83,6 +83,7 @@ public class ConstructRepository(IServiceProvider provider) : IConstructReposito
     {
         return new ConstructItem
         {
+            Id = row.id,
             Name = row.name,
             Position = new Vec3
             {
@@ -95,6 +96,7 @@ public class ConstructRepository(IServiceProvider provider) : IConstructReposito
 
     private struct DbRow
     {
+        public ulong id { get; set; }
         public string name { get; set; }
         public double position_x { get; set; }
         public double position_y { get; set; }
