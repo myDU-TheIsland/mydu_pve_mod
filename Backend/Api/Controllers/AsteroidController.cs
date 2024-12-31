@@ -110,12 +110,16 @@ public class AsteroidController : Controller
         var outcome = await asteroidSpawnerService.SpawnAsteroidWithData(new SpawnAsteroidCommand
         {
             Position = request.Position.Value,
-            Model = request.File,
             Planet = 2,
             Prefix = "T",
             Tier = 5,
             RegisterAsteroid = true,
-            Data = request.Data
+            Data = request.Data,
+            Radius = 32,
+            AreaSize = 256,
+            VoxelSize = 512,
+            VoxelLod = 7,
+            Gravity = 0
         });
         
         return Ok(outcome);

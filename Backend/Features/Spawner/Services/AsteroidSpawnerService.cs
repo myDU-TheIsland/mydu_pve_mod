@@ -2,7 +2,6 @@
 using System.Text;
 using System.Threading.Tasks;
 using Backend;
-using Backend.AWS;
 using Backend.Database;
 using Backend.Fixture;
 using Backend.Fixture.Construct;
@@ -11,6 +10,7 @@ using Mod.DynamicEncounters.Features.Common.Services;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.Spawner.Interfaces;
 using Mod.DynamicEncounters.Helpers;
+using Mod.DynamicEncounters.Overrides.Common.Helper;
 using Newtonsoft.Json.Linq;
 using NQ.Interfaces;
 using NQutils.Sql;
@@ -20,7 +20,6 @@ namespace Mod.DynamicEncounters.Features.Spawner.Services;
 
 public class AsteroidSpawnerService : IAsteroidSpawnerService
 {
-    private readonly IServiceProvider _provider = ModBase.ServiceProvider;
     private readonly Random _random = ModBase.ServiceProvider.GetRandomProvider().GetRandom();
     private readonly IUserContent _userContent = ModBase.ServiceProvider.GetRequiredService<IUserContent>();
     private readonly ISql _sql = ModBase.ServiceProvider.GetRequiredService<ISql>();
@@ -71,13 +70,13 @@ public class AsteroidSpawnerService : IAsteroidSpawnerService
 
     public async Task<AsteroidSpawnOutcome> SpawnAsteroidWithData(SpawnAsteroidCommand command)
     {
-        var s3 = _provider.GetRequiredService<IS3>();
-
-        var asteroidJsonString = await s3.Get(NQutils.Config.Config.Instance.asteroids, command.Model, true);
-        var asteroidJToken = JToken.Parse(asteroidJsonString);
+        command.Tier = Math.Clamp(command.Tier, 1, 5);
+        command.Tier = Math.Clamp(command.Radius, 32, 2048);
+        
+        var asteroidJToken = AsteroidData.GetBase();
 
         var randomSeed = _random.Next(); 
-        //Size 32 Seeds: 418819536, 1814325084
+        //Size 32 Seeds: 418819536, 1814325084, 1799286799, 201633054
         ReplaceSeedValues(command.Data, randomSeed);
         
         var jsonString = command.Data.ToString();
@@ -85,6 +84,12 @@ public class AsteroidSpawnerService : IAsteroidSpawnerService
         var jsonData = Lz4CompressionService.PrependDecompressedSize(jsonBytes.Length, Lz4CompressionService.Compress(jsonString));
         
         asteroidJToken["pipeline"] = jsonData;
+        asteroidJToken["voxelGeometry"]!["maxRadius"] = command.Radius;
+        asteroidJToken["voxelGeometry"]!["radius"] = command.Radius;
+        asteroidJToken["planetProperties"]!["altitudeReferenceRadius"] = command.Radius;
+        asteroidJToken["planetProperties"]!["seaLevelGravity"] = command.Gravity;
+        asteroidJToken["rotation"] = JToken.FromObject(_random.RandomQuaternion().ToNqQuat());
+        // asteroidJToken["ores"] = JArray.FromObject(command.Ores);
 
         command.Data = asteroidJToken;
         
@@ -93,7 +98,7 @@ public class AsteroidSpawnerService : IAsteroidSpawnerService
         return AsteroidSpawnOutcome.Spawned(randomSeed, asteroidId);
     }
 
-    public static void ReplaceSeedValues(JToken token, object newValue)
+    private static void ReplaceSeedValues(JToken token, object newValue)
     {
         var seeds = token.SelectTokens("$..seed");
         foreach (var seed in seeds)

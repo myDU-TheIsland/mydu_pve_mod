@@ -20,27 +20,26 @@ public class ScriptRunnerController : Controller
         var provider = ModBase.ServiceProvider;
 
         var scriptService = provider.GetRequiredService<IScriptService>();
-        var result = await scriptService.ExecuteScriptAsync(
-            name,
-            new ScriptContext(
-                provider,
-                request.FactionId,
-                [..request.PlayerIds],
-                request.Sector,
-                request.TerritoryId
-            )
-            {
-                ConstructId = request.ConstructId,
-                Properties = new ConcurrentDictionary<string, object>(request.Properties)
-            }
-        );
 
-        if (result.Success)
+        for (var i = 0; i < request.Repeat; i++)
         {
-            return Ok(result);
+            await scriptService.ExecuteScriptAsync(
+                name,
+                new ScriptContext(
+                    provider,
+                    request.FactionId,
+                    [..request.PlayerIds],
+                    request.Sector,
+                    request.TerritoryId
+                )
+                {
+                    ConstructId = request.ConstructId,
+                    Properties = new ConcurrentDictionary<string, object>(request.Properties)
+                }
+            );
         }
 
-        return StatusCode(500, result);
+        return Ok();
     }
 
     public class RunScriptContextRequest
@@ -51,5 +50,6 @@ public class ScriptRunnerController : Controller
         public long FactionId { get; set; } = 1;
         public Guid? TerritoryId { get; set; }
         public Dictionary<string, object> Properties { get; set; } = [];
+        public int Repeat { get; set; } = 1;
     }
 }
