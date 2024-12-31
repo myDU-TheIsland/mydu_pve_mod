@@ -50,7 +50,7 @@ public class ConstructSpatialHashRepository(IServiceProvider serviceProvider) : 
     {
         using var db = _factory.Create();
         db.Open();
-        
+
         var result = await db.ExecuteScalarAsync<long>(
             $"""
              SELECT COUNT(0) 

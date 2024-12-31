@@ -37,9 +37,6 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
     private readonly IConstructSpatialHashRepository _constructSpatial =
         serviceProvider.GetRequiredService<IConstructSpatialHashRepository>();
 
-    private readonly IFeatureReaderService _featureReaderService =
-        serviceProvider.GetRequiredService<IFeatureReaderService>();
-
     private readonly ILogger<SectorPoolManager> _logger = serviceProvider.CreateLogger<SectorPoolManager>();
 
     public async Task GenerateTerritorySectors(SectorGenerationArgs args)
