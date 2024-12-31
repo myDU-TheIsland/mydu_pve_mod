@@ -145,52 +145,34 @@ public class FollowTargetBehaviorV2(ulong constructId, IPrefab prefab) : IConstr
                 grounded = false,
             };
 
-            if (ConstructBehaviorContextCache.IsBotDisconnected)
+            var sw = new Stopwatch();
+            sw.Start();
+
+            try
             {
-                await ModBase.Bot.Reconnect();
-                ConstructBehaviorContextCache.RaiseBotReconnected();
+                await ModBase.Bot.Req.ConstructUpdate(cUpdate);
+            }
+            catch (BusinessException bex)
+            {
+                if (bex.error.code == ErrorCode.InvalidSession)
+                {
+                    ConstructBehaviorContextCache.RaiseBotDisconnected();
+                    ModBase.ServiceProvider
+                        .CreateLogger<FollowTargetBehaviorV2>()
+                        .LogError(bex, "Need to reconnect the Bot");
+                }
+            }
+            catch (Exception e)
+            {
+                ModBase.ServiceProvider.CreateLogger<FollowTargetBehaviorV2>()
+                    .LogError(e, "Failed to send Construct Update Fire-And-Forget");
             }
 
-            _ = Task.Run(async () =>
-            {
-                var sw = new Stopwatch();
-                sw.Start();
-
-                try
-                {
-                    await ModBase.Bot.Req.ConstructUpdate(cUpdate);
-                }
-                catch (BusinessException bex)
-                {
-                    if (bex.error.code == ErrorCode.InvalidSession)
-                    {
-                        ConstructBehaviorContextCache.RaiseBotDisconnected();
-                        ModBase.ServiceProvider
-                            .CreateLogger<FollowTargetBehaviorV2>()
-                            .LogError(bex, "Need to reconnect the Bot");
-                    }
-                }
-                catch (Exception e)
-                {
-                    ModBase.ServiceProvider.CreateLogger<FollowTargetBehaviorV2>()
-                        .LogError(e, "Failed to send Construct Update Fire-And-Forget");
-                }
-
-                StatsRecorder.Record("ConstructUpdate", sw.ElapsedMilliseconds);
-            });
+            StatsRecorder.Record("ConstructUpdate", sw.ElapsedMilliseconds);
         }
         catch (BusinessException be)
         {
             _logger.LogError(be, "Failed to update construct transform. Attempting a restart of the bot connection.");
-
-            try
-            {
-                await ModBase.Bot.Reconnect();
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to Reconnect");
-            }
         }
     }
 }
