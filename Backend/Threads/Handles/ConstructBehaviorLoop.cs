@@ -15,14 +15,6 @@ using Mod.DynamicEncounters.Helpers;
 
 namespace Mod.DynamicEncounters.Threads.Handles;
 
-public class MediumPriority(int framesPerSecond, BehaviorTaskCategory category, bool fixedStep = false)
-    : ConstructBehaviorLoop(framesPerSecond, category, fixedStep);
-public class HighPriority(int framesPerSecond, BehaviorTaskCategory category, bool fixedStep = false)
-    : ConstructBehaviorLoop(framesPerSecond, category, fixedStep);
-
-public class MovementPriority(int framesPerSecond, BehaviorTaskCategory category, bool fixedStep = false)
-    : ConstructBehaviorLoop(framesPerSecond, category, fixedStep);
-
 public class ConstructBehaviorLoop : HighTickModLoop
 {
     private readonly BehaviorTaskCategory _category;
@@ -33,7 +25,6 @@ public class ConstructBehaviorLoop : HighTickModLoop
 
     public static readonly ConcurrentDictionary<ulong, ConstructHandleItem> ConstructHandles = [];
     public static readonly ConcurrentDictionary<ulong, DateTime> ConstructHandleHeartbeat = [];
-    public static readonly object ListLock = new();
 
     public ConstructBehaviorLoop(
         int framesPerSecond,
@@ -66,7 +57,7 @@ public class ConstructBehaviorLoop : HighTickModLoop
         }
 
         await Parallel.ForEachAsync(
-            constructHandleList, async (item, token) =>
+            constructHandleList, stoppingToken, async (item, token) =>
             {
                 if (token.IsCancellationRequested) return;
                 await RunIsolatedAsync(() => TickConstructHandle(deltaTime, item, stoppingToken));
