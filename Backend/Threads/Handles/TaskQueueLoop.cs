@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 
@@ -17,15 +16,9 @@ public class TaskQueueLoop(IThreadManager tm, CancellationToken ct) : ThreadHand
         {
             var provider = ModBase.ServiceProvider;
             var taskQueueService = provider.GetRequiredService<ITaskQueueService>();
-            var featureService = provider.GetRequiredService<IFeatureReaderService>();
-            
-            var isEnabled = await featureService.GetEnabledValue<TaskQueueLoop>(false);
 
-            if (isEnabled)
-            {
-                await taskQueueService.ProcessQueueMessages();
-            }
-                
+            await taskQueueService.ProcessQueueMessages();
+
             ReportHeartbeat();
             Thread.Sleep(TimeSpan.FromSeconds(5));
         }
@@ -33,7 +26,7 @@ public class TaskQueueLoop(IThreadManager tm, CancellationToken ct) : ThreadHand
         {
             var logger = ModBase.ServiceProvider.CreateLogger<TaskQueueLoop>();
             logger.LogError(e, "Failed to execute {Name}", nameof(TaskQueueLoop));
-            
+
             Thread.Sleep(TimeSpan.FromSeconds(5));
         }
     }
