@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mod.DynamicEncounters.Api;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Threads;
 using Mod.DynamicEncounters.Threads.Handles;
 using NQutils.Config;
@@ -41,7 +42,10 @@ public static class Program
             var host = CreateHostBuilder(serviceCollection, args)
                 .ConfigureServices(services =>
                 {
-                    services.AddHostedService(_ => ThreadManager.GetInstance());
+                    services.AddHostedService(_ => new ConstructBehaviorLoop(1, BehaviorTaskCategory.MediumPriority));
+                    services.AddHostedService(_ => new ConstructBehaviorLoop(10, BehaviorTaskCategory.HighPriority));
+                    services.AddHostedService(_ => new ConstructBehaviorLoop(20, BehaviorTaskCategory.MovementPriority, true));
+                    services.AddHostedService<ConstructHandleListQueryWorker>();
                     services.AddHostedService<SectorLoopWorker>();
                     services.AddHostedService<ExpirationNamesWorker>();
                     services.AddHostedService<CleanupWorker>();

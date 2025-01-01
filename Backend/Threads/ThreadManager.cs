@@ -7,9 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Helpers;
-using Mod.DynamicEncounters.Threads.Handles;
 using ThreadState = System.Threading.ThreadState;
 
 namespace Mod.DynamicEncounters.Threads;
@@ -146,45 +144,6 @@ public class ThreadManager : BackgroundService, IThreadManager
 
         switch (threadId)
         {
-            case ThreadId.ConstructHandleQuery:
-                return CreateThread(
-                    threadId,
-                    new ConstructHandleListQueryLoop(this, cts.Token).Tick
-                );
-            case ThreadId.ConstructBehaviorMedium:
-                return CreateThread(
-                    threadId,
-                    new ConstructBehaviorLoop(
-                        ThreadId.ConstructBehaviorMedium,
-                        this,
-                        cts.Token,
-                        1,
-                        BehaviorTaskCategory.MediumPriority
-                    ).Tick
-                );
-            case ThreadId.ConstructBehaviorHigh:
-                return CreateThread(
-                    threadId,
-                    new ConstructBehaviorLoop(
-                        ThreadId.ConstructBehaviorHigh,
-                        this,
-                        cts.Token,
-                        10,
-                        BehaviorTaskCategory.HighPriority
-                    ).Tick
-                );
-            case ThreadId.ConstructBehaviorMovement:
-                return CreateThread(
-                    threadId,
-                    new ConstructBehaviorLoop(
-                        ThreadId.ConstructBehaviorMovement,
-                        this,
-                        cts.Token,
-                        20,
-                        BehaviorTaskCategory.MovementPriority,
-                        true
-                    ).Tick
-                );
             default:
                 throw new ArgumentOutOfRangeException(nameof(threadId));
         }

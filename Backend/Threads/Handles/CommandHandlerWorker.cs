@@ -25,11 +25,19 @@ public class CommandHandlerWorker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
-
-            await Tick(cts.Token);
-            await Task.Delay(TimeSpan.FromMilliseconds(300), stoppingToken);
+            try
+            {
+                var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
+            
+                await Tick(cts.Token);
+                await Task.Delay(TimeSpan.FromMilliseconds(300), stoppingToken);
+            }
+            catch (Exception e)
+            {
+                ModBase.ServiceProvider.CreateLogger<CommandHandlerWorker>()
+                    .LogError(e, "{Type} Exception: {Message}", GetType().Name, e.Message);
+            }
         }
     }
 

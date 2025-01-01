@@ -15,11 +15,19 @@ public class ExpirationNamesWorker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
+            try
+            {
+                var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
             
-            await Tick(cts.Token);
-            await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                await Tick(cts.Token);
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
+            catch (Exception e)
+            {
+                ModBase.ServiceProvider.CreateLogger<ExpirationNamesWorker>()
+                    .LogError(e, "{Type} Exception: {Message}", GetType().Name, e.Message);
+            }
         }
     }
 

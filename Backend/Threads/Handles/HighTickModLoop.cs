@@ -2,10 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FluentMigrator.Runner;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Mod.DynamicEncounters.Helpers;
 
 namespace Mod.DynamicEncounters.Threads.Handles;
 
-public abstract class HighTickModLoop : ThreadHandle
+public abstract class HighTickModLoop : BackgroundService
 {
     private StopWatch _stopWatch = new();
     private DateTime _lastTickTime;
@@ -17,11 +20,8 @@ public abstract class HighTickModLoop : ThreadHandle
 
     protected HighTickModLoop(
         int framesPerSecond, 
-        ThreadId threadId,
-        IThreadManager threadManager,
-        CancellationToken token,
         bool fixedStep
-    ) : base(threadId, threadManager, token)
+    )
     {
         _framesPerSecond = framesPerSecond;
         _fixedStep = fixedStep;
@@ -34,19 +34,39 @@ public abstract class HighTickModLoop : ThreadHandle
         }
     }
 
-    public override Task Tick()
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        if (CancellationToken.IsCancellationRequested) return Task.CompletedTask;
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
+            
+                await Tick(cts.Token);
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            }
+            catch (Exception e)
+            {
+                ModBase.ServiceProvider.CreateLogger<HighTickModLoop>()
+                    .LogError(e, "{Type} Exception: {Message}", GetType().Name, e.Message);
+            }
+        }
+    }
+
+    public Task Tick(CancellationToken stoppingToken)
+    {
+        if (stoppingToken.IsCancellationRequested) return Task.CompletedTask;
         
         if (_fixedStep)
         {
-            return FixedStepTickInternal();
+            return FixedStepTickInternal(stoppingToken);
         }
 
-        return TickInternal();
+        return TickInternal(stoppingToken);
     }
-    
-    public async Task TickInternal()
+
+    private async Task TickInternal(CancellationToken stoppingToken)
     {
         var currentTickTime = DateTime.UtcNow;
         var deltaTime = currentTickTime - _lastTickTime;
@@ -56,16 +76,16 @@ public abstract class HighTickModLoop : ThreadHandle
         if (deltaTime.TotalSeconds < fpsSeconds)
         {
             var waitSeconds = Math.Max(0, fpsSeconds - deltaTime.TotalSeconds);
-            Thread.Sleep(TimeSpan.FromSeconds(waitSeconds));
+            await Task.Delay(TimeSpan.FromSeconds(waitSeconds), stoppingToken);
         }
             
-        await Tick(deltaTime);
+        await Tick(deltaTime, stoppingToken);
 
         _stopWatch = new StopWatch();
         _stopWatch.Start();
     }
-    
-    public async Task FixedStepTickInternal()
+
+    private async Task FixedStepTickInternal(CancellationToken stoppingToken)
     {
         var currentTickTime = DateTime.UtcNow;
         var deltaTime = currentTickTime - _lastTickTime;
@@ -75,7 +95,7 @@ public abstract class HighTickModLoop : ThreadHandle
         if (deltaTime.TotalSeconds < fpsSeconds)
         {
             var waitSeconds = Math.Max(0, fpsSeconds - deltaTime.TotalSeconds);
-            Thread.Sleep(TimeSpan.FromSeconds(waitSeconds));
+            await Task.Delay(TimeSpan.FromSeconds(waitSeconds), stoppingToken);
         }
 
         _accumulatedTime += deltaTime;
@@ -84,7 +104,9 @@ public abstract class HighTickModLoop : ThreadHandle
         var tickCount = 0;
         while (_accumulatedTime >= fixedDeltaSpan)
         {
-            await Tick(fixedDeltaSpan);
+            if (stoppingToken.IsCancellationRequested) return;
+            
+            await Tick(fixedDeltaSpan, stoppingToken);
             _accumulatedTime -= fixedDeltaSpan;
 
             tickCount++;
@@ -100,7 +122,7 @@ public abstract class HighTickModLoop : ThreadHandle
         _stopWatch.Start();
     }
 
-    public virtual Task Tick(TimeSpan deltaTime)
+    public virtual Task Tick(TimeSpan deltaTime, CancellationToken stoppingToken)
     {
         return Task.CompletedTask;
     }

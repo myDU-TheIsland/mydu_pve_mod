@@ -28,13 +28,10 @@ public class ConstructBehaviorLoop : HighTickModLoop
     public static readonly object ListLock = new();
 
     public ConstructBehaviorLoop(
-        ThreadId threadId,
-        IThreadManager threadManager,
-        CancellationToken token,
         int framesPerSecond,
         BehaviorTaskCategory category,
         bool fixedStep = false
-    ) : base(framesPerSecond, threadId, threadManager, token, fixedStep)
+    ) : base(framesPerSecond, fixedStep)
     {
         _category = category;
         _provider = ModBase.ServiceProvider;
@@ -44,9 +41,9 @@ public class ConstructBehaviorLoop : HighTickModLoop
         _constructDefinitionFactory = _provider.GetRequiredService<IConstructDefinitionFactory>();
     }
 
-    public override async Task Tick(TimeSpan deltaTime)
+    public override async Task Tick(TimeSpan deltaTime, CancellationToken stoppingToken)
     {
-        if (CancellationToken.IsCancellationRequested) return;
+        if (stoppingToken.IsCancellationRequested) return;
         
         var sw = new Stopwatch();
         sw.Start();
@@ -62,7 +59,6 @@ public class ConstructBehaviorLoop : HighTickModLoop
         {
             Thread.Sleep(TimeSpan.FromMilliseconds(500));
             StatsRecorder.Record(_category, sw.ElapsedMilliseconds);
-            ReportHeartbeat();
             return;
         }
 
@@ -70,11 +66,10 @@ public class ConstructBehaviorLoop : HighTickModLoop
             constructHandleList, async (item, token) =>
             {
                 if (token.IsCancellationRequested) return;
-                await RunIsolatedAsync(() => TickConstructHandle(deltaTime, item));
+                await RunIsolatedAsync(() => TickConstructHandle(deltaTime, item, stoppingToken));
             });
 
         StatsRecorder.Record(_category, sw.ElapsedMilliseconds);
-        ReportHeartbeat();
     }
 
     private async Task RunIsolatedAsync(Func<Task> taskFn)
@@ -89,7 +84,10 @@ public class ConstructBehaviorLoop : HighTickModLoop
         }
     }
 
-    private async Task TickConstructHandle(TimeSpan deltaTime, ConstructHandleItem handleItem)
+    private async Task TickConstructHandle(
+        TimeSpan deltaTime, 
+        ConstructHandleItem handleItem, 
+        CancellationToken stoppingToken)
     {
         if (handleItem.ConstructDefinitionItem == null)
         {
@@ -131,11 +129,15 @@ public class ConstructBehaviorLoop : HighTickModLoop
 
         foreach (var behavior in finalBehaviors)
         {
+            if (stoppingToken.IsCancellationRequested) return;
+            
             await behavior.InitializeAsync(context);
         }
 
         foreach (var behavior in finalBehaviors)
         {
+            if (stoppingToken.IsCancellationRequested) return;
+            
             if (!context.IsBehaviorActive(behavior.GetType()))
             {
                 continue;
@@ -143,8 +145,6 @@ public class ConstructBehaviorLoop : HighTickModLoop
 
             await behavior.TickAsync(context);
         }
-
-        ReportHeartbeat();
     }
 
     public static void RecordConstructHeartBeat(ulong constructId)

@@ -13,11 +13,19 @@ public class ReconnectBotWorker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
+            try
+            {
+                var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
             
-            await Tick(cts.Token);
-            await Task.Delay(TimeSpan.FromMilliseconds(100), stoppingToken);
+                await Tick(cts.Token);
+                await Task.Delay(TimeSpan.FromMilliseconds(100), stoppingToken);
+            }
+            catch (Exception e)
+            {
+                ModBase.ServiceProvider.CreateLogger<ReconnectBotWorker>()
+                    .LogError(e, "{Type} Exception: {Message}", GetType().Name, e.Message);
+            }
         }
     }
 
