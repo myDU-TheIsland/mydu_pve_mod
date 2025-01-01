@@ -46,6 +46,8 @@ public class ConstructBehaviorLoop : HighTickModLoop
 
     public override async Task Tick(TimeSpan deltaTime)
     {
+        if (CancellationToken.IsCancellationRequested) return;
+        
         var sw = new Stopwatch();
         sw.Start();
 

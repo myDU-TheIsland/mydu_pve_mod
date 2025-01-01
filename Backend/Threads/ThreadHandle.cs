@@ -18,8 +18,5 @@ public abstract class ThreadHandle(
         ThreadManager.ReportHeartbeat(ThreadId);
     }
 
-    public virtual Task Tick()
-    {
-        return Task.CompletedTask;
-    }
+    public abstract Task Tick();
 }

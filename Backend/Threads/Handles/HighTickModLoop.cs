@@ -36,6 +36,8 @@ public abstract class HighTickModLoop : ThreadHandle
 
     public override Task Tick()
     {
+        if (CancellationToken.IsCancellationRequested) return Task.CompletedTask;
+        
         if (_fixedStep)
         {
             return FixedStepTickInternal();
