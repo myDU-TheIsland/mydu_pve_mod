@@ -40,10 +40,10 @@ public abstract class HighTickModLoop : BackgroundService
         {
             try
             {
-                // var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-                // var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
+                var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
             
-                await Tick(stoppingToken);
+                await Tick(cts.Token);
                 await Task.Yield();
             }
             catch (Exception e)
