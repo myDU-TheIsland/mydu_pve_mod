@@ -58,15 +58,10 @@ public class ConstructBehaviorLoop : HighTickModLoop
             if (constructHandleList.Count == 0)
             {
                 Thread.Sleep(TimeSpan.FromMilliseconds(500));
+                StatsRecorder.Record(_category, sw.ElapsedMilliseconds);
                 ReportHeartbeat();
                 return;
             }
-
-            // foreach (var kvp in ConstructHandles)
-            // {
-            //     var task = Task.Run(() => RunIsolatedAsync(() => TickConstructHandle(deltaTime, kvp.Value)));
-            //     taskList.Add(task);
-            // }
         }
         
         await Parallel.ForEachAsync(

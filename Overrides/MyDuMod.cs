@@ -61,6 +61,13 @@ public class MyDuMod : IMod
             this,
             nameof(InventoryReady)
         );
+        
+        hookCallManager.Register(
+            "ConstructGrain.WarpEnd",
+            HookMode.Replace,
+            this,
+            nameof(WarpEnd)
+        );
 
         // hookCallManager.Register(
         //     "RadarGrain.ScanStart",
@@ -70,6 +77,11 @@ public class MyDuMod : IMod
         // );
 
         return Task.CompletedTask;
+    }
+
+    public async Task WarpEnd(IIncomingGrainCallContext context, PlayerId playerId)
+    {
+        await context.Invoke();
     }
 
     public async Task ScanStart(IIncomingGrainCallContext context, PlayerId pid, RadarScan v)
