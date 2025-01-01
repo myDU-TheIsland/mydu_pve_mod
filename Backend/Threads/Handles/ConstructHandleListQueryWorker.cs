@@ -42,25 +42,22 @@ public class ConstructHandleListQueryWorker : BackgroundService
 
             var items = await constructHandleRepository.FindActiveHandlesAsync();
 
-            lock (ConstructBehaviorLoop.ListLock)
+            // ConstructBehaviorLoop.ConstructHandles.Clear();
+            foreach (var item in items)
             {
-                // ConstructBehaviorLoop.ConstructHandles.Clear();
-                foreach (var item in items)
-                {
-                    ConstructBehaviorLoop.ConstructHandles.TryAdd(item.ConstructId, item);
-                }
+                ConstructBehaviorLoop.ConstructHandles.TryAdd(item.ConstructId, item);
+            }
 
-                var deadConstructHandles = ConstructBehaviorLoop.ConstructHandleHeartbeat
-                    .Where(x => DateTime.UtcNow - x.Value > TimeSpan.FromMinutes(30));
+            var deadConstructHandles = ConstructBehaviorLoop.ConstructHandleHeartbeat
+                .Where(x => DateTime.UtcNow - x.Value > TimeSpan.FromMinutes(30));
 
-                foreach (var kvp in deadConstructHandles)
-                {
-                    if (stoppingToken.IsCancellationRequested) return;
-                    
-                    ConstructBehaviorLoop.ConstructHandles.TryRemove(kvp.Key, out _);
-                    ConstructBehaviorLoop.ConstructHandleHeartbeat.TryRemove(kvp.Key, out _);
-                    logger.LogWarning("Removed Construct Handle {Construct} that failed to be removed", kvp.Key);
-                }
+            foreach (var kvp in deadConstructHandles)
+            {
+                if (stoppingToken.IsCancellationRequested) return;
+                
+                ConstructBehaviorLoop.ConstructHandles.TryRemove(kvp.Key, out _);
+                ConstructBehaviorLoop.ConstructHandleHeartbeat.TryRemove(kvp.Key, out _);
+                logger.LogWarning("Removed Construct Handle {Construct} that failed to be removed", kvp.Key);
             }
         }
         catch (Exception e)

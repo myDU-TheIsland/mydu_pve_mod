@@ -56,13 +56,8 @@ public class ConstructBehaviorLoop : HighTickModLoop
         var sw = new Stopwatch();
         sw.Start();
 
-        List<ConstructHandleItem> constructHandleList;
-
-        lock (ListLock)
-        {
-            constructHandleList = ConstructHandles.Select(x => x.Value).ToList();
-        }
-
+        var constructHandleList = ConstructHandles.Select(x => x.Value).ToList();
+        
         if (constructHandleList.Count == 0)
         {
             Thread.Sleep(TimeSpan.FromMilliseconds(500));
