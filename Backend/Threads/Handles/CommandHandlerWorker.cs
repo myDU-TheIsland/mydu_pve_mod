@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Commands.Interfaces;
 using Mod.DynamicEncounters.Features.Party.Interfaces;
@@ -10,16 +11,29 @@ using Mod.DynamicEncounters.Helpers;
 
 namespace Mod.DynamicEncounters.Threads.Handles;
 
-public class CommandHandlerLoop(IThreadManager threadManager, CancellationToken token)
-    : ThreadHandle(ThreadId.CommandHandler, threadManager, token)
+public class CommandHandlerWorker : BackgroundService
 {
-    private readonly ILogger<CommandHandlerLoop> _logger = ModBase.ServiceProvider.CreateLogger<CommandHandlerLoop>();
+    private readonly ILogger<CommandHandlerWorker> _logger =
+        ModBase.ServiceProvider.CreateLogger<CommandHandlerWorker>();
+
     private readonly IPendingCommandRepository _pendingCommandRepository =
         ModBase.ServiceProvider.GetRequiredService<IPendingCommandRepository>();
 
     private DateTime _refDate = DateTime.UtcNow;
-    
-    public override async Task Tick()
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            var timeoutCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
+
+            await Tick(cts.Token);
+            await Task.Delay(TimeSpan.FromMilliseconds(300), stoppingToken);
+        }
+    }
+
+    private async Task Tick(CancellationToken stoppingToken)
     {
         var now = DateTime.UtcNow;
         var commandItems = await _pendingCommandRepository.QueryAsync(_refDate);
@@ -27,12 +41,14 @@ public class CommandHandlerLoop(IThreadManager threadManager, CancellationToken 
 
         foreach (var commandItem in commandItems)
         {
+            if (stoppingToken.IsCancellationRequested) return;
+
             using var commandScope = _logger.BeginScope(new Dictionary<string, object>
             {
                 { nameof(commandItem.PlayerId), commandItem.PlayerId },
                 { nameof(commandItem.Message), commandItem.Message },
             });
-            
+
             try
             {
                 if (commandItem.Message.StartsWith("@g", StringComparison.OrdinalIgnoreCase))
@@ -68,8 +84,5 @@ public class CommandHandlerLoop(IThreadManager threadManager, CancellationToken 
                 _logger.LogError(e, "Failed to handle command");
             }
         }
-        
-        ReportHeartbeat();
-        Thread.Sleep(300);
     }
 }

@@ -146,11 +146,6 @@ public class ThreadManager : BackgroundService, IThreadManager
 
         switch (threadId)
         {
-            case ThreadId.TaskQueue:
-                return CreateThread(
-                    threadId,
-                    new TaskQueueLoop(this, cts.Token).Tick
-                );
             case ThreadId.ConstructHandleQuery:
                 return CreateThread(
                     threadId,
@@ -188,14 +183,6 @@ public class ThreadManager : BackgroundService, IThreadManager
                         20,
                         BehaviorTaskCategory.MovementPriority,
                         true
-                    ).Tick
-                );
-            case ThreadId.CommandHandler:
-                return CreateThread(
-                    threadId,
-                    new CommandHandlerLoop(
-                        this,
-                        cts.Token
                     ).Tick
                 );
             default:

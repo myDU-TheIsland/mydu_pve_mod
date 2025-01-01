@@ -41,7 +41,7 @@ public class AddMoreFeatureEntries : Migration
             .InSchema("public")
             .Row(new
             {
-                name = $"{nameof(TaskQueueLoop)}Enabled",
+                name = "TaskQueueLoopEnabled",
                 type = "bool",
                 value = "true"
             });

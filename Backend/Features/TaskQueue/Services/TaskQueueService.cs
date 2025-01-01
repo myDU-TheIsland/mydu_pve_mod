@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -24,7 +25,7 @@ public class TaskQueueService(IServiceProvider provider) : ITaskQueueService
     private readonly IFeatureReaderService _featureReaderService = provider.GetRequiredService<IFeatureReaderService>();
     private readonly ILogger<TaskQueueService> _logger = provider.CreateLogger<TaskQueueService>();
     
-    public async Task ProcessQueueMessages()
+    public async Task ProcessQueueMessages(CancellationToken cancellationToken)
     {
         var messageBatch = await _featureReaderService.GetIntValueAsync(ProcessQueueMessageCountFeatureName, 10);
 
@@ -36,6 +37,8 @@ public class TaskQueueService(IServiceProvider provider) : ITaskQueueService
 
         foreach (var message in messages)
         {
+            if (cancellationToken.IsCancellationRequested) return;
+            
             switch (message.Command)
             {
                 case "script":

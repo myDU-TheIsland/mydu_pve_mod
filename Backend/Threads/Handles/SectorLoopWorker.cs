@@ -32,7 +32,7 @@ public class SectorLoopWorker : BackgroundService
         }
     }
     
-    public async Task Tick(CancellationToken stoppingToken)
+    private async Task Tick(CancellationToken stoppingToken)
     {
         var logger = ModBase.ServiceProvider.CreateLogger<SectorLoopWorker>();
 

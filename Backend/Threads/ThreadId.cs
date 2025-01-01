@@ -6,6 +6,4 @@ public enum ThreadId
     ConstructBehaviorMedium = 6,
     ConstructBehaviorHigh = 7,
     ConstructBehaviorMovement = 8,
-    TaskQueue = 9,
-    CommandHandler = 11
 }

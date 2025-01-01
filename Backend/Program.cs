@@ -46,6 +46,8 @@ public static class Program
                     services.AddHostedService<ExpirationNamesWorker>();
                     services.AddHostedService<CleanupWorker>();
                     services.AddHostedService<ReconnectBotWorker>();
+                    services.AddHostedService<TaskQueueWorker>();
+                    services.AddHostedService<CommandHandlerWorker>();
                 })
                 .Build();
 
