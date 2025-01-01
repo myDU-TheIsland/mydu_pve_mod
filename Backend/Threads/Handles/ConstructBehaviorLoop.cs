@@ -49,21 +49,21 @@ public class ConstructBehaviorLoop : HighTickModLoop
         var sw = new Stopwatch();
         sw.Start();
 
-        List<ConstructHandleItem> constructHandleList; 
-        
+        List<ConstructHandleItem> constructHandleList;
+
         lock (ListLock)
         {
             constructHandleList = ConstructHandles.Select(x => x.Value).ToList();
-            
-            if (constructHandleList.Count == 0)
-            {
-                Thread.Sleep(TimeSpan.FromMilliseconds(500));
-                StatsRecorder.Record(_category, sw.ElapsedMilliseconds);
-                ReportHeartbeat();
-                return;
-            }
         }
-        
+
+        if (constructHandleList.Count == 0)
+        {
+            Thread.Sleep(TimeSpan.FromMilliseconds(500));
+            StatsRecorder.Record(_category, sw.ElapsedMilliseconds);
+            ReportHeartbeat();
+            return;
+        }
+
         await Parallel.ForEachAsync(
             constructHandleList, async (item, token) =>
             {
