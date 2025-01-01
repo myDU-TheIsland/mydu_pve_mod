@@ -15,6 +15,14 @@ using Mod.DynamicEncounters.Helpers;
 
 namespace Mod.DynamicEncounters.Threads.Handles;
 
+public class MediumPriority(int framesPerSecond, BehaviorTaskCategory category, bool fixedStep = false)
+    : ConstructBehaviorLoop(framesPerSecond, category, fixedStep);
+public class HighPriority(int framesPerSecond, BehaviorTaskCategory category, bool fixedStep = false)
+    : ConstructBehaviorLoop(framesPerSecond, category, fixedStep);
+
+public class MovementPriority(int framesPerSecond, BehaviorTaskCategory category, bool fixedStep = false)
+    : ConstructBehaviorLoop(framesPerSecond, category, fixedStep);
+
 public class ConstructBehaviorLoop : HighTickModLoop
 {
     private readonly BehaviorTaskCategory _category;

@@ -42,9 +42,9 @@ public static class Program
             var host = CreateHostBuilder(serviceCollection, args)
                 .ConfigureServices(services =>
                 {
-                    services.AddHostedService(_ => new ConstructBehaviorLoop(1, BehaviorTaskCategory.MediumPriority));
-                    services.AddHostedService(_ => new ConstructBehaviorLoop(10, BehaviorTaskCategory.HighPriority));
-                    services.AddHostedService(_ => new ConstructBehaviorLoop(20, BehaviorTaskCategory.MovementPriority, true));
+                    services.AddHostedService(_ => new MediumPriority(1, BehaviorTaskCategory.MediumPriority));
+                    services.AddHostedService(_ => new HighPriority(10, BehaviorTaskCategory.HighPriority));
+                    services.AddHostedService(_ => new MovementPriority(20, BehaviorTaskCategory.MovementPriority, true));
                     services.AddHostedService<ConstructHandleListQueryWorker>();
                     services.AddHostedService<SectorLoopWorker>();
                     services.AddHostedService<ExpirationNamesWorker>();
