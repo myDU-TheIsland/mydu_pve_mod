@@ -16,7 +16,7 @@ using Mod.DynamicEncounters.Helpers;
 
 namespace Mod.DynamicEncounters.Threads.Handles;
 
-public class SectorLoopWorker : BackgroundService
+public class SectorSpawnerWorker : BackgroundService
 {
     private readonly IServiceProvider _provider = ModBase.ServiceProvider;
     
@@ -34,7 +34,7 @@ public class SectorLoopWorker : BackgroundService
             }
             catch (Exception e)
             {
-                ModBase.ServiceProvider.CreateLogger<SectorLoopWorker>()
+                ModBase.ServiceProvider.CreateLogger<SectorSpawnerWorker>()
                     .LogError(e, "{Type} Exception: {Message}", GetType().Name, e.Message);
             }
         }
@@ -42,7 +42,7 @@ public class SectorLoopWorker : BackgroundService
     
     private async Task Tick(CancellationToken stoppingToken)
     {
-        var logger = ModBase.ServiceProvider.CreateLogger<SectorLoopWorker>();
+        var logger = ModBase.ServiceProvider.CreateLogger<SectorSpawnerWorker>();
 
         try
         {
@@ -50,7 +50,7 @@ public class SectorLoopWorker : BackgroundService
         }
         catch (Exception e)
         {
-            logger.LogError(e, "Failed to execute {Name}", nameof(SectorLoopWorker));
+            logger.LogError(e, "Failed to execute {Name}", nameof(SectorSpawnerWorker));
         }
     }
     
@@ -59,7 +59,7 @@ public class SectorLoopWorker : BackgroundService
         var sw = new Stopwatch();
         sw.Start();
 
-        var logger = _provider.CreateLogger<SectorLoopWorker>();
+        var logger = _provider.CreateLogger<SectorSpawnerWorker>();
 
         using var scope = logger.BeginScope(new Dictionary<string, object>
         {
@@ -67,27 +67,17 @@ public class SectorLoopWorker : BackgroundService
         });
 
         var factionRepository = _provider.GetRequiredService<IFactionRepository>();
-        var sectorPoolManager = _provider.GetRequiredService<ISectorPoolManager>();
-
-        await sectorPoolManager.ExecuteSectorCleanup()
-            .OnError(exception => { logger.LogError(exception, "Failed to Execute Sector Cleanup"); })
-            .WaitAsync(stoppingToken);
-        StatsRecorder.Record("ExecuteSectorCleanup", sw.ElapsedMilliseconds);
-
         var factionSectorPrepTasks = (await factionRepository.GetAllAsync())
             .Select(x => PrepareFactionSector(x, stoppingToken));
         await Task.WhenAll(factionSectorPrepTasks).WaitAsync(stoppingToken);
 
-        await sectorPoolManager.LoadUnloadedSectors().WaitAsync(stoppingToken);
-        await sectorPoolManager.ActivateEnteredSectors().WaitAsync(stoppingToken);
-
-        logger.LogInformation("Sector Loop Action took {Time}ms", sw.ElapsedMilliseconds);
-        StatsRecorder.Record("SectorLoop", sw.ElapsedMilliseconds);
+        logger.LogInformation("{Name} took {Time}ms", nameof(SectorSpawnerWorker), sw.ElapsedMilliseconds);
+        StatsRecorder.Record(nameof(SectorSpawnerWorker), sw.ElapsedMilliseconds);
     }
 
     private async Task PrepareFactionSector(FactionItem faction, CancellationToken stoppingToken)
     {
-        var logger = _provider.CreateLogger<SectorLoopWorker>();
+        var logger = _provider.CreateLogger<SectorSpawnerWorker>();
         logger.LogDebug("Preparing Sector for {Faction}", faction.Name);
 
         // TODO sector encounters becomes tied to a territory

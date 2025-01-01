@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mod.DynamicEncounters.Api;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Threads.Handles;
 using NQutils.Config;
 
@@ -45,7 +44,10 @@ public static class Program
                     services.AddHostedService<HighPriority>();
                     services.AddHostedService<MediumPriority>();
                     services.AddHostedService<ConstructHandleListQueryWorker>();
-                    services.AddHostedService<SectorLoopWorker>();
+                    services.AddHostedService<SectorLoaderWorker>();
+                    services.AddHostedService<SectorActivationWorker>();
+                    services.AddHostedService<SectorCleanupWorker>();
+                    services.AddHostedService<SectorSpawnerWorker>();
                     services.AddHostedService<ExpirationNamesWorker>();
                     services.AddHostedService<CleanupWorker>();
                     services.AddHostedService<ReconnectBotWorker>();
