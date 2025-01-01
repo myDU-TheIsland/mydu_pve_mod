@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +35,9 @@ public class ConstructHandleListQueryWorker : BackgroundService
     
     private async Task Tick(CancellationToken stoppingToken)
     {
+        var sw = new Stopwatch();
+        sw.Start();
+        
         try
         {
             var logger = ModBase.ServiceProvider.CreateLogger<ConstructHandleListQueryWorker>();
@@ -45,7 +49,12 @@ public class ConstructHandleListQueryWorker : BackgroundService
             // ConstructBehaviorLoop.ConstructHandles.Clear();
             foreach (var item in items)
             {
-                ConstructBehaviorLoop.ConstructHandles.TryAdd(item.ConstructId, item);
+                var failed = ConstructBehaviorLoop.ConstructHandles.TryAdd(item.ConstructId, item);
+
+                if (failed)
+                {
+                    logger.LogError("Failed to add item {ConstructId}", item.ConstructId);
+                }
             }
 
             var deadConstructHandles = ConstructBehaviorLoop.ConstructHandleHeartbeat
@@ -65,5 +74,7 @@ public class ConstructHandleListQueryWorker : BackgroundService
             var logger = ModBase.ServiceProvider.CreateLogger<ConstructHandleListQueryWorker>();
             logger.LogError(e, "Failed to Query Construct Handles");
         }
+        
+        StatsRecorder.Record(nameof(ConstructHandleListQueryWorker), sw.ElapsedMilliseconds);
     }
 }

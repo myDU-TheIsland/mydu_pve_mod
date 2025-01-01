@@ -44,6 +44,7 @@ public abstract class HighTickModLoop : BackgroundService
                 // var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
             
                 await Tick(stoppingToken);
+                await Task.Yield();
             }
             catch (Exception e)
             {
