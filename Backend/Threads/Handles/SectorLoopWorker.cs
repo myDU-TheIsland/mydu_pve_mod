@@ -72,6 +72,7 @@ public class SectorLoopWorker : BackgroundService
         await sectorPoolManager.ExecuteSectorCleanup()
             .OnError(exception => { logger.LogError(exception, "Failed to Execute Sector Cleanup"); })
             .WaitAsync(stoppingToken);
+        StatsRecorder.Record("ExecuteSectorCleanup", sw.ElapsedMilliseconds);
 
         var factionSectorPrepTasks = (await factionRepository.GetAllAsync())
             .Select(PrepareFactionSector);
