@@ -2,5 +2,4 @@
 
 namespace Mod.DynamicEncounters.Threads.Handles;
 
-public class HighPriority(int framesPerSecond, BehaviorTaskCategory category, bool fixedStep = false)
-    : ConstructBehaviorLoop(framesPerSecond, category, fixedStep);
+public class HighPriority() : ConstructBehaviorLoop(10, BehaviorTaskCategory.HighPriority);
