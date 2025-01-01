@@ -63,28 +63,32 @@ public class CommandHandlerWorker : BackgroundService
                 {
                     var playerPartyCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<IPlayerPartyCommandHandler>();
-                    playerPartyCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message).Wait();
+                    await playerPartyCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message)
+                        .WaitAsync(stoppingToken);
                 }
 
                 if (commandItem.Message.StartsWith("@kills npc", StringComparison.OrdinalIgnoreCase))
                 {
                     var npcKillsCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<INpcKillsCommandHandler>();
-                    npcKillsCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message).Wait();
+                    await npcKillsCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message)
+                        .WaitAsync(stoppingToken);
                 }
 
                 if (commandItem.Message.StartsWith("@wac", StringComparison.OrdinalIgnoreCase))
                 {
                     var warpAnchorCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<IWarpAnchorCommandHandler>();
-                    warpAnchorCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message).Wait();
+                    await warpAnchorCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message)
+                        .WaitAsync(stoppingToken);
                 }
 
                 if (commandItem.Message.StartsWith("@m", StringComparison.OrdinalIgnoreCase))
                 {
                     var openPlayerBoardCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<IOpenPlayerBoardCommandHandler>();
-                    openPlayerBoardCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message).Wait();
+                    await openPlayerBoardCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message)
+                        .WaitAsync(stoppingToken);
                 }
             }
             catch (Exception e)

@@ -51,8 +51,8 @@ public class ConstructBehaviorLoop : HighTickModLoop
         
         if (constructHandleList.Count == 0)
         {
-            Thread.Sleep(TimeSpan.FromMilliseconds(500));
             StatsRecorder.Record(_category, sw.ElapsedMilliseconds);
+            Thread.Sleep(TimeSpan.FromMilliseconds(500));
             return;
         }
 

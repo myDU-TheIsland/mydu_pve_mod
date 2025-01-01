@@ -42,8 +42,8 @@ public static class Program
                 .ConfigureServices(services =>
                 {
                     services.AddHostedService(_ => new MovementPriority(20, BehaviorTaskCategory.MovementPriority, true));
-                    services.AddHostedService(_ => new MediumPriority(1, BehaviorTaskCategory.MediumPriority));
                     services.AddHostedService(_ => new HighPriority(10, BehaviorTaskCategory.HighPriority));
+                    services.AddHostedService(_ => new MediumPriority(1, BehaviorTaskCategory.MediumPriority));
                     services.AddHostedService<ConstructHandleListQueryWorker>();
                     services.AddHostedService<SectorLoopWorker>();
                     services.AddHostedService<ExpirationNamesWorker>();

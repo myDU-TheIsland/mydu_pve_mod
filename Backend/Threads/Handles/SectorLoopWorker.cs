@@ -75,7 +75,7 @@ public class SectorLoopWorker : BackgroundService
         StatsRecorder.Record("ExecuteSectorCleanup", sw.ElapsedMilliseconds);
 
         var factionSectorPrepTasks = (await factionRepository.GetAllAsync())
-            .Select(PrepareFactionSector);
+            .Select(x => PrepareFactionSector(x, stoppingToken));
         await Task.WhenAll(factionSectorPrepTasks).WaitAsync(stoppingToken);
 
         await sectorPoolManager.LoadUnloadedSectors().WaitAsync(stoppingToken);
@@ -85,7 +85,7 @@ public class SectorLoopWorker : BackgroundService
         StatsRecorder.Record("SectorLoop", sw.ElapsedMilliseconds);
     }
 
-    private async Task PrepareFactionSector(FactionItem faction)
+    private async Task PrepareFactionSector(FactionItem faction, CancellationToken stoppingToken)
     {
         var logger = _provider.CreateLogger<SectorLoopWorker>();
         logger.LogDebug("Preparing Sector for {Faction}", faction.Name);
@@ -105,7 +105,7 @@ public class SectorLoopWorker : BackgroundService
         {
             var encountersTask =
                 sectorEncountersRepository.FindActiveByFactionTerritoryAsync(ft.FactionId, ft.TerritoryId);
-            encountersTask.Wait();
+            await ((Task)encountersTask).WaitAsync(stoppingToken);
             
             var encounters = encountersTask.Result.ToList();
 
@@ -127,7 +127,7 @@ public class SectorLoopWorker : BackgroundService
 
             try
             {
-                sectorPoolManager.GenerateTerritorySectors(args).Wait();
+                await sectorPoolManager.GenerateTerritorySectors(args).WaitAsync(stoppingToken);
             }
             catch (Exception e)
             {
