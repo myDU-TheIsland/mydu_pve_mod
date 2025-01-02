@@ -5,41 +5,36 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Helpers;
 using NQutils.Def;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
-public class StasisTargetSkill : ISkill
+public class StasisTargetSkill(SkillItem skillItem) : BaseSkill(skillItem)
 {
     private static double MagazineVolume => 1500D;
     private static double AmmoUnitVolume => 100D;
     private static long TotalAmmoCount => (long)(MagazineVolume / AmmoUnitVolume);
-    public long CurrentAmmo { get; set; }
+    public long CurrentAmmo { get; set; } = TotalAmmoCount;
 
     public required string? ItemTypeName { get; set; }
     public required TimeSpan Cooldown { get; set; }
     public TimeSpan ReloadCooldown { get; set; } = TimeSpan.FromSeconds(30);
 
-    public StasisTargetSkill()
+    public override bool CanUse(BehaviorContext context)
     {
-        CurrentAmmo = TotalAmmoCount;
+        return (!context.Effects.IsEffectActive<CooldownEffect>() ||
+               !context.Effects.IsEffectActive<ReloadEffect>()) &&
+               base.CanUse(context);
     }
 
-    public bool CanUse(BehaviorContext context)
+    public override bool ShouldUse(BehaviorContext context)
     {
-        return !context.Effects.IsEffectActive<CooldownEffect>() ||
-               !context.Effects.IsEffectActive<ReloadEffect>();
+        return context.HasTargetConstruct() && base.ShouldUse(context);
     }
 
-    public bool ShouldUse(BehaviorContext context)
-    {
-        return context.HasTargetConstruct();
-    }
-
-    public async Task Use(BehaviorContext context)
+    public override async Task Use(BehaviorContext context)
     {
         if (!context.HasTargetConstruct()) return;
 
@@ -101,7 +96,7 @@ public class StasisTargetSkill : ISkill
 
     public static StasisTargetSkill Create(SkillItem item)
     {
-        return new StasisTargetSkill
+        return new StasisTargetSkill(item)
         {
             Cooldown = TimeSpan.FromSeconds(item.CooldownSeconds),
             ItemTypeName = item.ItemTypeName

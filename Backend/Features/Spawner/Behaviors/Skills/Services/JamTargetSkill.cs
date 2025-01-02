@@ -8,22 +8,22 @@ using Mod.DynamicEncounters.Features.Spawner.Data;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
-public class JamTargetSkill : ISkill
+public class JamTargetSkill(SkillItem skillItem) : BaseSkill(skillItem)
 {
     public required TimeSpan Cooldown { get; set; }
     public required IJamTargetService JamTargetService { get; set; }
 
-    public bool CanUse(BehaviorContext context)
+    public override bool CanUse(BehaviorContext context)
     {
-        return !context.Effects.IsEffectActive<CooldownEffect>();
+        return !context.Effects.IsEffectActive<CooldownEffect>() && base.CanUse(context);
     }
 
-    public bool ShouldUse(BehaviorContext context)
+    public override bool ShouldUse(BehaviorContext context)
     {
-        return context.HasTargetConstruct();
+        return context.HasTargetConstruct() && base.ShouldUse(context);
     }
 
-    public async Task Use(BehaviorContext context)
+    public override async Task Use(BehaviorContext context)
     {
         if (!context.HasTargetConstruct()) return;
 
@@ -38,7 +38,7 @@ public class JamTargetSkill : ISkill
 
     public static JamTargetSkill Create(IServiceProvider provider, SkillItem item)
     {
-        return new JamTargetSkill
+        return new JamTargetSkill(item)
         {
             Cooldown = TimeSpan.FromSeconds(item.CooldownSeconds),
             JamTargetService = provider.GetRequiredService<IJamTargetService>(),

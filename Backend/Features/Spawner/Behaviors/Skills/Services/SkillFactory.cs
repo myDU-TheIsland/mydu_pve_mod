@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 using Newtonsoft.Json.Linq;
@@ -39,5 +41,10 @@ public class SkillFactory(IServiceProvider provider) : ISkillFactory
             default:
                 return new NullSkill();
         }
+    }
+
+    public IEnumerable<ISkill> CreateAll(IEnumerable<object> items)
+    {
+        return items.Select(Create);
     }
 }

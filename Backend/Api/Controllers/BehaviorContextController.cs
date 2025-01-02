@@ -10,6 +10,7 @@ using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.Vector.Helpers;
+using Newtonsoft.Json.Linq;
 using NQ;
 using NQ.Interfaces;
 using NQutils.Def;
@@ -45,6 +46,27 @@ public class BehaviorContextController : Controller
             Context = context,
             ExtraProperties = context.Properties.ToDictionary(k => k.Key, v => v.Value)
         });
+    }
+
+    [HttpPost]
+    [Route("prop/{propName}/set")]
+    public IActionResult SetProperty(ulong constructId, string propName, [FromBody] JToken req)
+    {
+        if (!ConstructBehaviorContextCache.Data.TryGetValue(constructId, out var context))
+        {
+            return NotFound();
+        }
+
+        var property = typeof(BehaviorContext).GetProperty(propName);
+        if (property == null)
+        {
+            return NotFound($"{propName} not found");
+        }
+
+        var propValueTyped = req.ToObject(property.GetType());
+        property.SetValue(context, propValueTyped);
+        
+        return Ok();
     }
 
     [SwaggerOperation("Sets the target position of an NPC construct and sticks with that position until changed")]

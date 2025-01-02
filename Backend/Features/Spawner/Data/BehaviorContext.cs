@@ -70,9 +70,7 @@ public class BehaviorContext(
     public ConcurrentBag<ScanContact> Contacts { get; private set; } = [];
     public ConcurrentBag<DamageDealtData> DamageHistory { get; private set; } = [];
 
-    public IList<ISkill> Skills { get; set; } = prefab.DefinitionItem.Skills
-        .Select(SkillFactory.Create)
-        .ToList();
+    public IList<ISkill> Skills { get; set; } = SkillFactory.CreateAll(prefab.DefinitionItem.Skills).ToList();
 
     public bool BoosterActive { get; set; } = false;
     public double AccelerationG { get; set; } = prefab.DefinitionItem.AccelerationG;

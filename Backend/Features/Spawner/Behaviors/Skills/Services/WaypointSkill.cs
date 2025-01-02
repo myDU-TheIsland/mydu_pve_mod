@@ -6,29 +6,19 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Extensions;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
+using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
-public class WaypointSkill(WaypointSkill.WaypointSkillItem skillItem) : ISkill
+public class WaypointSkill(WaypointSkill.WaypointSkillItem skillItem) : BaseSkill(skillItem)
 {
     public bool WaypointInitialized { get; set; }
     public Queue<WaypointItem> WaypointQueue { get; set; } = new(skillItem.Waypoints);
 
-    public bool CanUse(BehaviorContext context)
-    {
-        return true;
-    }
-
-    public bool ShouldUse(BehaviorContext context)
-    {
-        return true;
-    }
-
-    public virtual async Task Use(BehaviorContext context)
+    public override async Task Use(BehaviorContext context)
     {
         if (!context.Position.HasValue) return;
 
@@ -114,7 +104,7 @@ public class WaypointSkill(WaypointSkill.WaypointSkillItem skillItem) : ISkill
         return new WaypointSkill(item.ToObject<WaypointSkillItem>());
     }
 
-    public class WaypointSkillItem
+    public class WaypointSkillItem : SkillItem
     {
         [JsonProperty] public IEnumerable<WaypointItem> Waypoints { get; set; } = [];
         [JsonProperty] public double WaypointArrivalDistance { get; set; } = 50000;

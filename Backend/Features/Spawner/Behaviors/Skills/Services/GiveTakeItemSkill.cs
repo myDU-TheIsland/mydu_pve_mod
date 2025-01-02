@@ -18,23 +18,18 @@ using Newtonsoft.Json.Linq;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
-public class GiveTakeItemSkill(GiveTakeItemSkill.GiveTakeItemSkillItem skillItem) : ISkill
+public class GiveTakeItemSkill(GiveTakeItemSkill.GiveTakeItemSkillItem skillItem) : BaseSkill(skillItem)
 {
     public int CurrentIteration { get; set; }
     public ulong? OverrideConstructId { get; set; }
     public bool Finished { get; set; }
     
-    public virtual bool CanUse(BehaviorContext context)
+    public override bool CanUse(BehaviorContext context)
     {
-        return !context.Effects.IsEffectActive<CooldownEffect>() && !Finished;
+        return !context.Effects.IsEffectActive<CooldownEffect>() && !Finished && base.CanUse(context);
     }
 
-    public virtual bool ShouldUse(BehaviorContext context)
-    {
-        return true;
-    }
-
-    public virtual async Task Use(BehaviorContext context)
+    public override async Task Use(BehaviorContext context)
     {
         var provider = context.Provider;
         

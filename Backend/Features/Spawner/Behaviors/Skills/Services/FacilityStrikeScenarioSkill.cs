@@ -9,7 +9,6 @@ using Mod.DynamicEncounters.Features.Spawner.Behaviors.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,21 +18,22 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 public class FacilityStrikeScenarioSkill(
     FacilityStrikeScenarioSkill.FacilityStrikeScenarioSkillItem skillItem,
     ProduceItemsWhenSafeSkill produceItemsSkill
-) : ISkill
+) : BaseSkill(skillItem)
 {
     public FacilityStrikeState? State { get; set; }
 
-    public bool CanUse(BehaviorContext context)
+    public override bool CanUse(BehaviorContext context)
     {
-        return (State is null or { Finished: false } || !produceItemsSkill.Finished) && context.IsAlive;
+        return (State is null or { Finished: false } || !produceItemsSkill.Finished) && base.CanUse(context);
     }
 
-    public bool ShouldUse(BehaviorContext context) => !context.Effects.IsEffectActive<UseCooldownEffect>();
+    public override bool ShouldUse(BehaviorContext context) =>
+        !context.Effects.IsEffectActive<UseCooldownEffect>() && base.ShouldUse(context);
 
-    public async Task Use(BehaviorContext context)
+    public override async Task Use(BehaviorContext context)
     {
         context.Effects.Activate<UseCooldownEffect>(TimeSpan.FromSeconds(skillItem.CooldownSeconds));
-        
+
         if (!skillItem.Waves.Any()) return;
 
         var constructStateService = context.Provider.GetRequiredService<IConstructStateService>();
@@ -59,7 +59,7 @@ public class FacilityStrikeScenarioSkill(
         }
 
         var wave = waves[State!.CurrentWaveIndex];
-        
+
         if (context.Effects.IsEffectActive<NextWaveCooldownEffect>()) return;
         context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
         State.CurrentWaveIndex++;
@@ -78,7 +78,7 @@ public class FacilityStrikeScenarioSkill(
     private async Task PersistState(BehaviorContext context, IConstructStateService constructStateService)
     {
         if (State == null) return;
-        
+
         await constructStateService.PersistState(new ConstructStateItem
         {
             Properties = JToken.FromObject(State),
@@ -130,6 +130,7 @@ public class FacilityStrikeScenarioSkill(
     }
 
     public class NextWaveCooldownEffect : IEffect;
+
     public class UseCooldownEffect : IEffect;
 
     public class FacilityStrikeScenarioSkillItem : SkillItem

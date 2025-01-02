@@ -8,20 +8,19 @@ using Mod.DynamicEncounters.Helpers;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
-public class LeashSkill : ISkill
+public class LeashSkill(SkillItem skillItem) : BaseSkill(skillItem)
 {
-    public bool CanUse(BehaviorContext context) => !context.Effects.IsEffectActive<LeashCooldown>();
+    public override bool CanUse(BehaviorContext context) =>
+        !context.Effects.IsEffectActive<LeashCooldown>() && base.CanUse(context);
 
-    public bool ShouldUse(BehaviorContext context) => true;
-
-    public Task Use(BehaviorContext context)
+    public override Task Use(BehaviorContext context)
     {
         if (!context.StartPosition.HasValue) return Task.CompletedTask;
 
         var leashPos = context.Sector;
         const long leashRange = DistanceHelpers.OneSuInMeters * 5;
         var iAmFar = context.Position.HasValue &&
-                    context.Position.Value.Dist(leashPos) > leashRange;
+                     context.Position.Value.Dist(leashPos) > leashRange;
         var targetIsFar = context.GetTargetConstructId().HasValue &&
                           context.TargetPosition.Dist(leashPos) > leashRange;
         var isReturningCooldown = context.Effects.IsEffectActive<ReturningToSectorCooldown>();
@@ -35,7 +34,7 @@ public class LeashSkill : ISkill
         {
             context.SetOverrideTargetMovePosition(null);
         }
-        
+
         context.Effects.Activate<LeashCooldown>(TimeSpan.FromSeconds(1));
 
         return Task.CompletedTask;
@@ -43,9 +42,10 @@ public class LeashSkill : ISkill
 
     public static LeashSkill Create(SkillItem item)
     {
-        return new LeashSkill();
+        return new LeashSkill(item);
     }
-    
+
     public class ReturningToSectorCooldown : IEffect;
+
     public class LeashCooldown : IEffect;
 }

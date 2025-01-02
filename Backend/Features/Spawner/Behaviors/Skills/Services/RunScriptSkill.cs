@@ -5,26 +5,20 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
-public class RunScriptSkill(RunScriptSkill.RunScriptSkillItem skillItem) : ISkill
+public class RunScriptSkill(RunScriptSkill.RunScriptSkillItem skillItem) : BaseSkill(skillItem)
 {
-    public bool CanUse(BehaviorContext context)
+    public override bool CanUse(BehaviorContext context)
     {
-        return !context.Effects.IsEffectActive<CooldownEffect>();
+        return !context.Effects.IsEffectActive<CooldownEffect>() && base.CanUse(context);
     }
 
-    public bool ShouldUse(BehaviorContext context)
-    {
-        return true;
-    }
-
-    public Task Use(BehaviorContext context)
+    public override Task Use(BehaviorContext context)
     {
         context.Effects.Activate<CooldownEffect>(TimeSpan.FromSeconds(skillItem.CooldownSeconds));
 
