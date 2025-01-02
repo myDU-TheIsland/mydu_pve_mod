@@ -12,7 +12,7 @@ Some of that is due to performance, some due to choice.
 
 * Honjo - For providing the tools, the infrastructure, trust and freedom to develop the PVE mod.
 * TobiwanKenobi - For continuously testing and providing ideas and feedback on features developed for the PVE mod. 
-  * Also for continuously pushing the on fixing the smallest details. 
+  * Also for continuously pushing for the fixing the movement of NPCs when I was stuck. 
 * W1zard - For early on helping with the simulation algorithm when I was stuck
 * BearClaw - For the prompt help and support provided on the Dual Universe channel
 * NovaQuark - For making the game moddable and providing the means for us to mod it :D
