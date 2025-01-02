@@ -91,7 +91,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
             Vec3 position;
             var interactions = 0;
-            const int maxInteractions = 100;
+            const int maxInteractions = 10;
 
             do
             {
@@ -144,8 +144,6 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 _logger.LogError(e,
                     "Failed to create sector. Likely violating unique constraint. It will be tried again on the next cycle");
             }
-
-            await Task.Delay(200);
         }
     }
 

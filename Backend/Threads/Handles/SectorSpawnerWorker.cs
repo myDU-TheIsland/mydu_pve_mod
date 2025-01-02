@@ -67,16 +67,21 @@ public class SectorSpawnerWorker : BackgroundService
         });
 
         var factionRepository = _provider.GetRequiredService<IFactionRepository>();
-        var factionSectorPrepTasks = (await factionRepository.GetAllAsync())
-            .Select(x => PrepareFactionSector(x, stoppingToken));
-        await Task.WhenAll(factionSectorPrepTasks).WaitAsync(stoppingToken);
+        var factions = await factionRepository.GetAllAsync().WaitAsync(stoppingToken);
 
+        foreach (var faction in factions)
+        {
+            await PrepareFactionSector(faction, stoppingToken);
+        }
+        
         logger.LogInformation("{Name} took {Time}ms", nameof(SectorSpawnerWorker), sw.ElapsedMilliseconds);
         StatsRecorder.Record(nameof(SectorSpawnerWorker), sw.ElapsedMilliseconds);
     }
 
     private async Task PrepareFactionSector(FactionItem faction, CancellationToken stoppingToken)
     {
+        if (stoppingToken.IsCancellationRequested) return;
+        
         var logger = _provider.CreateLogger<SectorSpawnerWorker>();
         logger.LogDebug("Preparing Sector for {Faction}", faction.Name);
 
