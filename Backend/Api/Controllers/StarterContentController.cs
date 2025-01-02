@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
@@ -109,12 +108,6 @@ public class StarterContentController(IServiceProvider provider) : Controller
                     [
                         "aggressive",
                         "follow-target"
-                    ],
-                    WeaponItems = ["WeaponCannonExtraSmallAgile3"],
-                    AmmoItems =
-                    [
-                        "AmmoCannonExtraSmallThermicUncommon",
-                        "AmmoCannonExtraSmallKineticUncommon"
                     ],
                     ServerProperties = new PrefabItem.ServerPropertiesItem
                     {

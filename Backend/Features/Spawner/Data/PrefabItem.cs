@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Newtonsoft.Json;
 
 namespace Mod.DynamicEncounters.Features.Spawner.Data;
@@ -20,10 +19,8 @@ public class PrefabItem
     public ServerPropertiesItem ServerProperties { get; set; } = new();
     public BehaviorModifiers Mods { get; set; } = new();
     public List<string> InitialBehaviors { get; set; } = [];
-    public List<string> AmmoItems { get; set; } = [];
     public int AmmoTier { get; set; } = 3;
     public string AmmoVariant { get; set; } = "Agile";
-    public List<string> WeaponItems { get; set; } = [];
     public double AccelerationG { get; set; } = 15;
     public float RotationSpeed { get; set; } = 0.5f;
     public double MinSpeedKph { get; set; } = 2000;

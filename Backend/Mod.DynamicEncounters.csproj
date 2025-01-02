@@ -88,6 +88,9 @@
     <Compile Remove="Mod.DynamicEncounters.Tests\**" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\README.md">
+      <Link>README.md</Link>
+    </Content>
     <EmbeddedResource Remove="LoaderTest\**" />
     <Content Remove="Resources\Basic_Pirate.json" />
     <EmbeddedResource Include="Resources\Basic_Pirate.json">
