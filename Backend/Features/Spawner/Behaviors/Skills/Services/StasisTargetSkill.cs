@@ -75,14 +75,14 @@ public class StasisTargetSkill : ISkill
         context.Effects.Activate<CooldownEffect>(Cooldown);
 
         CurrentAmmo--;
-        
+
         if (CurrentAmmo <= 0)
         {
             CurrentAmmo = TotalAmmoCount;
             context.Effects.Activate<ReloadEffect>(ReloadCooldown);
             return;
         }
-        
+
         if (distance > maxRange * 3.0)
         {
             // miss
@@ -109,5 +109,6 @@ public class StasisTargetSkill : ISkill
     }
 
     public class CooldownEffect : IEffect;
+
     public class ReloadEffect : IEffect;
 }

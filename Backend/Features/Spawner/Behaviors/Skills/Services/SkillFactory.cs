@@ -34,6 +34,8 @@ public class SkillFactory(IServiceProvider provider) : ISkillFactory
                 return ProduceItemsWhenSafeSkill.Create(jObj);
             case "scenario-facility-strike":
                 return FacilityStrikeScenarioSkill.Create(jObj);
+            case "run-away":
+                return RunAwaySkill.Create(jObj);
             default:
                 return new NullSkill();
         }
