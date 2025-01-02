@@ -8,6 +8,15 @@ Some of that is due to performance, some due to choice.
 
 [![image](https://github.com/user-attachments/assets/8d5a4b86-d3a2-4319-b715-9a5608dbb6bc)](https://www.youtube.com/watch?v=vlXTiFBxXbk)
 
+# Acknowledgments and Collaborators
+
+* Honjo - For providing the tools, the infrastructure, trust and freedom to develop the PVE mod.
+* TobiwanKenobi - For continuously testing and providing ideas and feedback on features developed for the PVE mod. 
+  * Also for continuously pushing the on fixing the smallest details. 
+* W1zard - For early on helping with the simulation algorithm when I was stuck
+* BearClaw - For the prompt help and support provided on the Dual Universe channel
+* NovaQuark - For making the game moddable and providing the means for us to mod it :D
+
 # Advantages of Running the mod on a separate container
 
 * No need to restart the server, just the mod container
@@ -109,3 +118,4 @@ see [Running Locally](Documentation/RunningLocally.md)
 * Factions and Influence - Like Elite Dangerous BGS
 * User Interface
 * Second Pass on NPCs and Wreck Experience
+
