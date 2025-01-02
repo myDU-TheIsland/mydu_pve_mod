@@ -123,6 +123,7 @@ public class SectorSpawnerWorker : BackgroundService
             try
             {
                 await sectorPoolManager.GenerateTerritorySectors(args).WaitAsync(stoppingToken);
+                await Task.Yield();
             }
             catch (Exception e)
             {
