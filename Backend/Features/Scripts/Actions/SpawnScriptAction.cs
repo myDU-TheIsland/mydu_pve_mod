@@ -18,6 +18,7 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Helpers;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NQ;
 using NQ.Interfaces;
 using NQutils.Config;
@@ -158,7 +159,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
 
         _logger.LogInformation("Spawned Construct [{Name}]({Id}) at ::pos{{0,0,{Pos}}}", resultName, constructId,
             spawnPosition);
-
+        
         var isWreck = constructDef.DefinitionItem.ServerProperties.IsDynamicWreck;
         var cannotTarget = constructDef.DefinitionItem.IsUntargetable;
 
@@ -261,6 +262,8 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
             _logger.LogError(e, "Failed to Reload Construct Post-Spawn");
         }
 
+        context.RaiseEvent(new ConstructSpawnedEvent(constructId));
+        
         return ScriptActionResult.Successful();
     }
 
@@ -270,5 +273,10 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
     {
         [JsonProperty] public bool AddConstructHandle { get; set; } = true;
         [JsonProperty] public bool Visible { get; set; } = true;
+    }
+
+    public class ConstructSpawnedEvent(ulong constructId) : ScriptContextEventArgs("construct-spawned")
+    {
+        public override JToken? Data { get; set; } = constructId;
     }
 }

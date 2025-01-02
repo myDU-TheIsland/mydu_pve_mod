@@ -7,7 +7,8 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
 public abstract class BaseSkill(SkillItem skillItem) : ISkill
 {
-    protected bool Active { get; set; } = skillItem.Active;
+    public string Name { get; set; } = skillItem.Name;
+    public bool Active { get; set; } = skillItem.Active;
     public virtual bool CanUse(BehaviorContext context) => Active && context.IsAlive;
 
     public virtual bool ShouldUse(BehaviorContext context) => Active;
