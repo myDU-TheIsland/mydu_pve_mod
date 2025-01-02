@@ -187,10 +187,13 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
                     targeting
                 );
 
-                await _constructService.SendAttackingNotification(
-                    targetId,
-                    targeting
-                );
+                if (context.HasAnyWeapons())
+                {
+                    await _constructService.SendAttackingNotification(
+                        targetId,
+                        targeting
+                    );
+                }
             }
         }
         catch (Exception e)

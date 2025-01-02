@@ -209,6 +209,11 @@ public class BehaviorContext(
     {
         return GetAvailableWeapons().Any();
     }
+    
+    public bool HasAnyWeapons()
+    {
+        return GetAvailableWeapons().Any();
+    }
 
     public IEnumerable<WeaponEffectivenessData> GetAvailableWeapons()
     {
