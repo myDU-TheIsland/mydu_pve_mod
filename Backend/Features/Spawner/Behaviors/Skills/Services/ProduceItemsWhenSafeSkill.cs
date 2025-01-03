@@ -48,6 +48,6 @@ public class ProduceItemsWhenSafeSkill(ProduceItemsWhenSafeSkill.ProduceItemsWhe
     
     public class ProduceItemsWhenSafeSkillItem : GiveTakeItemSkillItem
     {
-        [JsonProperty] public double AreScanRange { get; set; } = DistanceHelpers.OneSuInMeters * 5D;
+        [JsonProperty] public double AreScanRange { get; set; } = DistanceHelpers.OneSuInMeters * 8D;
     }
 }

@@ -70,7 +70,7 @@ public class AsteroidSpawnerService : IAsteroidSpawnerService
     public async Task<AsteroidSpawnOutcome> SpawnAsteroidWithData(SpawnAsteroidCommand command)
     {
         command.Tier = Math.Clamp(command.Tier, 1, 5);
-        command.Tier = Math.Clamp(command.Radius, 32, 2048);
+        command.Radius = Math.Clamp(command.Radius, 32, 2048);
         
         var asteroidJToken = AsteroidData.GetBase();
 
