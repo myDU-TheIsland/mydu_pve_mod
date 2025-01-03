@@ -8,4 +8,5 @@ public interface IWarpAnchorService
     Task<CreateWarpAnchorOutcome> SpawnWarpAnchor(SpawnWarpAnchorCommand command);
     Task<CreateWarpAnchorOutcome> CreateWarpAnchorForPosition(CreateWarpAnchorCommand command);
     Task<CreateWarpAnchorOutcome> CreateWarpAnchorForward(CreateWarpAnchorForwardCommand command);
+    Task<SetWarpCooldownOutcome> SetWarpCooldown(SetWarpCooldownCommand command);
 }

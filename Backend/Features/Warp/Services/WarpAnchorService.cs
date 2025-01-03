@@ -318,4 +318,40 @@ public class WarpAnchorService(IServiceProvider provider) : IWarpAnchorService
             }
         );
     }
+
+    public async Task<SetWarpCooldownOutcome> SetWarpCooldown(SetWarpCooldownCommand command)
+    {
+        var traitRepository = provider.GetRequiredService<ITraitRepository>();
+        var elementTraitMap = (await traitRepository.GetElementTraits(command.ElementTypeName)).Map();
+
+        if (!elementTraitMap.TryGetValue("supercruise", out var trait))
+        {
+            return SetWarpCooldownOutcome.NotASupercruiseDrive(command.ElementTypeName);
+        }
+
+        trait.TryGetPropertyValue("warpEndCooldown", out var warpEndCooldown, TimeSpan.FromSeconds(3).TotalMilliseconds);
+        
+        var orleans = provider.GetOrleans();
+
+        var constructElementsGrain = orleans.GetConstructElementsGrain(command.ConstructId);
+        var coreUnits = await constructElementsGrain.GetElementsOfType<CoreUnit>();
+
+        if (coreUnits.Count == 0)
+        {
+            return SetWarpCooldownOutcome.InvalidConstruct();
+        }
+
+        var cooldownDate = DateTime.UtcNow + TimeSpan.FromSeconds(warpEndCooldown);
+        
+        await constructElementsGrain.UpdateElementProperty(new ElementPropertyUpdate
+        {
+            constructId = command.ConstructId,
+            name = "endOfWarpCooldown",
+            elementId = coreUnits.First().elementId,
+            value = new PropertyValue(cooldownDate.ToNQTimePoint().networkTime),
+            timePoint = TimePoint.Now()
+        });
+
+        return SetWarpCooldownOutcome.CooldownSet();
+    }
 }

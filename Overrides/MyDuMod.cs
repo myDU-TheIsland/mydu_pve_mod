@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Backend;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Overrides;
@@ -17,6 +19,7 @@ using Newtonsoft.Json;
 using NQ;
 using NQ.Grains.Core;
 using NQ.Interfaces;
+using NQutils.Def;
 using Orleans;
 using Notifications = Mod.DynamicEncounters.Overrides.Notifications;
 
@@ -82,6 +85,29 @@ public class MyDuMod : IMod
     public async Task WarpEnd(IIncomingGrainCallContext context, PlayerId playerId)
     {
         await context.Invoke();
+
+        var constructId = (ulong)context.Grain.GetPrimaryKeyLong();
+        
+        var orleans = _provider.GetRequiredService<IClusterClient>();
+        var bank = _provider.GetRequiredService<IGameplayBank>();
+        var constructElementsGrain = orleans.GetConstructElementsGrain(constructId);
+        var warpDrives = await constructElementsGrain.GetElementsOfType<WarpDriveUnit>();
+
+        if (warpDrives.Count == 0)
+        {
+            _logger.LogError("No Warp Drives Detected");
+            
+            return;
+        }
+
+        var elementInfo = await constructElementsGrain.GetElement(warpDrives.First());
+        
+        var warpAnchorApiClient = new WarpAnchorApiClient(_provider);
+        await warpAnchorApiClient.SetWarpEndCooldown(new SetWarpEndCooldownRequest
+        {
+            ConstructId = constructId,
+            ElementTypeName = bank.GetDefinition(elementInfo.elementType)?.Name ?? nameof(WarpDriveUnit)
+        });
     }
 
     public async Task ScanStart(IIncomingGrainCallContext context, PlayerId pid, RadarScan v)

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Warp.Data;
 using Mod.DynamicEncounters.Features.Warp.Interfaces;
 using Mod.DynamicEncounters.Vector.Helpers;
+using Newtonsoft.Json;
 using NQ;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
@@ -46,6 +47,27 @@ public class WarpController : Controller
                 outcome.WarpAnchorPosition.Vec3ToPosition()
             )
         );
+    }
+
+    [HttpPost]
+    [Route("cooldown")]
+    public async Task<IActionResult> SetCooldown([FromBody] SetWarpPropertyRequest request)
+    {
+        var provider = ModBase.ServiceProvider;
+        var warpAnchorService = provider.GetRequiredService<IWarpAnchorService>();
+        var outcome = await warpAnchorService.SetWarpCooldown(new SetWarpCooldownCommand
+        {
+            ConstructId = request.ConstructId,
+            ElementTypeName = request.ElementTypeName
+        });
+
+        return Ok(outcome);
+    }
+
+    public class SetWarpPropertyRequest
+    {
+        [JsonProperty] public ulong ConstructId { get; set; }
+        [JsonProperty] public string ElementTypeName { get; set; } = string.Empty;
     }
 
     public class WarpAnchorRequestV2
