@@ -262,7 +262,14 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
             _logger.LogError(e, "Failed to Reload Construct Post-Spawn");
         }
 
-        context.RaiseEvent(new ConstructSpawnedEvent(constructId));
+        try
+        {
+            context.RaiseEvent(new ConstructSpawnedEvent(constructId));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to Raise {Event}", nameof(ConstructSpawnedEvent));
+        }
         
         return ScriptActionResult.Successful();
     }
