@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -7,6 +8,8 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Features.Sector.Data;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
+using Mod.DynamicEncounters.Features.Sector.Services;
+using Mod.DynamicEncounters.Features.Spawner.Extensions;
 using Mod.DynamicEncounters.Helpers;
 using Newtonsoft.Json;
 using NQ;
@@ -14,7 +17,7 @@ using NQ;
 namespace Mod.DynamicEncounters.Features.Scripts.Actions;
 
 [ScriptActionName(ActionName)]
-public class SpawnDynamicSector : IScriptAction
+public class SpawnDynamicSector(ScriptActionItem actionItem) : IScriptAction
 {
     public const string ActionName = "spawn-sector";
     public string Name => ActionName;
@@ -26,7 +29,8 @@ public class SpawnDynamicSector : IScriptAction
         var logger = provider.CreateLogger<SpawnDynamicSector>();
         var sectorInstanceRepository = provider.GetRequiredService<ISectorInstanceRepository>();
 
-        var props = context.GetProperties<Properties>();
+        actionItem.Properties.Merge(context.Properties.ToDictionary());
+        var props = actionItem.GetProperties<Properties>();
 
         if (!context.TerritoryId.HasValue)
         {
@@ -38,7 +42,7 @@ public class SpawnDynamicSector : IScriptAction
         await sectorInstanceRepository.AddAsync(new SectorInstance
         {
             Name = props.Name,
-            Sector = props.Position ?? context.Sector,
+            Sector = (props.Position ?? context.Sector).GridSnap(SectorPoolManager.SectorGridSnap),
             FactionId = context.FactionId ?? 1,
             PublishAt = props.PublishTimeSpan.HasValue ? DateTime.UtcNow + props.PublishTimeSpan : null,
             ExpiresAt = DateTime.UtcNow + props.ExpirationTimeSpan,

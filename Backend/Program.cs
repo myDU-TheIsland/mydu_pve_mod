@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mod.DynamicEncounters.Api;
-using Mod.DynamicEncounters.Common.Extensions;
 using Mod.DynamicEncounters.Threads.Handles;
-using Mod.DynamicEncounters.Threads.Handles.Test;
 using NQutils.Config;
 
 namespace Mod.DynamicEncounters;
