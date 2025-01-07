@@ -18,6 +18,8 @@ public class TestActor(IServiceProvider provider) : Actor
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
+        FramesPerSecond = 10;
+        
         for (var i = 2; i <= 4; i++)
         {
             var duClientFactory = provider.GetRequiredService<IDuClientFactory>();
