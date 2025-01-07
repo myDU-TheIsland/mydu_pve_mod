@@ -56,7 +56,7 @@ public static class Program
                     services.AddHostedService<TaskQueueWorker>();
                     services.AddHostedService<CommandHandlerWorker>();
                     // services.AddSingleHostedService(p => new ActorLoop(new TestActor(p)));
-                    services.RegisterActorPlugins();
+                    // services.RegisterActorPlugins();
                 })
                 .Build();
 
