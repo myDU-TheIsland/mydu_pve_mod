@@ -54,7 +54,7 @@ public abstract class HighTickModLoop : BackgroundService
         }
     }
 
-    public Task Tick(CancellationToken stoppingToken)
+    private Task Tick(CancellationToken stoppingToken)
     {
         if (stoppingToken.IsCancellationRequested) return Task.CompletedTask;
         
