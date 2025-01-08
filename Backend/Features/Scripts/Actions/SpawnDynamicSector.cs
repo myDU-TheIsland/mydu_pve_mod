@@ -32,13 +32,15 @@ public class SpawnDynamicSector(ScriptActionItem actionItem) : IScriptAction
         actionItem.Properties.Merge(context.Properties.ToDictionary());
         var props = actionItem.GetProperties<Properties>();
 
-        if (!context.TerritoryId.HasValue)
+        var territoryId = context.TerritoryId ?? actionItem.TerritoryId;
+        
+        if (!territoryId.HasValue)
         {
             logger.LogError("Missing Territory on Sector Instance Spawn");
             
             return ScriptActionResult.Failed();
         }
-        
+
         await sectorInstanceRepository.AddAsync(new SectorInstance
         {
             Name = props.Name,
@@ -50,7 +52,7 @@ public class SpawnDynamicSector(ScriptActionItem actionItem) : IScriptAction
             Id = Guid.NewGuid(),
             OnLoadScript = props.OnLoadScript,
             OnSectorEnterScript = props.OnSectorEnterScript,
-            TerritoryId = context.TerritoryId.Value,
+            TerritoryId = territoryId.Value,
             Properties = new SectorInstanceProperties
             {
                 Tags = props.Tags,
