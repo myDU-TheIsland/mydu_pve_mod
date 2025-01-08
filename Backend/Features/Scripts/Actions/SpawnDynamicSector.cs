@@ -44,7 +44,7 @@ public class SpawnDynamicSector(ScriptActionItem actionItem) : IScriptAction
         await sectorInstanceRepository.AddAsync(new SectorInstance
         {
             Name = props.Name,
-            Sector = (props.Position ?? context.Sector).GridSnap(SectorPoolManager.SectorGridSnap),
+            Sector = (props.Position ?? context.Sector).GridSnap(props.SectorSize),
             FactionId = context.FactionId ?? 1,
             PublishAt = props.PublishTimeSpan.HasValue ? DateTime.UtcNow + props.PublishTimeSpan : null,
             ExpiresAt = DateTime.UtcNow + props.ExpirationTimeSpan,
@@ -74,5 +74,6 @@ public class SpawnDynamicSector(ScriptActionItem actionItem) : IScriptAction
         [JsonProperty] public string[] Tags { get; set; } = [];
         [JsonProperty] public bool HasActiveMarker { get; set; }
         [JsonProperty] public string Name { get; set; } = string.Empty;
+        [JsonProperty] public double SectorSize { get; set; } = SectorPoolManager.SectorGridSnap;
     }
 }
