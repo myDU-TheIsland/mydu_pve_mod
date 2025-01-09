@@ -20,7 +20,7 @@ public class TestActor(IServiceProvider provider) : Actor
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        for (var i = 2; i <= 9; i++)
+        for (var i = 2; i <= 4; i++)
         {
             var duClientFactory = provider.GetRequiredService<IDuClientFactory>();
             var pi1 = LoginInformations.Impersonate($"PVE{i}",
