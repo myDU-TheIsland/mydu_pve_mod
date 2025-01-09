@@ -2,9 +2,9 @@ namespace Mod.DynamicEncounters.SDK;
 
 public abstract class Actor : IActor
 {
-    public int FramesPerSecond { get; set; } = 20;
-    public bool FixedStep { get; set; } = true;
-    public bool TickActive { get; set; } = true;
+    public virtual double FramesPerSecond { get; set; } = 20;
+    public virtual bool FixedStep { get; set; } = false;
+    public virtual bool TickActive { get; set; } = true;
 
     public virtual Task StartAsync(CancellationToken cancellationToken)
     {

@@ -16,18 +16,16 @@ public class TestActor(IServiceProvider provider) : Actor
 {
     private readonly List<Client> _clients = [];
 
+    public override double FramesPerSecond { get; set; } = 1 / 4d;
+
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        FramesPerSecond = 10;
-        
         for (var i = 2; i <= 4; i++)
         {
             var duClientFactory = provider.GetRequiredService<IDuClientFactory>();
-            var pi1 = LoginInformations.BotLogin(
+            var pi1 = LoginInformations.Impersonate($"PVE{i}",
                 $"PVE{i}",
-                $"PVE{i}",
-                "Test12345!!!"
-            );
+                "Test12345!!!");
 
             var client = await Client.FromFactory(duClientFactory, pi1, allowExising: true);
             _clients.Add(client);
@@ -36,11 +34,11 @@ public class TestActor(IServiceProvider provider) : Actor
         await base.StartAsync(cancellationToken);
     }
 
-    public override Task Tick(TimeSpan deltaTime, CancellationToken stoppingToken)
+    public override async Task Tick(TimeSpan deltaTime, CancellationToken stoppingToken)
     {
         foreach (var client in _clients)
         {
-            client.ImplementationClient.PlayerUpdate(new PlayerUpdate
+            await client.ImplementationClient.PlayerUpdate(new PlayerUpdate
             {
                 playerId = client.PlayerId,
                 position = new Vec3(),
@@ -48,7 +46,7 @@ public class TestActor(IServiceProvider provider) : Actor
                 time = TimePoint.Now(),
             }, stoppingToken);
         }
-        
-        return base.Tick(deltaTime, stoppingToken);
+
+        await Task.Yield();
     }
 }

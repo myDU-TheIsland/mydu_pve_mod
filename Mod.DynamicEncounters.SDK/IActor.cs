@@ -2,7 +2,7 @@
 
 public interface IActor
 {
-    int FramesPerSecond { get; }
+    double FramesPerSecond { get; }
     bool FixedStep { get; }
 
     Task StartAsync(CancellationToken cancellationToken);
