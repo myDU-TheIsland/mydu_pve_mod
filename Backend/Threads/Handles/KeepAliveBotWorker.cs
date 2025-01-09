@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using BotLib.Generated;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Helpers;
+using NQ;
 
 namespace Mod.DynamicEncounters.Threads.Handles;
 
-public class ReconnectBotWorker : BackgroundService
+public class KeepAliveBotWorker : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -19,7 +21,7 @@ public class ReconnectBotWorker : BackgroundService
                 var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, timeoutCts.Token);
 
                 await Tick(cts.Token);
-                await Task.Delay(TimeSpan.FromMilliseconds(100), stoppingToken);
+                await Task.Delay(TimeSpan.FromMilliseconds(2000), stoppingToken);
             }
             catch (Exception e)
             {
@@ -29,27 +31,19 @@ public class ReconnectBotWorker : BackgroundService
         }
     }
 
-    private async Task Tick(CancellationToken stoppingToken)
+    private static async Task Tick(CancellationToken stoppingToken)
     {
-        if (!ConstructBehaviorContextCache.IsBotDisconnected || stoppingToken.IsCancellationRequested)
+        if (ConstructBehaviorContextCache.IsBotDisconnected || stoppingToken.IsCancellationRequested)
         {
             return;
         }
 
-        var logger = ModBase.ServiceProvider.CreateLogger<ReconnectBotWorker>();
-
-        try
+        await ModBase.Bot.ImplementationClient.PlayerUpdate(new PlayerUpdate
         {
-            logger.LogWarning("Reconnecting Bot");
-
-            await ModBase.Bot.Reconnect();
-            ConstructBehaviorContextCache.RaiseBotReconnected();
-
-            logger.LogWarning("Reconnected Bot");
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Failed to Reconnect BOT");
-        }
+            playerId = ModBase.Bot.PlayerId,
+            position = new Vec3(),
+            rotation = Quat.Identity,
+            time = TimePoint.Now()
+        }, stoppingToken);
     }
 }

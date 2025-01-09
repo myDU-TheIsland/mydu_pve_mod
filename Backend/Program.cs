@@ -52,6 +52,7 @@ public static class Program
                     services.AddHostedService<SectorSpawnerWorker>();
                     services.AddHostedService<ExpirationNamesWorker>();
                     services.AddHostedService<CleanupWorker>();
+                    services.AddHostedService<KeepAliveBotWorker>();
                     services.AddHostedService<ReconnectBotWorker>();
                     services.AddHostedService<TaskQueueWorker>();
                     services.AddHostedService<CommandHandlerWorker>();
