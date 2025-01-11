@@ -28,7 +28,7 @@ public class LeashSkill(SkillItem skillItem) : BaseSkill(skillItem)
         if (iAmFar || targetIsFar)
         {
             context.SetOverrideTargetMovePosition(context.StartPosition.Value);
-            context.Effects.Activate<ReturningToSectorCooldown>(TimeSpan.FromMinutes(2));
+            context.Effects.Activate<ReturningToSectorCooldown>(TimeSpan.FromSeconds(30));
         }
         else if (!isReturningCooldown)
         {
