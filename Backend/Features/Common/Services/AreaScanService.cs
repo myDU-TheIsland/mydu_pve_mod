@@ -166,7 +166,12 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
             row.name,
             (ulong)row.id,
             row.distance,
-            row.position
+            new Vec3
+            {
+                x = row.position_x,
+                y = row.position_y,
+                z = row.position_z
+            }
         );
     }
 
@@ -180,6 +185,8 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
         public long id { get; set; }
         public string name { get; set; }
         public double distance { get; set; }
-        public Vec3 position { get; set; }
+        public double position_x { get; set; }
+        public double position_y { get; set; }
+        public double position_z { get; set; }
     }
 }
