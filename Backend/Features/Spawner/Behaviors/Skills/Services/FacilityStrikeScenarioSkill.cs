@@ -17,14 +17,14 @@ namespace Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Services;
 
 public class FacilityStrikeScenarioSkill(
     FacilityStrikeScenarioSkill.FacilityStrikeScenarioSkillItem skillItem,
-    ProduceItemsWhenSafeSkill produceItemsSkill
+    ProduceLootWhenSafeSkill produceLootSkill
 ) : BaseSkill(skillItem)
 {
     public FacilityStrikeState? State { get; set; }
 
     public override bool CanUse(BehaviorContext context)
     {
-        return (State is null or { Finished: false } || !produceItemsSkill.Finished) && base.CanUse(context);
+        return (State is null or { Finished: false } || !produceLootSkill.Finished) && base.CanUse(context);
     }
 
     public override bool ShouldUse(BehaviorContext context) =>
@@ -39,16 +39,16 @@ public class FacilityStrikeScenarioSkill(
         var constructStateService = context.Provider.GetRequiredService<IConstructStateService>();
 
         await LoadState(context, constructStateService);
-        if (produceItemsSkill.CanUse(context) && produceItemsSkill.ShouldUse(context))
+        if (produceLootSkill.CanUse(context) && produceLootSkill.ShouldUse(context))
         {
-            await produceItemsSkill.Use(context);
+            await produceLootSkill.Use(context);
         }
 
         var waves = skillItem.Waves.ToList();
         if (waves.Count < State!.CurrentWaveIndex + 1)
         {
             State.Finished = true;
-            if (produceItemsSkill.Finished)
+            if (produceLootSkill.Finished)
             {
                 await FinishScenario(context);
             }
@@ -119,7 +119,7 @@ public class FacilityStrikeScenarioSkill(
 
         return new FacilityStrikeScenarioSkill(
             facilityStrikeSkillItem,
-            ProduceItemsWhenSafeSkill.Create(jObj[nameof(FacilityStrikeScenarioSkillItem.Production)])
+            ProduceLootWhenSafeSkill.Create(jObj[nameof(FacilityStrikeScenarioSkillItem.Production)])
         );
     }
 
@@ -135,7 +135,7 @@ public class FacilityStrikeScenarioSkill(
 
     public class FacilityStrikeScenarioSkillItem : SkillItem
     {
-        [JsonProperty] public ProduceItemsWhenSafeSkill.ProduceItemsWhenSafeSkillItem? Production { get; set; }
+        [JsonProperty] public ProduceLootWhenSafeSkill.ProduceLootWhenSafe? Production { get; set; }
         [JsonProperty] public IEnumerable<WaveItem> Waves { get; set; } = [];
         [JsonProperty] public IEnumerable<ScriptActionItem> OnFinishedScript { get; set; } = [];
 
