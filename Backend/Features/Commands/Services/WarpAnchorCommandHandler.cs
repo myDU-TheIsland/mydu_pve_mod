@@ -41,7 +41,7 @@ public partial class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
 
         if (command == "@wac")
         {
-            await HandleCreateWarpAnchorCommand(instigatorPlayerId, command);
+            await HandleCreateWarpAnchorCommand(instigatorPlayerId);
         }
         else if (command.StartsWith("@wac ::pos{0,0,"))
         {
@@ -82,7 +82,7 @@ public partial class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
             var outcome = await warpAnchorService.CreateWarpAnchorForward(
                 new CreateWarpAnchorForwardCommand
                 {
-                    Distance = distance,
+                    Distance = distance + 12000D,
                     PlayerId = instigatorPlayerId
                 }
             );
@@ -103,7 +103,7 @@ public partial class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
         }
     }
 
-    private async Task HandleCreateWarpAnchorCommand(ulong instigatorPlayerId, string command)
+    private async Task HandleCreateWarpAnchorCommand(ulong instigatorPlayerId)
     {
         var warpAnchorModActionId = await _featureReaderService.GetIntValueAsync("WarpAnchorActionId", 3);
         var warpAnchorModName =
