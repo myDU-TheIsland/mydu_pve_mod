@@ -97,7 +97,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
 
         if (context.Position.HasValue)
         {
-            // var safeZones = await _safeZoneService.GetSafeZones();
+            var safeZones = await _safeZoneService.GetSafeZones();
             
             var spatialQuerySw = new StopWatch();
             spatialQuerySw.Start();
@@ -107,7 +107,7 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
                     context.Position.Value,
                     DistanceHelpers.OneSuInMeters * 8
                 ))
-                // .Where(c => safeZones.All(sz => !sz.IsPointInside(c.Position)))
+                .Where(c => !safeZones.Any(sz => sz.IsPointInside(c.Position)))
                 .ToList();
 
             await Task.WhenAll(radarContacts
