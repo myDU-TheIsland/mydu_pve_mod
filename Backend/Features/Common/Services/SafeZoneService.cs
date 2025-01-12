@@ -44,7 +44,9 @@ public class SafeZoneService(IServiceProvider provider) : ISafeZoneService
 
         var pvp = bank.GetBaseObject<PVPConfig>();
         var planetList = await sql.GetPlanetList();
-        var planetMap = planetList.ToDictionary(k => k.Name, v => v);
+        var planetMap = planetList
+            .DistinctBy(x => x.Name)
+            .ToDictionary(k => k.Name, v => v);
 
         var result = new List<ISafeZoneService.SafeZoneSphere>();
 
