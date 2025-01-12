@@ -30,7 +30,10 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
              SELECT 
                  C.id, 
                  C.name, 
-                 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance 
+                 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance,
+                 C.position_x,
+                 C.position_y,
+                 C.position_z
              FROM public.construct C
              INNER JOIN public.ownership O ON O.id = C.owner_entity_id
              LEFT JOIN mod_npc_construct_handle CH ON (CH.construct_id = C.id)
@@ -162,7 +165,8 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
         return new ScanContact(
             row.name,
             (ulong)row.id,
-            row.distance
+            row.distance,
+            row.position
         );
     }
 
@@ -176,5 +180,6 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
         public long id { get; set; }
         public string name { get; set; }
         public double distance { get; set; }
+        public Vec3 position { get; set; }
     }
 }
