@@ -88,13 +88,13 @@ public class ElementController : Controller
 
         if (children.Count == 0)
         {
-            if (item.BaseObject is EngineUnit engineUnit)
+            if (item.BaseObject is EngineDisplay engine)
             {
                 map.Add(new Dictionary<string, object>
                 {
                     { "Name", item.Name },
-                    { "FuelRate", engineUnit.fuelRate },
-                    { "MaxPower", engineUnit.maxPower },
+                    { "FuelRate", engine.fuelRate },
+                    { "MaxPower", engine.maxPower },
                 });
             }
 
@@ -103,7 +103,7 @@ public class ElementController : Controller
 
         foreach (var child in children)
         {
-            AddFuelTankItem(child, map);
+            AddEngineItem(child, map);
         }
     }
 
