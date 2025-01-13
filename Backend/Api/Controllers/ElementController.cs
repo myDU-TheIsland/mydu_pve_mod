@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Backend;
 using Backend.Database;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQ.Interfaces;
+using NQutils.Def;
 using NQutils.Sql;
 using Services;
 
@@ -17,6 +19,49 @@ namespace Mod.DynamicEncounters.Api.Controllers;
 [Route("element")]
 public class ElementController : Controller
 {
+    [HttpGet]
+    [Route("fueltank")]
+    public IActionResult GetFuelTanks()
+    {
+        var provider = ModBase.ServiceProvider;
+        var bank = provider.GetGameplayBank();
+
+        var fuelContainer = bank.GetDefinition<FuelContainer>();
+
+        var items = new List<Dictionary<string, object>>();
+        
+        AddItem(fuelContainer, items);
+
+        return Ok(items);
+    }
+
+    private void AddItem(IGameplayDefinition item, List<Dictionary<string, object>> map)
+    {
+        var children = item.GetChildren().ToList();
+
+        if (children.Count == 0)
+        {
+            if (item.BaseObject is FuelContainer fuelContainer)
+            {
+                map.Add(new Dictionary<string, object>
+                {
+                    { "id", item.Id },
+                    { "name", item.Name },
+                    { "maxVolume", fuelContainer.maxVolume },
+                    { "unitMass", fuelContainer.unitMass },
+                    { "scale", fuelContainer.scale },
+                });
+            }
+            
+            return;
+        }
+
+        foreach (var child in children)
+        {
+            AddItem(child, map);
+        }
+    }
+    
     [HttpGet]
     [Route("databank/construct/{constructId:long}/element/{elementId:long}")]
     public async Task<IActionResult> GetDataBankData(ulong constructId, ulong elementId)
