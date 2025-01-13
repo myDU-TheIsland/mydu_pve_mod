@@ -48,6 +48,6 @@ public class ProduceLootWhenSafeSkill(ProduceLootWhenSafeSkill.ProduceLootWhenSa
     
     public class ProduceLootWhenSafe : GiveTakeLootSkillItem
     {
-        [JsonProperty] public double AreScanRange { get; set; } = DistanceHelpers.OneSuInMeters * 8D;
+        [JsonProperty] public double AreScanRange { get; set; } = DistanceHelpers.OneSuInMeters * 3D;
     }
 }

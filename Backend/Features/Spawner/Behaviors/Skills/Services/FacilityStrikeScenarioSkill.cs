@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Extensions;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Data;
@@ -10,6 +11,7 @@ using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Mod.DynamicEncounters.Features.Spawner.Data;
+using Mod.DynamicEncounters.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -32,6 +34,9 @@ public class FacilityStrikeScenarioSkill(
 
     public override async Task Use(BehaviorContext context)
     {
+        var provider = context.Provider;
+        var position = context.Position ?? context.Sector;
+        
         context.Effects.Activate<UseCooldownEffect>(TimeSpan.FromSeconds(skillItem.CooldownSeconds));
 
         if (!skillItem.Waves.Any()) return;
@@ -61,6 +66,21 @@ public class FacilityStrikeScenarioSkill(
         var wave = waves[State!.CurrentWaveIndex];
 
         if (context.Effects.IsEffectActive<NextWaveCooldownEffect>()) return;
+
+        if (skillItem.NewWaveOnlyWhenClear)
+        {
+            var areaScanService = provider.GetRequiredService<IAreaScanService>();
+            var contacts = (await areaScanService.ScanForNpcConstructs(position, skillItem.AreScanRange))
+                .Select(x => x.ConstructId)
+                .ToHashSet();
+
+            contacts.Remove(context.ConstructId);
+
+            if (contacts.Count != 0) return;
+            
+            context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
+        }
+
         context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
         State.CurrentWaveIndex++;
 
@@ -138,6 +158,8 @@ public class FacilityStrikeScenarioSkill(
         [JsonProperty] public ProduceLootWhenSafeSkill.ProduceLootWhenSafe? Production { get; set; }
         [JsonProperty] public IEnumerable<WaveItem> Waves { get; set; } = [];
         [JsonProperty] public IEnumerable<ScriptActionItem> OnFinishedScript { get; set; } = [];
+        [JsonProperty] public double AreScanRange { get; set; } = DistanceHelpers.OneSuInMeters * 3D;
+        [JsonProperty] public bool NewWaveOnlyWhenClear { get; set; } = true;
 
         public class WaveItem
         {
