@@ -49,6 +49,7 @@ public class ElementController : Controller
                     { "name", item.Name },
                     { "maxVolume", fuelContainer.maxVolume },
                     { "unitMass", fuelContainer.unitMass },
+                    { "hitpoints", fuelContainer.hitpoints },
                     { "scale", fuelContainer.scale },
                 });
             }
