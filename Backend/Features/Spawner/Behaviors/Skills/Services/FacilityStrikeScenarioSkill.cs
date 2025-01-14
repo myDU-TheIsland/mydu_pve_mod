@@ -77,8 +77,12 @@ public class FacilityStrikeScenarioSkill(
             contacts.Remove(context.ConstructId);
 
             if (contacts.Count != 0) return;
-            
-            context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
+
+            if (!context.Effects.IsEffectActive<NextWaveCooldownEffect>())
+            {
+                context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
+                return;
+            }
         }
 
         context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
