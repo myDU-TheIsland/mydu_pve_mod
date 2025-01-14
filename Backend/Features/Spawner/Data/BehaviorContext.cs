@@ -377,7 +377,7 @@ public class BehaviorContext(
     {
         if (TargetLinearVelocity.Size() < MinVelocity)
         {
-            return MaxVelocity / 2;
+            return MaxVelocity / Prefab.DefinitionItem.Mods.Velocity.OutsideOptimalRange2XAlpha;
         }
 
         return Math.Clamp(
@@ -391,7 +391,7 @@ public class BehaviorContext(
     {
         if (TargetLinearVelocity.Size() < MinVelocity)
         {
-            return MaxVelocity / 4;
+            return MaxVelocity / Prefab.DefinitionItem.Mods.Velocity.OutsideOptimalRangeAlpha;
         }
 
         return Math.Clamp(
