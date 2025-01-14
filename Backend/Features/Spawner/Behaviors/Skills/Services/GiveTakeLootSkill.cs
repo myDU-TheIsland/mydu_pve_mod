@@ -96,8 +96,6 @@ public class GiveTakeLootSkill(GiveTakeLootSkill.GiveTakeLootSkillItem skillItem
                 MaxBudget = 1,
                 Tags = [],
                 Entries = lootBag.Entries
-                    .Select(x => new ItemBagData.ItemAndQuantity(x.ItemName, x.Quantity))
-                    .ToList()
             }));
 
         await stateService.PersistState(new ConstructStateItem
