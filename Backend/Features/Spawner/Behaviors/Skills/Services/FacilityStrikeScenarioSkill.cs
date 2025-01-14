@@ -23,6 +23,7 @@ public class FacilityStrikeScenarioSkill(
 ) : BaseSkill(skillItem)
 {
     public FacilityStrikeState? State { get; set; }
+    public bool ReadyForNextWave { get; set; }
 
     public override bool CanUse(BehaviorContext context)
     {
@@ -78,11 +79,17 @@ public class FacilityStrikeScenarioSkill(
 
             if (contacts.Count != 0) return;
             
-            context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
+            if (!ReadyForNextWave)
+            {
+                context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
+                ReadyForNextWave = true;
+                return;
+            }
         }
 
         context.Effects.Activate<NextWaveCooldownEffect>(TimeSpan.FromSeconds(wave.NextWaveCooldown));
         State.CurrentWaveIndex++;
+        ReadyForNextWave = false;
 
         await PersistState(context, constructStateService);
 
