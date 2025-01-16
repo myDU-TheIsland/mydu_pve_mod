@@ -78,7 +78,7 @@ public partial class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
                 return;
             }
 
-            const double su12KmDistance = 12D / DistanceHelpers.OneSuInMeters;
+            const double su12KmDistance = 12000D / DistanceHelpers.OneSuInMeters;
             
             var warpAnchorService = ModBase.ServiceProvider.GetRequiredService<IWarpAnchorService>();
             var outcome = await warpAnchorService.CreateWarpAnchorForward(
