@@ -77,12 +77,14 @@ public partial class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
                 await SendAlertForOutcome(instigatorPlayerId, CreateWarpAnchorOutcome.InvalidDistance());
                 return;
             }
+
+            const double su12KmDistance = 12D / DistanceHelpers.OneSuInMeters;
             
             var warpAnchorService = ModBase.ServiceProvider.GetRequiredService<IWarpAnchorService>();
             var outcome = await warpAnchorService.CreateWarpAnchorForward(
                 new CreateWarpAnchorForwardCommand
                 {
-                    Distance = distance + 12000D,
+                    Distance = distance + su12KmDistance,
                     PlayerId = instigatorPlayerId
                 }
             );
