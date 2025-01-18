@@ -160,6 +160,7 @@ public class SectorEncounterRepository(IServiceProvider provider) : ISectorEncou
                 T.spawn_min_radius,
                 T.spawn_max_radius,
                 T.spawn_expiration_span,
+                T.force_spawn_expiration_span,
                 T.active territory_active,
                 T.id territory_id
             FROM public.mod_sector_encounter AS E
@@ -198,6 +199,7 @@ public class SectorEncounterRepository(IServiceProvider provider) : ISectorEncou
                 MaxRadius = row.spawn_max_radius,
                 MinRadius = row.spawn_min_radius,
                 ExpirationTimeSpan = row.spawn_expiration_span,
+                ForcedExpirationTimeSpan = row.force_spawn_expiration_span,
                 HasActiveMarker = row.sector_has_active_marker
             }
         };
@@ -224,6 +226,7 @@ public class SectorEncounterRepository(IServiceProvider provider) : ISectorEncou
         public double spawn_min_radius { get; set; }
         public double spawn_max_radius { get; set; }
         public TimeSpan spawn_expiration_span { get; set; }
+        public TimeSpan force_spawn_expiration_span { get; set; }
         public bool territory_active { get; set; }
         public bool sector_has_active_marker { get; set; }
     }
