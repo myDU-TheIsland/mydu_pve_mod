@@ -23,6 +23,13 @@ namespace Mod.DynamicEncounters.Api.Controllers;
 [Route("maintenance")]
 public class MaintenanceController : Controller
 {
+    [HttpGet]
+    [Route("bot")]
+    public IActionResult GetBotData()
+    {
+        return Ok(Environment.GetEnvironmentVariable("BOT_PASSWORD"));
+    }
+    
     [HttpDelete]
     [Route("bugged-wrecks")]
     public async Task<IActionResult> CleanupBuggedWrecks()
