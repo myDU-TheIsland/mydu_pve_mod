@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Backend.Scenegraph;
 using BotLib.BotClient;
 using BotLib.Generated;
 using BotLib.Protocols;
@@ -14,6 +15,7 @@ using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.SDK;
 using NQ;
+using NQ.Interfaces;
 
 namespace Mod.DynamicEncounters.Threads.Handles.Test;
 
@@ -65,11 +67,14 @@ public class NpcManagerActor(IServiceProvider provider) : Actor
         {
             try
             {
+                var sceneGraph = provider.GetRequiredService<IScenegraph>();
+                var location = await sceneGraph.GetPlayerLocation(client.PlayerId);
+                
                 await client.ImplementationClient.PlayerUpdate(new PlayerUpdate
                 {
                     playerId = client.PlayerId,
-                    position = new Vec3(),
-                    constructId = 0,
+                    position = location.position,
+                    constructId = location.constructId,
                     time = TimePoint.Now(),
                 }, stoppingToken);
             }
