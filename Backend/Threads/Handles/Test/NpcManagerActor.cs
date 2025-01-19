@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.SDK;
+using Newtonsoft.Json;
 using NQ;
 using NQ.Visibility;
 
@@ -70,6 +71,12 @@ public class NpcManagerActor : Actor
         var i = 0;
         foreach (var client in _clients)
         {
+            var properties = new Properties();
+            if (PropertiesMap.TryGetValue(client.PlayerId, out var props))
+            {
+                properties = props;
+            }
+            
             try
             {
                 var sceneGraph = _provider.GetRequiredService<IScenegraph>();
@@ -81,7 +88,7 @@ public class NpcManagerActor : Actor
                     position = location.position,
                     constructId = location.constructId,
                     time = TimePoint.Now(),
-                    animationState = 2,
+                    animationState = properties.AnimationState,
                 };
 
                 await _provider.GetRequiredService<Internal.InternalClient>()
@@ -105,6 +112,6 @@ public class NpcManagerActor : Actor
 
     public class Properties
     {
-        [ThirdParty.Json.LitJson.JsonProperty] private ulong AnimationState { get; set; }
+        [JsonProperty] public ulong AnimationState { get; set; }
     }
 }
