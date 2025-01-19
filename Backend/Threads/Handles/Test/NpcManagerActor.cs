@@ -15,12 +15,13 @@ using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.SDK;
 using NQ;
-using NQ.Interfaces;
 
 namespace Mod.DynamicEncounters.Threads.Handles.Test;
 
-public class NpcManagerActor(IServiceProvider provider) : Actor
+public class NpcManagerActor : Actor
 {
+    private readonly IServiceProvider _provider = ModBase.ServiceProvider; 
+    
     private readonly List<string> _users = [];
     private readonly List<Client> _clients = [];
 
@@ -28,19 +29,19 @@ public class NpcManagerActor(IServiceProvider provider) : Actor
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        var factory = provider.GetRequiredService<IPostgresConnectionFactory>();
+        var factory = _provider.GetRequiredService<IPostgresConnectionFactory>();
         using var db = factory.Create();
         db.Open();
         
         var result = (await db.QueryAsync("SELECT * FROM mod_npc_def WHERE active")).ToList();
 
-        var logger = provider.CreateLogger<NpcManagerActor>();
+        var logger = _provider.CreateLogger<NpcManagerActor>();
 
         foreach (var item in result)
         {
             try
             {
-                var duClientFactory = provider.GetRequiredService<IDuClientFactory>();
+                var duClientFactory = _provider.GetRequiredService<IDuClientFactory>();
                 var pi1 = LoginInformations.Impersonate(item.name,
                     item.name,
                     Environment.GetEnvironmentVariable("BOT_PASSWORD")!);
@@ -60,14 +61,14 @@ public class NpcManagerActor(IServiceProvider provider) : Actor
 
     public override async Task Tick(TimeSpan deltaTime, CancellationToken stoppingToken)
     {
-        var logger = provider.CreateLogger<NpcManagerActor>();
+        var logger = _provider.CreateLogger<NpcManagerActor>();
         
         var i = 0;
         foreach (var client in _clients)
         {
             try
             {
-                var sceneGraph = provider.GetRequiredService<IScenegraph>();
+                var sceneGraph = _provider.GetRequiredService<IScenegraph>();
                 var location = await sceneGraph.GetPlayerLocation(client.PlayerId);
                 
                 await client.ImplementationClient.PlayerUpdate(new PlayerUpdate

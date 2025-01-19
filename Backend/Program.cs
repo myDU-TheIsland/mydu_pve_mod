@@ -56,7 +56,7 @@ public static class Program
                     services.AddHostedService<ReconnectBotWorker>();
                     services.AddHostedService<TaskQueueWorker>();
                     services.AddHostedService<CommandHandlerWorker>();
-                    services.AddSingleHostedService(p => new ActorLoop(new NpcManagerActor(p)));
+                    services.AddSingleHostedService(p => new ActorLoop(new NpcManagerActor()));
                     // services.RegisterActorPlugins();
                 })
                 .Build();
