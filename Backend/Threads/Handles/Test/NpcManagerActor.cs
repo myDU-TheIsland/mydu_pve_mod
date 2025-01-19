@@ -78,6 +78,7 @@ public class NpcManagerActor : Actor
                     position = location.position,
                     constructId = location.constructId,
                     time = TimePoint.Now(),
+                    animationState = 2,
                 };
                 
                 // await client.ImplementationClient.PlayerUpdate(pu, stoppingToken);
@@ -87,7 +88,7 @@ public class NpcManagerActor : Actor
                     {
                         Event = NQutils.Serialization.Grpc.MakeEvent(new NQutils.Messages.PlayerUpdate(pu)),
                         Location = location,
-                        VisibilityDistance = 1000
+                        VisibilityDistance = 1000,
                     }, cancellationToken: stoppingToken);
             }
             catch (Exception e)
