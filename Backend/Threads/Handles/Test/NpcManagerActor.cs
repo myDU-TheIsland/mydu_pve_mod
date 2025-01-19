@@ -30,7 +30,7 @@ public class NpcManagerActor(IServiceProvider provider) : Actor
         using var db = factory.Create();
         db.Open();
         
-        var result = (await db.QueryAsync("SELECT * FROM mod_npc_def")).ToList();
+        var result = (await db.QueryAsync("SELECT * FROM mod_npc_def WHERE active")).ToList();
 
         var logger = provider.CreateLogger<NpcManagerActor>();
 

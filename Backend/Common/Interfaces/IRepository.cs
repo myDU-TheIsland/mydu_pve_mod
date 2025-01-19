@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Mod.DynamicEncounters.Common.Repository;
+namespace Mod.DynamicEncounters.Common.Interfaces;
 
 public interface IRepository<T>
 {
