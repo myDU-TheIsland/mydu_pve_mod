@@ -28,7 +28,7 @@ public class NpcManagerActor : Actor
     private readonly List<Client> _clients = [];
     public static ConcurrentDictionary<ulong, Properties> PropertiesMap { get; set; } = [];
 
-    public override double FramesPerSecond { get; set; } = 1 / 4d;
+    public override double FramesPerSecond { get; set; } = 10;
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
