@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -20,10 +21,11 @@ namespace Mod.DynamicEncounters.Threads.Handles.Test;
 
 public class NpcManagerActor : Actor
 {
-    private readonly IServiceProvider _provider = ModBase.ServiceProvider; 
-    
+    private readonly IServiceProvider _provider = ModBase.ServiceProvider;
+
     private readonly List<string> _users = [];
     private readonly List<Client> _clients = [];
+    public static ConcurrentDictionary<ulong, Properties> PropertiesMap { get; set; } = [];
 
     public override double FramesPerSecond { get; set; } = 1 / 4d;
 
@@ -32,37 +34,39 @@ public class NpcManagerActor : Actor
         var factory = _provider.GetRequiredService<IPostgresConnectionFactory>();
         using var db = factory.Create();
         db.Open();
-        
+
         var result = (await db.QueryAsync("SELECT * FROM mod_npc_def WHERE active")).ToList();
 
         var logger = _provider.CreateLogger<NpcManagerActor>();
 
         foreach (var item in result)
         {
+            string playerName = item.name;
+
             try
             {
                 var duClientFactory = _provider.GetRequiredService<IDuClientFactory>();
-                var pi1 = LoginInformations.Impersonate(item.name,
-                    item.name,
+                var pi1 = LoginInformations.Impersonate(playerName,
+                    playerName,
                     Environment.GetEnvironmentVariable("BOT_PASSWORD")!);
 
                 var client = await Client.FromFactory(duClientFactory, pi1, allowExising: true);
                 _clients.Add(client);
-                _users.Add(item.name);
+                _users.Add(playerName);
             }
             catch (Exception e)
             {
                 logger.LogError(e, "Failed to auth to {User}", item.name as string);
             }
         }
-        
+
         await base.StartAsync(cancellationToken);
     }
 
     public override async Task Tick(TimeSpan deltaTime, CancellationToken stoppingToken)
     {
         var logger = _provider.CreateLogger<NpcManagerActor>();
-        
+
         var i = 0;
         foreach (var client in _clients)
         {
@@ -79,8 +83,6 @@ public class NpcManagerActor : Actor
                     time = TimePoint.Now(),
                     animationState = 2,
                 };
-                
-                // await client.ImplementationClient.PlayerUpdate(pu, stoppingToken);
 
                 await _provider.GetRequiredService<Internal.InternalClient>()
                     .PublishGenericEventAsync(new EventLocation
@@ -99,5 +101,10 @@ public class NpcManagerActor : Actor
         }
 
         await Task.Yield();
+    }
+
+    public class Properties
+    {
+        [ThirdParty.Json.LitJson.JsonProperty] private ulong AnimationState { get; set; }
     }
 }

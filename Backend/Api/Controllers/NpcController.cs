@@ -10,6 +10,7 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Extensions;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
+using Mod.DynamicEncounters.Threads.Handles.Test;
 using NQ;
 using Swashbuckle.AspNetCore.Annotations;
 using NameSanitationHelper = Mod.DynamicEncounters.Common.Helpers.NameSanitationHelper;
@@ -24,6 +25,18 @@ public class NpcController : Controller
 
     private readonly AddNpcRequestValidator _validator = new();
 
+    [HttpPost]
+    [Route("prop/{playerId:long}")]
+    public IActionResult UpdateProperties(ulong playerId, [FromBody] NpcManagerActor.Properties req)
+    {
+        if (!NpcManagerActor.PropertiesMap.TryAdd(playerId, req))
+        {
+            NpcManagerActor.PropertiesMap[playerId] = req;
+        }
+        
+        return Ok();
+    }
+    
     [HttpPost]
     [Route("delete-by-sector")]
     public async Task<IActionResult> DeleteConstructsBySector([FromBody] DeleteNpcsOnAreaRequest request)
