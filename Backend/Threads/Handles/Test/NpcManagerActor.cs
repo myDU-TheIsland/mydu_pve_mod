@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Backend.Scenegraph;
 using BotLib.BotClient;
-using BotLib.Generated;
 using BotLib.Protocols;
 using BotLib.Protocols.Queuing;
 using Dapper;
