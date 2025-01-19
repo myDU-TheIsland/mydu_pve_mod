@@ -15,6 +15,7 @@ using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Mod.DynamicEncounters.SDK;
 using NQ;
+using NQ.Visibility;
 
 namespace Mod.DynamicEncounters.Threads.Handles.Test;
 
@@ -70,14 +71,24 @@ public class NpcManagerActor : Actor
             {
                 var sceneGraph = _provider.GetRequiredService<IScenegraph>();
                 var location = await sceneGraph.GetPlayerLocation(client.PlayerId);
-                
-                await client.ImplementationClient.PlayerUpdate(new PlayerUpdate
+
+                var pu = new PlayerUpdate
                 {
                     playerId = client.PlayerId,
                     position = location.position,
                     constructId = location.constructId,
                     time = TimePoint.Now(),
-                }, stoppingToken);
+                };
+                
+                // await client.ImplementationClient.PlayerUpdate(pu, stoppingToken);
+
+                await _provider.GetRequiredService<Internal.InternalClient>()
+                    .PublishGenericEventAsync(new EventLocation
+                    {
+                        Event = NQutils.Serialization.Grpc.MakeEvent(new NQutils.Messages.PlayerUpdate(pu)),
+                        Location = location,
+                        VisibilityDistance = 1000
+                    }, cancellationToken: stoppingToken);
             }
             catch (Exception e)
             {
