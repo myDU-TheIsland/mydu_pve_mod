@@ -18,7 +18,6 @@ using Mod.DynamicEncounters.SDK;
 using Newtonsoft.Json;
 using NQ;
 using NQ.Visibility;
-using Vec3 = NQ.Vec3;
 
 namespace Mod.DynamicEncounters.Threads.Handles.Test;
 
@@ -78,7 +77,7 @@ public class NpcManagerActor : Actor
             {
                 properties = props;
             }
-
+            
             try
             {
                 var sceneGraph = _provider.GetRequiredService<IScenegraph>();
@@ -92,36 +91,17 @@ public class NpcManagerActor : Actor
                     time = TimePoint.Now(),
                     animationState = properties.AnimationState,
                 };
+                
+                var taskClientUpdate = client.ImplementationClient.PlayerUpdate(pu, stoppingToken);
+                var taskEvent =  _provider.GetRequiredService<Internal.InternalClient>()
+                    .PublishGenericEventAsync(new EventLocation
+                    {
+                        Event = NQutils.Serialization.Grpc.MakeEvent(new NQutils.Messages.PlayerUpdate(pu)),
+                        Location = location,
+                        VisibilityDistance = 1000,
+                    }, cancellationToken: stoppingToken).ResponseAsync;
 
-                // await client.ImplementationClient.PlayerUpdate(pu, stoppingToken);
-                
-                var internalClient = _provider.GetRequiredService<Internal.InternalClient>();
-                var taskEvent = internalClient.PublishGenericEventAsync(new EventLocation
-                {
-                    Event = NQutils.Serialization.Grpc.MakeEvent(new NQutils.Messages.PlayerUpdate(pu)),
-                    Location = location,
-                    VisibilityDistance = 1000,
-                }, cancellationToken: stoppingToken).ResponseAsync;
-
-                location.position += new Vec3 { x = 1 };
-                
-                var taskEvent2 = internalClient.PublishGenericEventAsync(new EventLocation
-                {
-                    Event = NQutils.Serialization.Grpc.MakeEvent(new NQutils.Messages.PlayerUpdate(pu)),
-                    Location = location,
-                    VisibilityDistance = 1000,
-                }, cancellationToken: stoppingToken).ResponseAsync;
-                
-                location.position += new Vec3 { y = 1 };
-                
-                var taskEvent3 = internalClient.PublishGenericEventAsync(new EventLocation
-                {
-                    Event = NQutils.Serialization.Grpc.MakeEvent(new NQutils.Messages.PlayerUpdate(pu)),
-                    Location = location,
-                    VisibilityDistance = 1000,
-                }, cancellationToken: stoppingToken).ResponseAsync;
-
-                await Task.WhenAll(taskEvent, taskEvent2, taskEvent3);
+                await Task.WhenAll(taskClientUpdate, taskEvent);
             }
             catch (Exception e)
             {
