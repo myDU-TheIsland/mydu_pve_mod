@@ -36,7 +36,7 @@ public class OrePriceRepository(IServiceProvider provider) : IOrePriceRepository
             		AND update_date < CURRENT_DATE + INTERVAL '1 day'
             		AND completion_date IS NOT NULL
             	GROUP BY I.name
-            );
+            ) as Base;
             """
         );
 
