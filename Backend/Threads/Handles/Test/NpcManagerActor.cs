@@ -93,7 +93,8 @@ public class NpcManagerActor : Actor
                     animationState = properties.AnimationState,
                 };
 
-                var taskClientUpdate = client.ImplementationClient.PlayerUpdate(pu, stoppingToken);
+                // await client.ImplementationClient.PlayerUpdate(pu, stoppingToken);
+                
                 var internalClient = _provider.GetRequiredService<Internal.InternalClient>();
                 var taskEvent = internalClient.PublishGenericEventAsync(new EventLocation
                 {
@@ -120,7 +121,7 @@ public class NpcManagerActor : Actor
                     VisibilityDistance = 1000,
                 }, cancellationToken: stoppingToken).ResponseAsync;
 
-                await Task.WhenAll(taskClientUpdate, taskEvent, taskEvent2, taskEvent3);
+                await Task.WhenAll(taskEvent, taskEvent2, taskEvent3);
             }
             catch (Exception e)
             {
