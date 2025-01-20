@@ -42,9 +42,15 @@ public class OrePriceRepository(IServiceProvider provider) : IOrePriceRepository
         
         foreach (var row in rows)
         {
-            var quanta = new Quanta((long)row.price);
+            var marketPrice = (long)row.price;
+            
+            var quanta = new Quanta(marketPrice);
             if (!orePrices.TryAdd(row.name, quanta))
             {
+                var orePrice = orePrices[row.name].Value;
+                var clampedPrice = Math.Clamp(marketPrice, orePrice, orePrice * 3);
+                quanta = new Quanta(clampedPrice);
+                
                 orePrices[row.name] = quanta;
             }
         }
