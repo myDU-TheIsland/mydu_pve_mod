@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Backend.Scenegraph;
 using BotLib.BotClient;
+using BotLib.Generated;
 using BotLib.Protocols;
 using BotLib.Protocols.Queuing;
 using Dapper;
@@ -90,14 +91,17 @@ public class NpcManagerActor : Actor
                     time = TimePoint.Now(),
                     animationState = properties.AnimationState,
                 };
-
-                await _provider.GetRequiredService<Internal.InternalClient>()
+                
+                var taskClientUpdate = client.ImplementationClient.PlayerUpdate(pu, stoppingToken);
+                var taskEvent =  _provider.GetRequiredService<Internal.InternalClient>()
                     .PublishGenericEventAsync(new EventLocation
                     {
                         Event = NQutils.Serialization.Grpc.MakeEvent(new NQutils.Messages.PlayerUpdate(pu)),
                         Location = location,
                         VisibilityDistance = 1000,
-                    }, cancellationToken: stoppingToken);
+                    }, cancellationToken: stoppingToken).ResponseAsync;
+
+                await Task.WhenAll(taskClientUpdate, taskEvent);
             }
             catch (Exception e)
             {
