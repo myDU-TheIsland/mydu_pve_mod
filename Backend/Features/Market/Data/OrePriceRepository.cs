@@ -20,17 +20,23 @@ public class OrePriceRepository(IServiceProvider provider) : IOrePriceRepository
 
         var rows = await db.QueryAsync<DbRow>(
             """
-            SELECT
-                I.name,
-                TRUNC(AVG(price)) AS price
-            FROM public.market_order MO
-            INNER JOIN item_definition I ON (I.id = MO.item_type_id)
-            WHERE 
-                parent_id IN (1240631464, 1240631465, 1240631466, 1240631467, 1240631468)
-                AND update_date >= CURRENT_DATE - INTERVAL '30 days'
-                AND update_date < CURRENT_DATE + INTERVAL '1 day'
-                AND completion_date IS NOT NULL
-            GROUP BY I.name;
+            SELECT 
+            	name,
+            	CEIL(price / qt) as price
+            FROM (
+            	SELECT
+            		I.name,
+            		AVG(ABS(original_buy_quantity)) qt,
+            		TRUNC(AVG(price * ABS(original_buy_quantity))) AS price
+            	FROM public.market_order MO
+            	INNER JOIN item_definition I ON (I.id = MO.item_type_id)
+            	WHERE 
+            		parent_id IN (1240631464, 1240631465, 1240631466, 1240631467, 1240631468)
+            		AND update_date >= CURRENT_DATE - INTERVAL '30 days'
+            		AND update_date < CURRENT_DATE + INTERVAL '1 day'
+            		AND completion_date IS NOT NULL
+            	GROUP BY I.name
+            );
             """
         );
 
