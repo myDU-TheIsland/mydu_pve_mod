@@ -29,6 +29,7 @@ public class OrePriceRepository(IServiceProvider provider) : IOrePriceRepository
                 parent_id IN (1240631464, 1240631465, 1240631466, 1240631467, 1240631468)
                 AND update_date >= CURRENT_DATE - INTERVAL '30 days'
                 AND update_date < CURRENT_DATE + INTERVAL '1 day'
+                AND completion_date IS NOT NULL
             GROUP BY I.name;
             """
         );
@@ -48,7 +49,7 @@ public class OrePriceRepository(IServiceProvider provider) : IOrePriceRepository
             if (!orePrices.TryAdd(row.name, quanta))
             {
                 var orePrice = orePrices[row.name].Value;
-                var clampedPrice = Math.Clamp(marketPrice, orePrice, orePrice * 3);
+                var clampedPrice = Math.Clamp(marketPrice, orePrice, orePrice * 4);
                 quanta = new Quanta(clampedPrice);
                 
                 orePrices[row.name] = quanta;
