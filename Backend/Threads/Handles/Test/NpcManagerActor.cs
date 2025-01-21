@@ -18,6 +18,7 @@ using Mod.DynamicEncounters.SDK;
 using Newtonsoft.Json;
 using NQ;
 using NQ.Visibility;
+using NQutils.Exceptions;
 
 namespace Mod.DynamicEncounters.Threads.Handles.Test;
 
@@ -27,17 +28,15 @@ public class NpcManagerActor : Actor
 
     private readonly List<string> _users = [];
     private readonly List<Client> _clients = [];
+    private readonly HashSet<ulong> _disconnected = [];
+    private readonly Dictionary<ulong, string> _playerMap = [];
     public static ConcurrentDictionary<ulong, Properties> PropertiesMap { get; set; } = [];
-
+    
     public override double FramesPerSecond { get; set; } = 10;
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
-        var factory = _provider.GetRequiredService<IPostgresConnectionFactory>();
-        using var db = factory.Create();
-        db.Open();
-
-        var result = (await db.QueryAsync("SELECT * FROM mod_npc_def WHERE active")).ToList();
+        var result = await GetNpcs();
 
         var logger = _provider.CreateLogger<NpcManagerActor>();
 
@@ -55,6 +54,7 @@ public class NpcManagerActor : Actor
                 var client = await Client.FromFactory(duClientFactory, pi1, allowExising: true);
                 _clients.Add(client);
                 _users.Add(playerName);
+                _playerMap.TryAdd(client.PlayerId, playerName);
             }
             catch (Exception e)
             {
@@ -77,7 +77,7 @@ public class NpcManagerActor : Actor
             {
                 properties = props;
             }
-            
+
             try
             {
                 var sceneGraph = _provider.GetRequiredService<IScenegraph>();
@@ -91,9 +91,9 @@ public class NpcManagerActor : Actor
                     time = TimePoint.Now(),
                     animationState = properties.AnimationState,
                 };
-                
+
                 var taskClientUpdate = client.ImplementationClient.PlayerUpdate(pu, stoppingToken);
-                var taskEvent =  _provider.GetRequiredService<Internal.InternalClient>()
+                var taskEvent = _provider.GetRequiredService<Internal.InternalClient>()
                     .PublishGenericEventAsync(new EventLocation
                     {
                         Event = NQutils.Serialization.Grpc.MakeEvent(new NQutils.Messages.PlayerUpdate(pu)),
@@ -103,6 +103,11 @@ public class NpcManagerActor : Actor
 
                 await Task.WhenAll(taskClientUpdate, taskEvent);
             }
+            catch (BusinessException bex)
+            {
+                logger.LogError(bex, "NPC Business Exception: {User} - {Message}", _users[i], bex.Message);
+                _disconnected.Add(client.PlayerId);
+            }
             catch (Exception e)
             {
                 logger.LogError(e, "Failed to update pos of {User}", _users[i]);
@@ -111,7 +116,45 @@ public class NpcManagerActor : Actor
             i++;
         }
 
+        foreach (var dcPlayerId in _disconnected)
+        {
+            if (!_playerMap.TryGetValue(dcPlayerId, out var dcPlayerName))
+            {
+                logger.LogError("Can't find data on map for {Id}", dcPlayerId);
+                continue;
+            }
+
+            var client = await ConnectPlayer(dcPlayerName);
+
+            var clients = _clients.Where(x => x.PlayerId != dcPlayerId)
+                .ToList();
+            clients.Add(client);
+            _disconnected.Remove(dcPlayerId);
+
+            _clients.Clear();
+            _clients.AddRange(clients);
+        }
+
         await Task.Yield();
+    }
+
+    private async Task<Client> ConnectPlayer(string dcPlayerName)
+    {
+        var duClientFactory = _provider.GetRequiredService<IDuClientFactory>();
+        var pi1 = LoginInformations.Impersonate(dcPlayerName,
+            dcPlayerName,
+            Environment.GetEnvironmentVariable("BOT_PASSWORD")!);
+
+        return await Client.FromFactory(duClientFactory, pi1, allowExising: true);
+    }
+
+    private async Task<List<dynamic>> GetNpcs()
+    {
+        var factory = _provider.GetRequiredService<IPostgresConnectionFactory>();
+        using var db = factory.Create();
+        db.Open();
+
+        return (await db.QueryAsync("SELECT * FROM mod_npc_def WHERE active")).ToList();
     }
 
     public class Properties

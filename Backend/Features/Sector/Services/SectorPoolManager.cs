@@ -13,6 +13,7 @@ using Mod.DynamicEncounters.Features.Events.Data;
 using Mod.DynamicEncounters.Features.Events.Interfaces;
 using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
+using Mod.DynamicEncounters.Features.Scripts.Actions.Extensions;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Data;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
@@ -228,6 +229,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
             }
 
             await _constructHandleManager.CleanupConstructHandlesInSectorAsync(sector.Sector);
+            await DeleteNPCsBySector(sector.Sector);
             await Task.Delay(200);
         }
 
@@ -236,6 +238,22 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
         _logger.LogInformation("Executed Sector Cleanup");
         StatsRecorder.Record("ExecuteSectorCleanup", sw.ElapsedMilliseconds);
+    }
+
+    private async Task DeleteNPCsBySector(Vec3 sector)
+    {
+        var areaScanService = serviceProvider.GetRequiredService<IAreaScanService>();
+        var contacts = await areaScanService.ScanForNpcConstructs(sector,
+            DistanceHelpers.OneSuInMeters * 10, 50);
+
+        foreach (var contact in contacts)
+        {
+            await serviceProvider.GetScriptAction(new ScriptActionItem
+            {
+                Type = "delete",
+                ConstructId = contact.ConstructId
+            }).ExecuteAsync(new ScriptContext(serviceProvider, 1, [], new Vec3(), null));
+        }
     }
 
     public async Task SetExpirationFromNow(Vec3 sector, TimeSpan span)
@@ -441,10 +459,5 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 _logger.LogError(e, "Failed to update expiration name of {Construct}", item.ConstructId);
             }
         }
-    }
-
-    private Task ExpireSector(SectorInstance instance)
-    {
-        return _sectorInstanceRepository.DeleteAsync(instance.Id);
     }
 }
