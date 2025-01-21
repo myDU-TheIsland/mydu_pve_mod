@@ -27,38 +27,25 @@ public class NpcManagerActor : Actor
     private readonly IServiceProvider _provider = ModBase.ServiceProvider;
 
     private readonly List<string> _users = [];
-    private readonly List<Client> _clients = [];
-    private readonly HashSet<ulong> _disconnected = [];
-    private readonly Dictionary<ulong, string> _playerMap = [];
+    private static readonly ConcurrentDictionary<string, NpcDefinitionItem> NpcDefinitionItems = [];
+    private static readonly ConcurrentDictionary<string, Client> Clients = [];
+    private static readonly ConcurrentDictionary<string, bool> Disconnected = [];
     public static ConcurrentDictionary<ulong, Properties> PropertiesMap { get; set; } = [];
-    
+
     public override double FramesPerSecond { get; set; } = 10;
 
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         var result = await GetNpcs();
 
-        var logger = _provider.CreateLogger<NpcManagerActor>();
-
         foreach (var item in result)
         {
-            string playerName = item.name;
+            var playerName = item.Name;
+            NpcDefinitionItems.TryAdd(playerName, item);
 
-            try
+            if (item.ShouldConnect(DateTime.UtcNow))
             {
-                var duClientFactory = _provider.GetRequiredService<IDuClientFactory>();
-                var pi1 = LoginInformations.Impersonate(playerName,
-                    playerName,
-                    Environment.GetEnvironmentVariable("BOT_PASSWORD")!);
-
-                var client = await Client.FromFactory(duClientFactory, pi1, allowExising: true);
-                _clients.Add(client);
-                _users.Add(playerName);
-                _playerMap.TryAdd(client.PlayerId, playerName);
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "Failed to auth to {User}", item.name as string);
+                Disconnected.TryAdd(playerName, true);
             }
         }
 
@@ -70,7 +57,7 @@ public class NpcManagerActor : Actor
         var logger = _provider.CreateLogger<NpcManagerActor>();
 
         var i = 0;
-        foreach (var client in _clients)
+        foreach (var (playerName, client) in Clients)
         {
             var properties = new Properties();
             if (PropertiesMap.TryGetValue(client.PlayerId, out var props))
@@ -106,60 +93,141 @@ public class NpcManagerActor : Actor
             catch (BusinessException bex)
             {
                 logger.LogError(bex, "NPC Business Exception: {User} - {Message}", _users[i], bex.Message);
-                _disconnected.Add(client.PlayerId);
+                Disconnected.TryAdd(playerName, true);
             }
             catch (Exception e)
             {
                 logger.LogError(e, "Failed to update pos of {User}", _users[i]);
-                _disconnected.Add(client.PlayerId);
+                Disconnected.TryAdd(playerName, true);
             }
 
             i++;
         }
 
-        foreach (var dcPlayerId in _disconnected)
+        foreach (var (dcPlayerName, _) in Disconnected)
         {
-            if (!_playerMap.TryGetValue(dcPlayerId, out var dcPlayerName))
+            if (NpcDefinitionItems.TryGetValue(dcPlayerName, out var item) && item.ShouldConnect(DateTime.UtcNow))
             {
-                logger.LogError("Can't find data on map for {Id}", dcPlayerId);
-                continue;
+                await ConnectPlayer(dcPlayerName);
             }
+        }
+        
+        foreach (var item in NpcDefinitionItems.Values)
+        {
+            if (item.ShouldConnect(DateTime.UtcNow))
+            {
+                if (!Clients.TryGetValue(item.Name, out _))
+                {
+                    Disconnected.TryAdd(item.Name, true);
+                }
+            }
+        }
 
-            var client = await ConnectPlayer(dcPlayerName);
-
-            var clients = _clients.Where(x => x.PlayerId != dcPlayerId)
-                .ToList();
-            clients.Add(client);
-            _disconnected.Remove(dcPlayerId);
-
-            _clients.Clear();
-            _clients.AddRange(clients);
+        foreach (var item in NpcDefinitionItems.Values)
+        {
+            if (item.ShouldDisconnect(DateTime.UtcNow))
+            {
+                if (Clients.TryGetValue(item.Name, out var client))
+                {
+                    await client.Disconnect();
+                    Disconnected.TryRemove(item.Name, out _);
+                }
+            }
         }
 
         await Task.Yield();
     }
 
-    private async Task<Client> ConnectPlayer(string dcPlayerName)
+    public static async Task RemoveNpc(string name)
+    {
+        if (Clients.TryRemove(name, out var client))
+        {
+            await client.Disconnect();
+            Disconnected.TryRemove(name, out _);
+        }
+    }
+
+    public static Task AddNpc(string name)
+    {
+        Disconnected.TryAdd(name, true);
+        return Task.CompletedTask;
+    }
+
+    private async Task ConnectPlayer(string dcPlayerName)
     {
         var duClientFactory = _provider.GetRequiredService<IDuClientFactory>();
         var pi1 = LoginInformations.Impersonate(dcPlayerName,
             dcPlayerName,
             Environment.GetEnvironmentVariable("BOT_PASSWORD")!);
 
-        return await Client.FromFactory(duClientFactory, pi1, allowExising: true);
+        var client = await Client.FromFactory(duClientFactory, pi1, allowExising: true);
+
+        if (!Clients.TryAdd(dcPlayerName, client))
+        {
+            Clients[dcPlayerName] = client;
+        }
+
+        Disconnected.TryRemove(dcPlayerName, out _);
     }
 
-    private async Task<List<dynamic>> GetNpcs()
+    private async Task<IEnumerable<NpcDefinitionItem>> GetNpcs()
     {
         var factory = _provider.GetRequiredService<IPostgresConnectionFactory>();
         using var db = factory.Create();
         db.Open();
 
-        return (await db.QueryAsync("SELECT * FROM mod_npc_def WHERE active")).ToList();
+        return (await db.QueryAsync<DbRow>("SELECT * FROM mod_npc_def WHERE active"))
+            .Select(MapToModel)
+            .ToList();
+    }
+
+    private NpcDefinitionItem MapToModel(DbRow row)
+    {
+        return new NpcDefinitionItem
+        {
+            Active = row.active,
+            Properties = JsonConvert.DeserializeObject<Properties>(row.json_properties),
+            FactionId = row.faction_id,
+            Name = row.name
+        };
     }
 
     public class Properties
     {
         [JsonProperty] public ulong AnimationState { get; set; }
+        [JsonProperty] public TimeSpan? ConnectAt { get; set; }
+        [JsonProperty] public TimeSpan? DisconnectAt { get; set; }
+    }
+
+    public struct DbRow
+    {
+        public Guid id { get; set; }
+        public string name { get; set; }
+        public int faction_id { get; set; }
+        public bool active { get; set; }
+        public string json_properties { get; set; }
+    }
+
+    public class NpcDefinitionItem
+    {
+        public string Name { get; set; } = string.Empty;
+        public int FactionId { get; set; }
+        public bool Active { get; set; }
+        public Properties Properties { get; set; } = new();
+
+        public bool ShouldConnect(DateTime refDate) => IsDateInsideRange(refDate);
+
+        public bool ShouldDisconnect(DateTime refDate) => !IsDateInsideRange(refDate);
+
+        private bool IsDateInsideRange(DateTime refDate)
+        {
+            if (!Properties.ConnectAt.HasValue) return true;
+            if (!Properties.DisconnectAt.HasValue) return true;
+
+            var dateWithStart = DateTime.UtcNow.Date + Properties.ConnectAt.Value;
+            var dateWithEnd = DateTime.UtcNow.Date + Properties.DisconnectAt.Value;
+
+            return refDate > dateWithStart && refDate < dateWithEnd;
+        }
     }
 }
