@@ -118,10 +118,6 @@ public class NpcManagerActor : Actor
                     Disconnected.TryAdd(item.Name, true);
                 }
             }
-            else
-            {
-                Clients.TryRemove(item.Name, out _);
-            }
         }
 
         foreach (var item in NpcDefinitionItems.Values)
@@ -228,6 +224,8 @@ public class NpcManagerActor : Actor
         public int FactionId { get; set; }
         public bool Active { get; set; }
         public Properties Properties { get; set; } = new();
+        
+        public Func<DateTime> UtcNow { get; set; } = () => DateTime.UtcNow;
 
         public bool ShouldConnect(DateTime refDate) => IsDateInsideRange(refDate);
 
@@ -238,8 +236,8 @@ public class NpcManagerActor : Actor
             if (!Properties.ConnectAt.HasValue) return true;
             if (!Properties.DisconnectAt.HasValue) return true;
 
-            var dateWithStart = DateTime.UtcNow.Date + Properties.ConnectAt.Value;
-            var dateWithEnd = DateTime.UtcNow.Date + Properties.DisconnectAt.Value;
+            var dateWithStart = UtcNow().Date + Properties.ConnectAt.Value;
+            var dateWithEnd = UtcNow().Date + Properties.DisconnectAt.Value;
 
             return refDate > dateWithStart && refDate < dateWithEnd;
         }
