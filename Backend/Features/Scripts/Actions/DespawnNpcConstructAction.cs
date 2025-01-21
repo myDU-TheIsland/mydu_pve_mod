@@ -51,7 +51,7 @@ public class DespawnNpcConstructAction : IScriptAction
         var owner = constructInfo.mutableData.ownerId;
         if (handleItem.OriginalOwnerPlayerId != owner.playerId || handleItem.OriginalOrganizationId != owner.organizationId)
         {
-            logger.LogInformation("Prevented Despawn of NPC - Ownership is different than initial Spawn.");
+            logger.LogWarning("Prevented Despawn of NPC - Ownership is different than initial Spawn.");
             return ScriptActionResult.Successful();
         }
         
@@ -59,7 +59,7 @@ public class DespawnNpcConstructAction : IScriptAction
 
         if (playerConstructs.Any())
         {
-            logger.LogInformation("Aborting Despawn of NPC. Players Nearby");
+            logger.LogWarning("Aborting Despawn of NPC. Players Nearby");
             return ScriptActionResult.Failed();
         }
 

@@ -218,18 +218,16 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
         foreach (var sector in expiredSectors)
         {
-            // TODO #perf Change to Counter
             var players = await _constructSpatial.FindPlayerLiveConstructsOnSector(sector.Sector);
             if (!sector.IsForceExpired(DateTime.UtcNow) && players.Any())
             {
-                _logger.LogInformation("Players Nearby - Extended Expiration of {Sector} {SectorGuid}", sector.Sector,
+                _logger.LogWarning("Players Nearby - Extended Expiration of {Sector} {SectorGuid}", sector.Sector,
                     sector.Id);
                 await _sectorInstanceRepository.SetExpirationFromNowAsync(sector.Id, TimeSpan.FromMinutes(60));
                 continue;
             }
 
             await _constructHandleManager.CleanupConstructHandlesInSectorAsync(sector.Sector);
-            await DeleteNPCsBySector(sector.Sector);
             await Task.Delay(200);
         }
 

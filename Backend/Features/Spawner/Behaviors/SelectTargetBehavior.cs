@@ -162,6 +162,10 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
         {
             await _sectorPoolManager.SetExpirationFromNow(context.Sector, context.ActiveSectorExpirationSeconds.Value);
         }
+        else
+        {
+            await _sectorPoolManager.SetExpirationFromNow(context.Sector, TimeSpan.FromSeconds(60 * 30));
+        }
 
         try
         {
