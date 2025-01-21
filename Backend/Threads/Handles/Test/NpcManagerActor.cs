@@ -25,8 +25,8 @@ namespace Mod.DynamicEncounters.Threads.Handles.Test;
 public class NpcManagerActor : Actor
 {
     private readonly IServiceProvider _provider = ModBase.ServiceProvider;
+    private DateTime _lastNpcListUpdate = DateTime.UtcNow;
 
-    private readonly List<string> _users = [];
     private static readonly ConcurrentDictionary<string, NpcDefinitionItem> NpcDefinitionItems = [];
     private static readonly ConcurrentDictionary<string, Client> Clients = [];
     private static readonly ConcurrentDictionary<string, bool> Disconnected = [];
@@ -56,7 +56,6 @@ public class NpcManagerActor : Actor
     {
         var logger = _provider.CreateLogger<NpcManagerActor>();
 
-        var i = 0;
         foreach (var (playerName, client) in Clients)
         {
             var properties = new Properties();
@@ -92,16 +91,14 @@ public class NpcManagerActor : Actor
             }
             catch (BusinessException bex)
             {
-                logger.LogError(bex, "NPC Business Exception: {User} - {Message}", _users[i], bex.Message);
+                logger.LogError(bex, "NPC Business Exception: {User} - {Message}", playerName, bex.Message);
                 Disconnected.TryAdd(playerName, true);
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Failed to update pos of {User}", _users[i]);
+                logger.LogError(e, "Failed to update pos of {User}", playerName);
                 Disconnected.TryAdd(playerName, true);
             }
-
-            i++;
         }
 
         foreach (var (dcPlayerName, _) in Disconnected)
@@ -132,6 +129,18 @@ public class NpcManagerActor : Actor
                     await client.Disconnect();
                     Disconnected.TryRemove(item.Name, out _);
                 }
+            }
+        }
+
+        if (DateTime.UtcNow - _lastNpcListUpdate > TimeSpan.FromSeconds(10))
+        {
+            _lastNpcListUpdate = DateTime.UtcNow;
+            var npcList = await GetNpcs();
+            NpcDefinitionItems.Clear();
+            
+            foreach (var npc in npcList)
+            {
+                NpcDefinitionItems.TryAdd(npc.Name, npc);
             }
         }
 
