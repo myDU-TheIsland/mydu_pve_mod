@@ -111,11 +111,7 @@ public class NpcManagerActor : Actor
             catch (Exception e)
             {
                 logger.LogError(e, "Failed to update pos of {User}", _users[i]);
-                if (e is BusinessException bex && bex.error.code == ErrorCode.InvalidSession)
-                {
-                    _disconnected.Add(client.PlayerId);
-                    logger.LogError(bex, "NPC Business Exception: {User} - {Message}", _users[i], bex.Message);
-                }
+                _disconnected.Add(client.PlayerId);
             }
 
             i++;
