@@ -118,6 +118,10 @@ public class NpcManagerActor : Actor
                     Disconnected.TryAdd(item.Name, true);
                 }
             }
+            else
+            {
+                Clients.TryRemove(item.Name, out _);
+            }
         }
 
         foreach (var item in NpcDefinitionItems.Values)
@@ -127,6 +131,7 @@ public class NpcManagerActor : Actor
                 if (Clients.TryGetValue(item.Name, out var client))
                 {
                     await client.Disconnect();
+                    Clients.TryRemove(item.Name, out _);
                     Disconnected.TryRemove(item.Name, out _);
                 }
             }
