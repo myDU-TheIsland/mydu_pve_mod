@@ -3,6 +3,12 @@ using TimeZoneConverter;
 
 namespace Mod.DynamicEncounters.Tests.Threads.Handles;
 
+/// <summary>
+/// For reporting
+/// SELECT P.id, P.display_name, N.json_properties FROM public.player P
+/// INNER JOIN public.mod_npc_def N ON N.name = P.display_name
+/// WHERE P.connected AND P.is_bot
+/// </summary>
 [TestFixture]
 public class NpcDefinitionItemTests
 {
