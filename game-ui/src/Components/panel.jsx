@@ -60,6 +60,7 @@ export const PanelBody = styled.div`
     display: flex;
     justify-content: space-between;
     flex-grow: 1;
+    overflow-y: scroll;
 `;
 
 export const SelectedCategoryButton = styled.button`

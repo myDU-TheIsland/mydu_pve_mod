@@ -9,12 +9,12 @@ const CategoryPanel = styled.div`
     background-color: rgb(13, 24, 28);
     min-width: 200px;
     display: flex;
-    align-items: center;
+    align-items: start;
 `;
 
 const TabContainer = styled.div`
     width: 100%;
-    padding: 0 8px;
+    padding: 8px;
 
     * {
         margin-bottom: 2px;
