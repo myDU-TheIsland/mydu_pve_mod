@@ -175,7 +175,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
             minQuantaReward = minQuantaPvpMultiplier * baseQuantaReward;
         }
         
-        quantaReward = Math.Clamp(quantaReward, minQuantaReward, Math.Abs(quantaReward));
+        quantaReward = Math.Clamp(quantaReward, minQuantaReward, Math.Max(Math.Abs(quantaReward), minQuantaReward));
         
         var lootRewardTextItems = new List<string> { $"{quantaReward / 100:N2}h" };
 
