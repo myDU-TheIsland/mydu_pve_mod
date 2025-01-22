@@ -19,8 +19,8 @@ public class LootDefinitionItem
     
     public class LootProperties
     {
-        [JsonProperty] public double MinQuanta { get; set; }
-        [JsonProperty] public double MaxQuanta { get; set; }
+        [JsonProperty] public double MinQuanta { get; set; } = 100000D;
+        [JsonProperty] public double MaxQuanta { get; set; } = 500000D;
     }
     
     public class ElementReplacementRule
