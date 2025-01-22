@@ -19,6 +19,7 @@ using Newtonsoft.Json;
 using NQ;
 using NQ.Visibility;
 using NQutils.Exceptions;
+using TimeZoneConverter;
 
 namespace Mod.DynamicEncounters.Threads.Handles.Test;
 
@@ -43,7 +44,7 @@ public class NpcManagerActor : Actor
             var playerName = item.Name;
             NpcDefinitionItems.TryAdd(playerName, item);
 
-            if (item.ShouldConnect(DateTime.UtcNow))
+            if (item.ShouldConnect())
             {
                 Disconnected.TryAdd(playerName, true);
             }
@@ -103,7 +104,7 @@ public class NpcManagerActor : Actor
 
         foreach (var (dcPlayerName, _) in Disconnected)
         {
-            if (NpcDefinitionItems.TryGetValue(dcPlayerName, out var item) && item.ShouldConnect(DateTime.UtcNow))
+            if (NpcDefinitionItems.TryGetValue(dcPlayerName, out var item) && item.ShouldConnect())
             {
                 await ConnectPlayer(dcPlayerName);
             }
@@ -111,7 +112,7 @@ public class NpcManagerActor : Actor
         
         foreach (var item in NpcDefinitionItems.Values)
         {
-            if (item.ShouldConnect(DateTime.UtcNow))
+            if (item.ShouldConnect())
             {
                 if (!Clients.TryGetValue(item.Name, out _))
                 {
@@ -122,7 +123,7 @@ public class NpcManagerActor : Actor
 
         foreach (var item in NpcDefinitionItems.Values)
         {
-            if (item.ShouldDisconnect(DateTime.UtcNow))
+            if (item.ShouldDisconnect())
             {
                 if (Clients.TryGetValue(item.Name, out var client))
                 {
@@ -205,8 +206,9 @@ public class NpcManagerActor : Actor
     public class Properties
     {
         [JsonProperty] public ulong AnimationState { get; set; }
-        [JsonProperty] public TimeSpan? ConnectAt { get; set; }
-        [JsonProperty] public TimeSpan? DisconnectAt { get; set; }
+        [JsonProperty] public TimeSpan? StartAt { get; set; }
+        [JsonProperty] public TimeSpan? EndAt { get; set; }
+        [JsonProperty] public string TimeZone { get; set; } = string.Empty;
     }
 
     public struct DbRow
@@ -227,19 +229,20 @@ public class NpcManagerActor : Actor
         
         public Func<DateTime> UtcNow { get; set; } = () => DateTime.UtcNow;
 
-        public bool ShouldConnect(DateTime refDate) => IsDateInsideRange(refDate);
+        public bool ShouldConnect() => IsDateInsideRange();
+        public bool ShouldDisconnect() => !IsDateInsideRange();
 
-        public bool ShouldDisconnect(DateTime refDate) => !IsDateInsideRange(refDate);
-
-        private bool IsDateInsideRange(DateTime refDate)
+        private bool IsDateInsideRange()
         {
-            if (!Properties.ConnectAt.HasValue) return true;
-            if (!Properties.DisconnectAt.HasValue) return true;
+            if (!Properties.StartAt.HasValue) return true;
+            if (!Properties.EndAt.HasValue) return true;
 
-            var dateWithStart = UtcNow().Date + Properties.ConnectAt.Value;
-            var dateWithEnd = UtcNow().Date + Properties.DisconnectAt.Value;
-
-            return refDate > dateWithStart && refDate < dateWithEnd;
+            var tz = TZConvert.GetTimeZoneInfo(Properties.TimeZone);
+            var localDate = TimeZoneInfo.ConvertTimeFromUtc(UtcNow(), tz);
+            var localStart = localDate.Date + Properties.StartAt.Value;
+            var localEnd = localDate.Date + Properties.EndAt.Value;
+            
+            return localDate > localStart && localDate < localEnd;
         }
     }
 }
