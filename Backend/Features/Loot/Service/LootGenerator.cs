@@ -34,7 +34,8 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
             {
                 MaxBudget = args.MaxBudget,
                 Tags = [],
-                Name = string.Empty
+                Name = string.Empty,
+                Properties = new LootDefinitionItem.LootProperties()
             };
         }
 
@@ -43,7 +44,8 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
         {
             MaxBudget = args.MaxBudget,
             Tags = randomLootDefItem.ExtraTags,
-            Name = randomLootDefItem.Name
+            Name = randomLootDefItem.Name,
+            Properties = randomLootDefItem.Properties
         };
 
         var allItemRules = lootDefinitionItems
@@ -152,7 +154,8 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
             {
                 MaxBudget = args.MaxBudget,
                 Name = randomLootDefItem.Name,
-                Tags = definitionItem.ExtraTags
+                Tags = definitionItem.ExtraTags,
+                Properties = definitionItem.Properties
             };
 
             foreach (var itemRule in definitionItem.ItemRules)

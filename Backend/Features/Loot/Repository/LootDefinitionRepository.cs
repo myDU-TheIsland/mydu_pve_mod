@@ -94,8 +94,9 @@ public class LootDefinitionRepository(IServiceProvider provider) : ILootDefiniti
             ItemRules = JsonConvert.DeserializeObject<IEnumerable<LootDefinitionItem.LootItemRule>>(row.items),
             Tags = JsonConvert.DeserializeObject<IEnumerable<string>>(row.tags),
             ExtraTags = JsonConvert.DeserializeObject<IEnumerable<string>>(row.extra_tags),
+            Properties = JsonConvert.DeserializeObject<LootDefinitionItem.LootProperties>(row.json_properties),
             CreatedAt = row.created_at,
-            UpdatedAt = row.updated_at
+            UpdatedAt = row.updated_at,
         };
     }
 
@@ -110,5 +111,6 @@ public class LootDefinitionRepository(IServiceProvider provider) : ILootDefiniti
         public DateTime created_at { get; set; }
         public DateTime updated_at { get; set; }
         public bool active { get; set; }
+        public string json_properties { get; set; }
     }
 }

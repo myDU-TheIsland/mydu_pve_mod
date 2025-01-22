@@ -89,6 +89,10 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var (lootName, lootItem) = random.PickOneAtRandom(lootItems);
 
+        var lootQuanta = Math.Clamp(random.NextDouble() * lootItem.Properties.MaxQuanta, 
+            lootItem.Properties.MinQuanta, 
+            lootItem.Properties.MaxQuanta);
+        
         var entries = lootItem.GetEntries().ToArray();
         random.Shuffle(entries);
         entries = entries.Take(10).ToArray();
@@ -112,7 +116,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var rewardCalculationResult = CalculateLootPrice(priceMap, rewardEntries);
         var rewardTotalPrice = rewardCalculationResult.TotalPrice;
-        var rewardQuestItems = rewardCalculationResult.QuestItems;
+        // var rewardQuestItems = rewardCalculationResult.QuestItems;
         
         var factionTerritoryRepository = provider.GetRequiredService<IFactionTerritoryRepository>();
 
@@ -167,7 +171,7 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
         var pvpMultiplier = await _featureReaderService.GetDoubleValueAsync("OrderMissionPvpMultiplier", 1.5d);
         var minQuantaPvpMultiplier = await _featureReaderService.GetDoubleValueAsync("OrderMissionMinPvpMultiplier", 0.5d);
 
-        var baseQuantaReward = totalPrice * (dropInSafeZone ? safeMultiplier : pvpMultiplier);
+        var baseQuantaReward = totalPrice * (dropInSafeZone ? safeMultiplier : pvpMultiplier) + lootQuanta;
         var quantaReward = baseQuantaReward - rewardTotalPrice;
         var minQuantaReward = 0d;
         if (!dropInSafeZone)

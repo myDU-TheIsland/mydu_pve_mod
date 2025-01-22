@@ -150,7 +150,8 @@ public class FacilityStrikeScenarioSkill(
                 Name = string.Empty,
                 MaxBudget = 1,
                 Tags = [],
-                Entries = lootBag.Entries
+                Entries = lootBag.Entries,
+                Properties = new LootDefinitionItem.LootProperties()
             }
         });
     }

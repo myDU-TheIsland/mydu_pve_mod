@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MongoDB.Driver.Core.Misc;
+using Newtonsoft.Json;
 
 namespace Mod.DynamicEncounters.Features.Loot.Data;
 
@@ -14,7 +15,14 @@ public class LootDefinitionItem
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public required IEnumerable<string> ExtraTags { get; set; }
-
+    public required LootProperties Properties { get; set; } = new();
+    
+    public class LootProperties
+    {
+        [JsonProperty] public double MinQuanta { get; set; }
+        [JsonProperty] public double MaxQuanta { get; set; }
+    }
+    
     public class ElementReplacementRule
     {
         public double Chance { get; set; } = 1;

@@ -67,6 +67,7 @@ public class ProceduralLootBasedMissionGeneratorServiceTests
             ElementsToReplace = [],
             Name = string.Empty,
             Tags = [],
+            Properties = new LootDefinitionItem.LootProperties()
         };
         
         var lootGeneratorService = Substitute.For<ILootGeneratorService>();

@@ -10,7 +10,8 @@ public class ItemBagData
     public double CurrentCost { get; set; } = 0;
     public IList<ItemAndQuantity> Entries { get; init; } = [];
     public IList<ElementReplace> ElementsToReplace { get; set; } = [];
-    public required IEnumerable<string> Tags { get; set; }
+    public required IEnumerable<string> Tags { get; set; } = [];
+    public required LootDefinitionItem.LootProperties Properties { get; set; }
 
     public readonly struct ElementReplace(string elementName, string replaceElementName, long quantity)
     {

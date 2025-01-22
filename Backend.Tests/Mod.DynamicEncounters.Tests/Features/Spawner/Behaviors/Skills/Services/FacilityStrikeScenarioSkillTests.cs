@@ -60,7 +60,8 @@ public class FacilityStrikeScenarioSkillTests
             {
                 Name = "loot",
                 MaxBudget = 25000,
-                Tags = ["loot-test"]
+                Tags = ["loot-test"],
+                Properties = new LootDefinitionItem.LootProperties()
             });
         services.AddSingleton(lootService);
 
