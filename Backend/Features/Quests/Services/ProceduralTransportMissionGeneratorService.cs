@@ -9,6 +9,7 @@ using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
+using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Data;
 using Mod.DynamicEncounters.Features.Quests.Interfaces;
@@ -26,6 +27,9 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
 
     private readonly IConstructService _constructService =
         provider.GetRequiredService<IConstructService>();
+    
+    private readonly IFeatureReaderService _featureReaderService =
+        provider.GetRequiredService<IFeatureReaderService>();
     
     public async Task<ProceduralQuestOutcome> GenerateAsync(
         PlayerId playerId,
@@ -148,8 +152,11 @@ public class ProceduralTransportMissionGeneratorService(IServiceProvider provide
         var dropInSafeZone = await _constructService.IsInSafeZone(dropConstructInfo.Info.rData.constructId);
         var isSafe = pickupInSafeZone && dropInSafeZone;
 
-        var quantaMultiplier = MissionProceduralGenerationConfig.TransportQuantaMultiplier;
-        var unsafeMultiplier = isSafe ? 1 : MissionProceduralGenerationConfig.UnsafeMultiplier;
+        var quantaMultiplier = await _featureReaderService.GetDoubleValueAsync("TransportMissionMultiplier", 1);
+        var safeMultiplier = await _featureReaderService.GetDoubleValueAsync("TransportMissionSafeMultiplier", 1);
+        var pvpMultiplier = await _featureReaderService.GetDoubleValueAsync("TransportMissionPvpMultiplier", 3d);
+        
+        var unsafeMultiplier = isSafe ? safeMultiplier : pvpMultiplier;
         var quantaReward = (long)(distanceSu * 10000d * 100d * quantaMultiplier * multiplier * unsafeMultiplier);
         var influenceReward = 1;
 

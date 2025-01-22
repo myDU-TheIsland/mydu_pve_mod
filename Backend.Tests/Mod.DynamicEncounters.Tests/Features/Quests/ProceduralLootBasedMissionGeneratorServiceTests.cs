@@ -5,6 +5,7 @@ using Mod.DynamicEncounters.Features.Common.Data;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
+using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Market.Data;
@@ -26,6 +27,8 @@ public class ProceduralLootBasedMissionGeneratorServiceTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
+
+        services.AddSingleton(Substitute.For<IFeatureReaderService>());
 
         var weaponRailgun1Definition = Substitute.For<IGameplayDefinition>();
         weaponRailgun1Definition.BaseObject.Returns(new WeaponUnit());

@@ -165,10 +165,18 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var safeMultiplier = await _featureReaderService.GetDoubleValueAsync("OrderMissionSafeMultiplier", 0.8d);
         var pvpMultiplier = await _featureReaderService.GetDoubleValueAsync("OrderMissionPvpMultiplier", 1.5d);
-        
-        var quantaReward = totalPrice * (dropInSafeZone ? safeMultiplier : pvpMultiplier) - rewardTotalPrice;
-        quantaReward = Math.Clamp(quantaReward, 0, Math.Abs(quantaReward));
+        var minQuantaPvpMultiplier = await _featureReaderService.GetDoubleValueAsync("OrderMissionMinPvpMultiplier", 0.5d);
 
+        var baseQuantaReward = totalPrice * (dropInSafeZone ? safeMultiplier : pvpMultiplier);
+        var quantaReward = baseQuantaReward - rewardTotalPrice;
+        var minQuantaReward = 0d;
+        if (!dropInSafeZone)
+        {
+            minQuantaReward = minQuantaPvpMultiplier * baseQuantaReward;
+        }
+        
+        quantaReward = Math.Clamp(quantaReward, minQuantaReward, Math.Abs(quantaReward));
+        
         var lootRewardTextItems = new List<string> { $"{quantaReward / 100:N2}h" };
 
         foreach (var reward in lootReward.GetEntries())

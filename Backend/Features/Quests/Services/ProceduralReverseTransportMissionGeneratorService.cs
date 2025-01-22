@@ -8,6 +8,7 @@ using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Data;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
+using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Data;
 using Mod.DynamicEncounters.Features.Quests.Interfaces;
@@ -22,6 +23,9 @@ public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider 
 {
     private readonly IConstructService _constructService =
         provider.GetRequiredService<IConstructService>();
+    
+    private readonly IFeatureReaderService _featureReaderService =
+        provider.GetRequiredService<IFeatureReaderService>();
     
     public async Task<ProceduralQuestOutcome> GenerateAsync(
         PlayerId playerId,
@@ -133,12 +137,15 @@ public class ProceduralReverseTransportMissionGeneratorService(IServiceProvider 
             multiplier++;
         }
         
+        var quantaMultiplier = await _featureReaderService.GetDoubleValueAsync("ReverseTransportMissionMultiplier", 1);
+        var safeMultiplier = await _featureReaderService.GetDoubleValueAsync("ReverseTransportMissionSafeMultiplier", 1.1);
+        var pvpMultiplier = await _featureReaderService.GetDoubleValueAsync("ReverseTransportMissionPvpMultiplier", 5d);
+        
         var pickupInSafeZone = await _constructService.IsInSafeZone(pickupConstructInfo.Info.rData.constructId);
         var dropInSafeZone = await _constructService.IsInSafeZone(deliverConstructInfo.Info.rData.constructId);
         var isSafe = pickupInSafeZone && dropInSafeZone;
 
-        var quantaMultiplier = MissionProceduralGenerationConfig.ReverseTransportMultiplier;
-        var unsafeMultiplier = isSafe ? 1 : MissionProceduralGenerationConfig.UnsafeMultiplier;
+        var unsafeMultiplier = isSafe ? safeMultiplier : pvpMultiplier;
         var quantaReward = (long)(distanceSu * 10000d * 100d * quantaMultiplier * multiplier * unsafeMultiplier);
         var influenceReward = 1;
 

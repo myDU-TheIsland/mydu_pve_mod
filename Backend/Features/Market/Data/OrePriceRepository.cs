@@ -32,7 +32,7 @@ public class OrePriceRepository(IServiceProvider provider) : IOrePriceRepository
             	INNER JOIN item_definition I ON (I.id = MO.item_type_id)
             	WHERE 
             		parent_id IN (1240631464, 1240631465, 1240631466, 1240631467, 1240631468)
-            		AND update_date >= CURRENT_DATE - INTERVAL '30 days'
+            		AND update_date >= CURRENT_DATE - INTERVAL '7 days'
             		AND update_date < CURRENT_DATE + INTERVAL '1 day'
             		AND completion_date IS NOT NULL
             	GROUP BY I.name
