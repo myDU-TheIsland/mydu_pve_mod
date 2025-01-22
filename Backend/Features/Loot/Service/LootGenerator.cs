@@ -155,7 +155,7 @@ public class LootGeneratorService(IServiceProvider provider) : ILootGeneratorSer
                 MaxBudget = args.MaxBudget,
                 Name = randomLootDefItem.Name,
                 Tags = definitionItem.ExtraTags,
-                Properties = definitionItem.Properties
+                Properties = randomLootDefItem.Properties
             };
 
             foreach (var itemRule in definitionItem.ItemRules)
