@@ -89,9 +89,8 @@ public class ProceduralLootBasedMissionGeneratorService(IServiceProvider provide
 
         var (lootName, lootItem) = random.PickOneAtRandom(lootItems);
 
-        var lootQuanta = Math.Clamp(random.NextDouble() * lootItem.Properties.MaxQuanta, 
-            lootItem.Properties.MinQuanta, 
-            lootItem.Properties.MaxQuanta);
+        var delta = lootItem.Properties.MaxQuanta - lootItem.Properties.MinQuanta;
+        var lootQuanta = random.NextDouble() * delta + lootItem.Properties.MinQuanta;
         
         var entries = lootItem.GetEntries().ToArray();
         random.Shuffle(entries);
