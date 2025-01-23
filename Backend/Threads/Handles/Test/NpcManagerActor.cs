@@ -187,7 +187,7 @@ public class NpcManagerActor : Actor
         using var db = factory.Create();
         db.Open();
 
-        return (await db.QueryAsync<DbRow>("SELECT * FROM mod_npc_def WHERE active"))
+        return (await db.QueryAsync<DbRow>("SELECT * FROM mod_npc_def"))
             .Select(MapToModel)
             .ToList();
     }
@@ -229,8 +229,8 @@ public class NpcManagerActor : Actor
         
         public Func<DateTime> UtcNow { get; set; } = () => DateTime.UtcNow;
 
-        public bool ShouldConnect() => IsDateInsideRange();
-        public bool ShouldDisconnect() => !IsDateInsideRange();
+        public bool ShouldConnect() => Active && IsDateInsideRange();
+        public bool ShouldDisconnect() => !Active || !IsDateInsideRange();
 
         private bool IsDateInsideRange()
         {
