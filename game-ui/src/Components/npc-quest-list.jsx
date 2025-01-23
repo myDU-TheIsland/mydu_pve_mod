@@ -34,6 +34,7 @@ const NpcQuestList = (props) => {
     const [factionId, setFactionId] = useState(0);
     const [error, setError] = useState("");
     const [acceptedQuestMap, setAcceptedQuestMap] = useState({});
+    const [typeFilter, setTypeTypeFilter] = useState([]);
 
     useEffect(() => {
 
@@ -68,8 +69,7 @@ const NpcQuestList = (props) => {
                 })
                 .then(data => {
 
-                    if (!data)
-                    {
+                    if (!data) {
                         window.modApi.cb(`Invalid Data`);
                         return;
                     }
@@ -93,8 +93,7 @@ const NpcQuestList = (props) => {
     const handleSelect = (item) => {
         if (expandedMap[item.id] === true) {
             setExpandedMap({});
-        }
-        else {
+        } else {
             setExpandedMap({[item.id]: true});
         }
     };
@@ -105,20 +104,29 @@ const NpcQuestList = (props) => {
         handleRefresh();
     };
 
-    const questItems = jobs.map((item, index) =>
-        <QuestItem key={index}
-                   onSelect={() => handleSelect(item)}
-                   questId={item.id}
-                   rewards={item.rewards}
-                   title={item.title}
-                   tasks={item.tasks}
-                   type={item.type}
-                   safe={item.safe}
-                   canAccept={true}
-                   onAccepted={(questId) => handleAccepted(index, questId)}
-                   accepted={acceptedQuestMap[item.id] || item.accepted}
-                   expanded={expandedMap[item.id]} />
-    );
+    const filterJobs = (items, filters) => {
+        if (filters.length === 0) {
+            return items;
+        }
+
+        return items.filter(r => filters.includes(r.type));
+    };
+
+    const questItems = filterJobs(jobs, typeFilter)
+        .map((item, index) =>
+            <QuestItem key={index}
+                       onSelect={() => handleSelect(item)}
+                       questId={item.id}
+                       rewards={item.rewards}
+                       title={item.title}
+                       tasks={item.tasks}
+                       type={item.type}
+                       safe={item.safe}
+                       canAccept={true}
+                       onAccepted={(questId) => handleAccepted(index, questId)}
+                       accepted={acceptedQuestMap[item.id] || item.accepted}
+                       expanded={expandedMap[item.id]}/>
+        );
 
     const handleRefresh = () => {
         window.modApi.refreshNpcQuestList();
@@ -128,18 +136,44 @@ const NpcQuestList = (props) => {
         }, 1000);
     };
 
+    const countRequisition = () => {
+        return jobs.filter(r => r.type === "order").length;
+    };
+
+    const countDelivery = () => {
+        return jobs.filter(r => r.type === "transport" || r.type === "reverse-transport").length;
+    };
+
+    const clearFilters = () => {
+        setTypeTypeFilter([]);
+    };
+
+    const setTransportFilter = () => {
+        setTypeTypeFilter(["transport", "reverse-transport"]);
+    };
+
+    const setOrderFilter = () => {
+        setTypeTypeFilter(["order"]);
+    };
+
+    const getFilterId = () => {
+        return typeFilter.join("-");
+    }
+
     return (
         <Container>
             <Panel>
                 <Header>
                     <Title>{factionName} Faction board</Title>
-                    <IconButton onClick={handleRefresh}><RefreshIcon /></IconButton>
+                    <IconButton onClick={handleRefresh}><RefreshIcon/></IconButton>
                     <CloseButton onClick={handleClose}>&times;</CloseButton>
                 </Header>
                 <PanelBody>
                     <CategoryPanel>
                         <TabContainer>
-                            <Tab selected={true}>Missions ({jobs.length})</Tab>
+                            <Tab onClick={() => clearFilters()} selected={!getFilterId()}>Missions ({jobs.length})</Tab>
+                            <Tab onClick={() => setOrderFilter()} selected={getFilterId() === "order"}>Orders ({countRequisition()})</Tab>
+                            <Tab onClick={() => setTransportFilter()} selected={getFilterId() === "transport-reverse-transport"}>Deliveries ({countDelivery()})</Tab>
                             {/*<Tab>Combat</Tab>*/}
                             {/*<Tab>Package Delivery</Tab>*/}
                             <br/>
