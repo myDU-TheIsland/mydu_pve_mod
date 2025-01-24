@@ -26,7 +26,7 @@ public class PveModQuestsApiClient(IServiceProvider provider) : IPveModQuestsApi
         return JToken.Parse(await responseMessage.Content.ReadAsStringAsync());
     }
 
-    public async Task<JToken> GetNpcQuests(ulong playerId, long factionId, Guid territoryId, int seed)
+    public async Task<JToken> GetNpcQuests(ulong playerId, ulong constructId, long factionId, Guid territoryId, int seed)
     {
         var url = Path.Combine(PveModBaseUrl.GetBaseUrl(), "quest/giver");
         
@@ -40,7 +40,8 @@ public class PveModQuestsApiClient(IServiceProvider provider) : IPveModQuestsApi
                     playerId,
                     factionId,
                     territoryId,
-                    seed
+                    seed,
+                    constructId
                 }),
                 Encoding.UTF8,
                 "application/json"

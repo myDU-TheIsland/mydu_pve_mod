@@ -337,7 +337,8 @@ public class MyDuMod : IMod
                 var refreshedNpcQuests = JsonConvert.DeserializeObject<QueryNpcQuests>(action.payload);
 
                 var refreshedJsonData = await questApi.GetNpcQuests(
-                    playerId,
+                    playerId, 
+                    action.constructId,
                     refreshedNpcQuests.FactionId,
                     refreshedNpcQuests.TerritoryId,
                     refreshedNpcQuests.Seed

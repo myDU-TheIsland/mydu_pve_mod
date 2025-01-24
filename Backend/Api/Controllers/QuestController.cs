@@ -200,6 +200,7 @@ public class QuestController : Controller
 
         return Ok(
             new QuestPanelViewModel(
+                request.ConstructId,
                 faction.Id,
                 faction.Name,
                 request.TerritoryId,
@@ -332,18 +333,21 @@ public class QuestController : Controller
 
     public class QuestPanelViewModel
     {
+        public ulong ConstructId { get; }
         public long FactionId { get; set; }
         public Guid Territory { get; set; }
         public string Faction { get; set; }
         public IEnumerable<QuestViewModel> Jobs { get; set; }
 
         public QuestPanelViewModel(
+            ulong constructId,
             long factionId,
             string factionName,
             Guid territory,
             GenerateQuestListOutcome outcome,
             Dictionary<Guid, bool> acceptedMap)
         {
+            ConstructId = constructId;
             FactionId = factionId;
             Faction = factionName;
             Territory = territory;
@@ -410,6 +414,7 @@ public class QuestController : Controller
     public class GenerateQuestsRequest
     {
         public ulong PlayerId { get; set; }
+        public ulong ConstructId { get; set; }
         public long FactionId { get; set; }
         public Guid TerritoryId { get; set; }
         public int Seed { get; set; }
