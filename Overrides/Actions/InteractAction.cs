@@ -35,18 +35,29 @@ public class InteractAction(IServiceProvider provider) : IModActionHandler
         var baseUrl = Config.GetPveModBaseUrl();
         var questInteractUrl = Path.Combine(baseUrl, "quest/interact");
 
+        var payload = JsonConvert.DeserializeObject<InteractPayload>(action.payload);
+        if (payload.ConstructId == 0)
+        {
+            payload.ConstructId = action.constructId;
+        }
+        
         await httpClient.PostAsync(
             questInteractUrl,
             new StringContent(
                 JsonConvert.SerializeObject(new
                 {
                     playerId,
-                    action.constructId,
+                    constructId = payload.ConstructId,
                     elementId = action.elementId == 0 ? (ulong?)null : action.elementId
                 }),
                 Encoding.UTF8,
                 "application/json"
             )
         );
+    }
+
+    public class InteractPayload
+    {
+        [JsonProperty("constructId")] public ulong ConstructId { get; set; }
     }
 }
