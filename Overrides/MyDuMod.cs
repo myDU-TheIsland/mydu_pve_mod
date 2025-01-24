@@ -192,10 +192,9 @@ public class MyDuMod : IMod
         }
 
         _logger.LogInformation(
-            "Received Trigger Action from Player({PlayerId} != {ActionPlayerId}): {ActionId} | {Content}",
+            "Received Trigger Action from {Player} | {Action} | {Payload}",
             playerId,
-            action.playerId,
-            action.actionId,
+            JsonConvert.SerializeObject(action),
             action.payload
         );
 
@@ -280,6 +279,7 @@ public class MyDuMod : IMod
                 await fetchPlayerParty.HandleAction(playerId, action);
                 break;
             case ActionType.Interact:
+            case ActionType.InteractInternal:
                 var interactAction = new InteractAction(_provider);
                 await interactAction.HandleAction(playerId, action);
                 break;
@@ -292,6 +292,12 @@ public class MyDuMod : IMod
                 await giveTakeContainerAction.HandleAction(playerId, action);
                 break;
             case ActionType.LoadBoardApp:
+                var loadBoardApp = JsonConvert.DeserializeObject<LoadBoardApp>(action.payload);
+                if (loadBoardApp.ConstructId == 0)
+                {
+                    loadBoardApp.ConstructId = action.constructId;
+                }
+                
                 await _injection.InjectJs(playerId, Resources.CommonJs);
                 await _injection.InjectJs(playerId, Resources.CreateRootDivJs);
                 await _injection.InjectJs(playerId, "window.modApi.setPage('npc');");
@@ -301,7 +307,7 @@ public class MyDuMod : IMod
                     new ModAction
                     {
                         playerId = action.playerId,
-                        actionId = (ulong)ActionType.RefreshPlayerQuestList,
+                        actionId = (ulong)ActionType.RefreshPlayerQuestLisInternal,
                         constructId = action.constructId,
                         elementId = action.elementId,
                         modName = action.modName,
@@ -320,6 +326,14 @@ public class MyDuMod : IMod
                         payload = action.payload
                     }
                 );
+                await _injection.SetContext(playerId, new
+                {
+                    playerId,
+                    factionId = loadBoardApp.FactionId,
+                    territoryId = loadBoardApp.TerritoryId,
+                    seed = loadBoardApp.Seed,
+                    constructId = loadBoardApp.ConstructId
+                });
 
                 await _injection.InjectCss(playerId, Resources.NpcAppCss);
                 await _injection.InjectJs(playerId, Resources.NpcAppJs);
@@ -347,10 +361,14 @@ public class MyDuMod : IMod
                 break;
             case ActionType.RefreshNpcQuestList:
                 var refreshedNpcQuests = JsonConvert.DeserializeObject<QueryNpcQuests>(action.payload);
+                if (refreshedNpcQuests.ConstructId == 0)
+                {
+                    refreshedNpcQuests.ConstructId = action.constructId;
+                }
 
                 var refreshedJsonData = await questApi.GetNpcQuests(
                     playerId, 
-                    action.constructId,
+                    refreshedNpcQuests.ConstructId,
                     refreshedNpcQuests.FactionId,
                     refreshedNpcQuests.TerritoryId,
                     refreshedNpcQuests.Seed
@@ -362,12 +380,12 @@ public class MyDuMod : IMod
                     playerId,
                     factionId = refreshedNpcQuests.FactionId,
                     territoryId = refreshedNpcQuests.TerritoryId,
-                    seed = refreshedNpcQuests.Seed
+                    seed = refreshedNpcQuests.Seed,
+                    constructId = refreshedNpcQuests.ConstructId
                 });
 
                 break;
             case ActionType.RefreshPlayerQuestList:
-
                 var playerQuestJsonData = await questApi.GetPlayerQuestsAsync(
                     playerId
                 );
@@ -378,6 +396,13 @@ public class MyDuMod : IMod
                     playerId
                 });
 
+                break;
+            case ActionType.RefreshPlayerQuestLisInternal:
+                var playerQuestJsonDataInternal = await questApi.GetPlayerQuestsAsync(
+                    playerId
+                );
+
+                await _injection.UploadJson(playerId, "player-quests", playerQuestJsonDataInternal);
                 break;
             case ActionType.CloseBoard:
                 await _injection.InjectJs(playerId, "modApi.removeAppRoot()");

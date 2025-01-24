@@ -172,6 +172,7 @@ const NpcQuestList = (props) => {
                        type={item.type}
                        safe={item.safe}
                        canAccept={true}
+                       canAbandon={item.accepted}
                        onAccepted={() => handleAccepted(item)}
                        accepted={acceptedQuestMap[item.id] || item.accepted}
                        expanded={expandedMap[item.id]}/>
@@ -179,6 +180,7 @@ const NpcQuestList = (props) => {
 
     const handleRefresh = () => {
         window.modApi.refreshNpcQuestList();
+        window.modApi.refreshPlayerQuestList();
 
         setTimeout(() => {
             fetchData();
@@ -187,7 +189,7 @@ const NpcQuestList = (props) => {
     };
 
     const handlePickupDeliver = () => {
-        window.modApi.interact(constructId);
+        window.modApi.interact();
     };
 
     const countRequisition = () => {

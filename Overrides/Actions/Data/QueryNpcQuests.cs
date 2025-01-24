@@ -5,6 +5,8 @@ namespace Mod.DynamicEncounters.Overrides.Actions.Data;
 
 public class QueryNpcQuests
 {
+    [JsonProperty("constructId")]
+    public ulong ConstructId { get; set; }
     [JsonProperty("playerId")]
     public ulong PlayerId { get; set; }
     [JsonProperty("factionId")]

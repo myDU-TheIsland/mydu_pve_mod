@@ -11,8 +11,8 @@ modApi.cb = (data) => {
     CPPMod.sendModAction("Mod.DynamicEncounters", 1999999, [], JSON.stringify(data));
 };
 
-modApi.interact = (constructId) => {
-    CPPMod.sendModAction("Mod.DynamicEncounters", 101, [], JSON.stringify({constructId}));
+modApi.interact = () => {
+    CPPMod.sendModAction("Mod.DynamicEncounters", 1000101, [], JSON.stringify(window.player_context || {}       ));
 };
 
 modApi.setWaypoint = (pos) => {
