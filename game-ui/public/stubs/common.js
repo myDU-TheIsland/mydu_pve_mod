@@ -21,7 +21,11 @@ modApi.setPage = (page) => {
 
 modApi.imageUrl = (path) => {
     return path;
-}
+};
+
+modApi.interact = (constructId) => {
+    console.log("Mod.DynamicEncounters", 1000101, [], JSON.stringify({constructId}));
+};
 
 modApi.getPlayerInfo = () => {
     return {

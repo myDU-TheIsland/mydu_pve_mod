@@ -3,7 +3,7 @@ import {TargetIcon2} from "./icons";
 
 export const IconButton = styled.button`
     background-color: rgb(250, 212, 122);
-    padding: 2px 2px 0;
+    padding: 4px 4px 0;
     font-weight: bold;
     text-transform: uppercase;
     color: black;
