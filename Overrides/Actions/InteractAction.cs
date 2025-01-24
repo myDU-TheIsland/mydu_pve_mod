@@ -35,7 +35,7 @@ public class InteractAction(IServiceProvider provider) : IModActionHandler
         var baseUrl = Config.GetPveModBaseUrl();
         var questInteractUrl = Path.Combine(baseUrl, "quest/interact");
 
-        var payload = JsonConvert.DeserializeObject<InteractPayload>(action.payload);
+        var payload = JsonConvert.DeserializeObject<InteractPayload>(action.payload) ?? new InteractPayload();
         if (payload.ConstructId == 0)
         {
             payload.ConstructId = action.constructId;
