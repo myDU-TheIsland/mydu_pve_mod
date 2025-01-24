@@ -140,8 +140,8 @@ const NpcQuestList = (props) => {
         }
     };
 
-    const handleAccepted = (index, questId) => {
-        setAcceptedQuestMap(Object.assign({[questId]: true}, acceptedQuestMap));
+    const handleAccepted = (item) => {
+        setAcceptedQuestMap(Object.assign({[item.id]: true}, acceptedQuestMap));
 
         handleRefresh();
     };
@@ -153,13 +153,9 @@ const NpcQuestList = (props) => {
 
         if (filters.length === 1 && filters[0] === "accepted")
         {
-            return acceptedJobs.reduce((res, item) => ([
-                ...res,
-                {
-                    ...item,
-                    accepted: true,
-                },
-            ]), []);
+            return acceptedJobs.reduce((res, item) => (
+                res.concat(Object.assign({}, item, { accepted: true }))
+            ), []);
         }
 
         return items.filter(r => filters.includes(r.type));
@@ -176,7 +172,7 @@ const NpcQuestList = (props) => {
                        type={item.type}
                        safe={item.safe}
                        canAccept={true}
-                       onAccepted={(questId) => handleAccepted(index, questId)}
+                       onAccepted={() => handleAccepted(item)}
                        accepted={acceptedQuestMap[item.id] || item.accepted}
                        expanded={expandedMap[item.id]}/>
         );

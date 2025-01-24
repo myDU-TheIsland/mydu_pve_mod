@@ -301,7 +301,7 @@ public class MyDuMod : IMod
                     new ModAction
                     {
                         playerId = action.playerId,
-                        actionId = (ulong)ActionType.RefreshNpcQuestList,
+                        actionId = (ulong)ActionType.RefreshPlayerQuestList,
                         constructId = action.constructId,
                         elementId = action.elementId,
                         modName = action.modName,
@@ -313,7 +313,7 @@ public class MyDuMod : IMod
                     new ModAction
                     {
                         playerId = action.playerId,
-                        actionId = (ulong)ActionType.RefreshPlayerQuestList,
+                        actionId = (ulong)ActionType.RefreshNpcQuestList,
                         constructId = action.constructId,
                         elementId = action.elementId,
                         modName = action.modName,
