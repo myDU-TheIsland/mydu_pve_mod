@@ -308,6 +308,18 @@ public class MyDuMod : IMod
                         payload = action.payload
                     }
                 );
+                await TriggerActionInternal(
+                    playerId,
+                    new ModAction
+                    {
+                        playerId = action.playerId,
+                        actionId = (ulong)ActionType.RefreshPlayerQuestList,
+                        constructId = action.constructId,
+                        elementId = action.elementId,
+                        modName = action.modName,
+                        payload = action.payload
+                    }
+                );
 
                 await _injection.InjectCss(playerId, Resources.NpcAppCss);
                 await _injection.InjectJs(playerId, Resources.NpcAppJs);

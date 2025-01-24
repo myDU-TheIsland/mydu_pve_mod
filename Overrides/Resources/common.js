@@ -11,6 +11,10 @@ modApi.cb = (data) => {
     CPPMod.sendModAction("Mod.DynamicEncounters", 1999999, [], JSON.stringify(data));
 };
 
+modApi.interact = (constructId) => {
+    CPPMod.sendModAction("Mod.DynamicEncounters", 101, [], JSON.stringify({constructId}));
+};
+
 modApi.setWaypoint = (pos) => {
     CPPMapsManagerPlanet.setCoordinateAsDestination(`${pos}`);
 };
