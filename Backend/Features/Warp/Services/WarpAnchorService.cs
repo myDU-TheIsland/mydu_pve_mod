@@ -366,6 +366,20 @@ public class WarpAnchorService(IServiceProvider provider) : IWarpAnchorService
             timePoint = TimePoint.Now()
         });
 
+        var constructInfoGrain = orleans.GetConstructInfoGrain(command.ConstructId);
+        var constructInfo = await constructInfoGrain.Get();
+        var pilotPlayerId = constructInfo.mutableData.pilot;
+
+        if (pilotPlayerId.HasValue)
+        {
+            var sql = provider.GetRequiredService<ISql>();
+            await sql.UpdatePlayerProperty_Generic(
+                pilotPlayerId.Value,
+                "warpAnchorTimePoint",
+                new PropertyValue(warpAnchorTimePoint.ToNQTimePoint().networkTime)
+            );
+        }
+
         return SetWarpCooldownOutcome.CooldownSet();
     }
 }
