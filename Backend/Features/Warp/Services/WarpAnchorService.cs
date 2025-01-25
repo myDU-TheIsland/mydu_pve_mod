@@ -347,6 +347,7 @@ public class WarpAnchorService(IServiceProvider provider) : IWarpAnchorService
         }
 
         var cooldownDate = DateTime.UtcNow + TimeSpan.FromSeconds(warpEndCooldown);
+        var warpAnchorTimePoint = DateTime.UtcNow - TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(warpEndCooldown);
         
         await constructElementsGrain.UpdateElementProperty(new ElementPropertyUpdate
         {
@@ -354,6 +355,14 @@ public class WarpAnchorService(IServiceProvider provider) : IWarpAnchorService
             name = "endOfWarpCooldown",
             elementId = coreUnits.First().elementId,
             value = new PropertyValue(cooldownDate.ToNQTimePoint().networkTime),
+            timePoint = TimePoint.Now()
+        });
+        await constructElementsGrain.UpdateElementProperty(new ElementPropertyUpdate
+        {
+            constructId = command.ConstructId,
+            name = "warpAnchorTimePoint",
+            elementId = coreUnits.First().elementId,
+            value = new PropertyValue(warpAnchorTimePoint.ToNQTimePoint().networkTime),
             timePoint = TimePoint.Now()
         });
 
