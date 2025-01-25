@@ -4,8 +4,6 @@ using System.Threading.Tasks;
 using Backend.Scenegraph;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Common.Data;
-using Mod.DynamicEncounters.Features.Spawner.Behaviors.Data;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.VoxelService.Data;
 using Mod.DynamicEncounters.Features.VoxelService.Interfaces;
@@ -22,15 +20,15 @@ public class ShotSpawnController : Controller
 {
     [SwaggerOperation("Spawns shots on a construct. Useful to make wrecks")]
     [HttpPut]
-    [Route("wreck/target/{targetConstructId:long}")]
+    [Route("wreck/shooter/{shooterConstructId:long}/target/{targetConstructId:long}")]
     public async Task<IActionResult> WreckShoot(
+        ulong shooterConstructId,
         ulong targetConstructId,
         [FromBody] ShotRequest request
     )
     {
         var provider = ModBase.ServiceProvider;
         var orleans = provider.GetOrleans();
-        var sceneGraph = provider.GetRequiredService<IScenegraph>();
         var targetConstructInfoGrain = orleans.GetConstructInfoGrain(targetConstructId);
         var bank = provider.GetGameplayBank();
         
@@ -45,7 +43,7 @@ public class ShotSpawnController : Controller
         for (var i = 0; i < request.Iterations; i++)
         {
             var direction = random.RandomDirectionVec3();
-            var range = 10000;
+            const int range = 10000;
             
             var targetConstructInfo = await targetConstructInfoGrain.Get();
             var targetPos = targetConstructInfo.rData.position;
@@ -70,55 +68,38 @@ public class ShotSpawnController : Controller
 
             var point = outcome.LocalPosition;
             
-            var ds = orleans.GetDirectServiceGrain();
-            var pos = await sceneGraph.ResolveWorldLocation(new RelativeLocation
-            {
-                constructId = targetConstructId,
-                position = point
-            });
+            var w = weaponUnit;
 
-            var sentinelWeapon = new SentinelWeapon
-            {
-                aoe = true,
-                damage = weaponUnit.BaseDamage,
-                range = weaponUnit.BaseOptimalDistance + weaponUnit.FalloffDistance,
-                aoeRange = 100000,
-                baseAccuracy = weaponUnit.BaseAccuracy,
-                effectDuration = 10,
-                effectStrength = 10,
-                falloffDistance = weaponUnit.FalloffDistance,
-                falloffTracking = weaponUnit.FalloffTracking,
-                fireCooldown = 0.5,
-                baseOptimalDistance = weaponUnit.BaseOptimalDistance,
-                falloffAimingCone = weaponUnit.FalloffAimingCone,
-                baseOptimalTracking = weaponUnit.BaseOptimalTracking,
-                baseOptimalAimingCone = weaponUnit.BaseOptimalAimingCone,
-                optimalCrossSectionDiameter = weaponUnit.OptimalCrossSectionDiameter,
-                ammoItem = request.AmmoItem,
-                weaponItem = weapon.Name
-            };
-            
-            var shootWeaponData = new ShootWeaponData
-            {
-                Weapon = sentinelWeapon,
-                CrossSection = 5,
-                ShooterName = weaponUnit.DisplayName,
-                ShooterPosition = shooterPos,
-                ShooterConstructId = targetConstructId,
-                LocalHitPosition = outcome.LocalPosition,
-                ShooterConstructSize = (ulong)targetConstructInfo.rData.geometry.size,
-                ShooterPlayerId = ModBase.Bot.PlayerId,
-                TargetConstructId = targetConstructId,
-                DamagesVoxel = true
-            };
-            
-            var modManagerGrain = orleans.GetModManagerGrain();
-            await modManagerGrain.TriggerModAction(
-                ModBase.Bot.PlayerId,
-                new ActionBuilder()
-                    .ShootWeapon(shootWeaponData)
-                    .WithConstructId(targetConstructId)
-                    .Build()
+            var npcShotGrain = orleans.GetNpcShotGrain();
+            await npcShotGrain.Fire(
+                "Random",
+                shooterPos,
+                shooterConstructId,
+                (ulong)targetConstructInfo.rData.geometry.size,
+                targetConstructId,
+                targetPos,
+                new SentinelWeapon
+                {
+                    aoe = true,
+                    damage = w.BaseDamage,
+                    range = 0,
+                    aoeRange = 1,
+                    baseAccuracy = w.BaseAccuracy,
+                    effectDuration = 1,
+                    effectStrength = 1,
+                    falloffDistance = w.FalloffDistance,
+                    falloffTracking = w.FalloffTracking,
+                    fireCooldown = 1,
+                    baseOptimalDistance = w.BaseOptimalDistance,
+                    falloffAimingCone = w.FalloffAimingCone,
+                    baseOptimalTracking = w.BaseOptimalTracking,
+                    baseOptimalAimingCone = w.BaseOptimalAimingCone,
+                    optimalCrossSectionDiameter = w.OptimalCrossSectionDiameter,
+                    ammoItem = request.AmmoItem,
+                    weaponItem = request.WeaponItem
+                },
+                5,
+                point
             );
 
             await Task.Delay((int)Math.Clamp(request.Wait, 1, 1000));
