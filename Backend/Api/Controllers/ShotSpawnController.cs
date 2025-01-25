@@ -61,6 +61,8 @@ public class ShotSpawnController : Controller
             );
             
             var voxelServiceClient = provider.GetRequiredService<IVoxelServiceClient>();
+            await voxelServiceClient.TriggerConstructCacheAsync(targetConstructId);
+            
             var outcome = await voxelServiceClient.QueryRandomPoint(
                 new QueryRandomPoint
                 {
