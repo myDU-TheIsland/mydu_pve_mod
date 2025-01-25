@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BotLib.Generated;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.NQ.Interfaces;
@@ -18,6 +19,25 @@ namespace Mod.DynamicEncounters.Api.Controllers;
 [Route("player")]
 public class PlayerController : Controller
 {
+    [HttpPost]
+    [Route("send-message")]
+    public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest request)
+    {
+        await ModBase.Bot.Req.ChatMessageSend(
+            new MessageContent
+            {
+                channel = new MessageChannel
+                {
+                    channel = MessageChannelType.PRIVATE,
+                    targetId = request.PlayerId
+                },
+                message = request.Message
+            }
+        );
+
+        return Ok();
+    }
+    
     [HttpPost]
     [Route("script/give-element-skin")]
     public IActionResult GetGiveElementSkinScript([FromBody] GiveElementSkinsToAllActivePlayersRequest request)
@@ -150,5 +170,11 @@ public class PlayerController : Controller
         public string ElementTypeName { get; set; }
         public ulong ElementTypeId { get; set; }
         public string Skin { get; set; }
+    }
+
+    public class SendMessageRequest
+    {
+        public ulong PlayerId { get; set; }
+        public string Message { get; set; } = string.Empty;
     }
 }
