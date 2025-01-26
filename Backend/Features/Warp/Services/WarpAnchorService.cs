@@ -357,14 +357,6 @@ public class WarpAnchorService(IServiceProvider provider) : IWarpAnchorService
             value = new PropertyValue(cooldownDate.ToNQTimePoint().networkTime),
             timePoint = TimePoint.Now()
         });
-        await constructElementsGrain.UpdateElementProperty(new ElementPropertyUpdate
-        {
-            constructId = command.ConstructId,
-            name = "warpAnchorTimePoint",
-            elementId = coreUnits.First().elementId,
-            value = new PropertyValue(warpAnchorTimePoint.ToNQTimePoint().networkTime),
-            timePoint = TimePoint.Now()
-        });
 
         var constructInfoGrain = orleans.GetConstructInfoGrain(command.ConstructId);
         var constructInfo = await constructInfoGrain.Get();
