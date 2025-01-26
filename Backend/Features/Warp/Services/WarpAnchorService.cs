@@ -347,7 +347,7 @@ public class WarpAnchorService(IServiceProvider provider) : IWarpAnchorService
         }
 
         var cooldownDate = DateTime.UtcNow + TimeSpan.FromSeconds(warpEndCooldown);
-        var warpAnchorTimePoint = DateTime.UtcNow - TimeSpan.FromMinutes(3) + TimeSpan.FromSeconds(warpEndCooldown);
+        var warpAnchorTimePoint = DateTime.UtcNow - TimeSpan.FromMinutes(3);
         
         await constructElementsGrain.UpdateElementProperty(new ElementPropertyUpdate
         {
