@@ -209,6 +209,7 @@ public class NpcManagerActor : Actor
         [JsonProperty] public TimeSpan? StartAt { get; set; }
         [JsonProperty] public TimeSpan? EndAt { get; set; }
         [JsonProperty] public string TimeZone { get; set; } = string.Empty;
+        [JsonProperty] public bool AlwaysActive { get; set; }
     }
 
     public struct DbRow
@@ -229,8 +230,8 @@ public class NpcManagerActor : Actor
         
         public Func<DateTime> UtcNow { get; set; } = () => DateTime.UtcNow;
 
-        public bool ShouldConnect() => Active && IsDateInsideRange();
-        public bool ShouldDisconnect() => !Active || !IsDateInsideRange();
+        public bool ShouldConnect() => Active && (Properties.AlwaysActive || IsDateInsideRange());
+        public bool ShouldDisconnect() => !Active || (!Properties.AlwaysActive && !IsDateInsideRange());
 
         private bool IsDateInsideRange()
         {
