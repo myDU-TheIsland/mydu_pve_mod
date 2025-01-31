@@ -38,7 +38,7 @@ public class AreaScanController : Controller
         var pos = await request.GetReferencePosition(provider);
         
         var contacts =
-            await areaScanService.ScanForPlayerContacts(request.ConstructId ?? 1, pos, request.Radius, request.Limit);
+            await areaScanService.ScanForAsteroids(pos, request.Radius);
 
         return Ok(contacts);
     }
