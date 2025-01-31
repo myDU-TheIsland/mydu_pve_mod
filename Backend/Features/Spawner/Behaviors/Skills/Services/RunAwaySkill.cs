@@ -20,6 +20,7 @@ public class RunAwaySkill(RunAwaySkill.RunAwaySkillItem skillItem) : BaseSkill(s
 {
     public bool Triggered { get; set; }
     public DateTime? LastContactDateTime { get; set; }
+    public Vec3? Direction { get; set; } = new Vec3 { z = 1 };
     
     public override bool CanUse(BehaviorContext context)
     {
@@ -48,17 +49,12 @@ public class RunAwaySkill(RunAwaySkill.RunAwaySkillItem skillItem) : BaseSkill(s
             Triggered = true;
         }
         
-        Vec3 direction;
         if (targetConstructId != null)
         {
-            direction = (context.Position.Value - context.TargetMovePosition).NormalizeSafe();
-        }
-        else
-        {
-            direction = context.Position.Value.NormalizeSafe();
+            Direction = (context.Position.Value - context.TargetMovePosition).NormalizeSafe();
         }
 
-        context.SetOverrideTargetMovePosition(context.Position + direction * skillItem.MovePositionDistance);
+        context.SetOverrideTargetMovePosition(context.Position + Direction * skillItem.MovePositionDistance);
         context.Effects.Activate<CooldownEffect>(TimeSpan.FromSeconds(skillItem.CooldownSeconds));
 
         var now = dateTimeProvider.UtcNow();
