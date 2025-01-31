@@ -24,6 +24,24 @@ namespace Mod.DynamicEncounters.Api.Controllers;
 public class ConstructController : Controller
 {
     [HttpPost]
+    [Route("{constructId:long}/release-repair")]
+    public async Task<IActionResult> ReleaseFromRepairUnit(ulong constructId)
+    {
+        var provider = ModBase.ServiceProvider;
+        var orleans = provider.GetOrleans();
+
+        var constructInfoGrain = orleans.GetConstructInfoGrain(constructId);
+        var constructInfo = await constructInfoGrain.Get();
+        
+        constructInfo.Update(new ConstructInfoUpdate
+        {
+            repairedBy = null
+        });
+        
+        return Ok(await constructInfoGrain.Get());
+    }
+    
+    [HttpPost]
     [Route("{constructId:long}/replace/{elementTypeName}/with/{replaceElementTypeName}")]
     public async Task<IActionResult> ReplaceElement(long constructId, string elementTypeName,
         string replaceElementTypeName)
