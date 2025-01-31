@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Effects.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Skills.Data;
 using Mod.DynamicEncounters.Features.Spawner.Data;
@@ -14,15 +17,28 @@ public class RunAwaySkill(RunAwaySkill.RunAwaySkillItem skillItem) : BaseSkill(s
 {
     public override bool CanUse(BehaviorContext context)
     {
-        return base.CanUse(context) && context.IsAlive &&
+        return Active && context.IsAlive &&
                !context.Effects.IsEffectActive<CooldownEffect>();
     }
 
-    public override Task Use(BehaviorContext context)
+    public override async Task Use(BehaviorContext context)
     {
+        var provider = context.Provider;
+        var areaScanService = provider.GetRequiredService<IAreaScanService>();
+        
         var targetConstructId = context.GetTargetConstructId();
-        if (!context.Position.HasValue) return Task.CompletedTask;
+        if (!context.Position.HasValue) return;
 
+        if (skillItem.TriggerOnPlayerContact)
+        {
+            var contacts = await areaScanService.ScanForPlayerContacts(
+                context.ConstructId, 
+                context.Position.Value, 
+                skillItem.ScanRange);
+            
+            if (!contacts.Any()) return;
+        }
+        
         Vec3 direction;
         if (targetConstructId != null)
         {
@@ -35,8 +51,6 @@ public class RunAwaySkill(RunAwaySkill.RunAwaySkillItem skillItem) : BaseSkill(s
 
         context.SetOverrideTargetMovePosition(context.Position + direction * skillItem.MovePositionDistance);
         context.Effects.Activate<CooldownEffect>(TimeSpan.FromSeconds(skillItem.CooldownSeconds));
-
-        return Task.CompletedTask;
     }
 
     public static RunAwaySkill Create(JToken jObj)
@@ -49,5 +63,7 @@ public class RunAwaySkill(RunAwaySkill.RunAwaySkillItem skillItem) : BaseSkill(s
     public class RunAwaySkillItem: SkillItem
     {
         [JsonProperty] public double MovePositionDistance { get; set; } = DistanceHelpers.OneSuInMeters * 20;
+        [JsonProperty] public bool TriggerOnPlayerContact { get; set; }
+        [JsonProperty] public float ScanRange { get; set; } = DistanceHelpers.OneSuInMeters * 4;
     }
 }
