@@ -227,6 +227,15 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 continue;
             }
 
+            try
+            {
+                await DeleteNpCsBySector(sector.Sector);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to Delete NPCs");
+            }
+
             await _constructHandleManager.CleanupConstructHandlesInSectorAsync(sector.Sector);
             await Task.Delay(200);
         }
@@ -238,7 +247,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         StatsRecorder.Record("ExecuteSectorCleanup", sw.ElapsedMilliseconds);
     }
 
-    private async Task DeleteNPCsBySector(Vec3 sector)
+    private async Task DeleteNpCsBySector(Vec3 sector)
     {
         var areaScanService = serviceProvider.GetRequiredService<IAreaScanService>();
         var contacts = await areaScanService.ScanForNpcConstructs(sector,
