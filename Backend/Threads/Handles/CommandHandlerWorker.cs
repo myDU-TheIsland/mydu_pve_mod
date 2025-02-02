@@ -90,6 +90,13 @@ public class CommandHandlerWorker : BackgroundService
                     await openPlayerBoardCommandHandler.HandleCommand(commandItem.PlayerId, commandItem.Message)
                         .WaitAsync(stoppingToken);
                 }
+
+                if (commandItem.Message.StartsWith("@tp", StringComparison.OrdinalIgnoreCase))
+                {
+                    var teleportCommandHandler =
+                        ModBase.ServiceProvider.GetRequiredService<ITeleportConstructCommandHandler>();
+                    await teleportCommandHandler.TeleportConstruct(commandItem.PlayerId, commandItem.Message);
+                }
             }
             catch (Exception e)
             {

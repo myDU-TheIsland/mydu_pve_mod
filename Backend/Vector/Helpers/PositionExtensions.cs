@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 using Mod.DynamicEncounters.Helpers;
@@ -14,7 +15,9 @@ public static class PositionExtensions
         var replacedString = position.Replace("::pos{", string.Empty)
             .Replace("}", string.Empty);
 
-        var pieces = replacedString.Split(',', StringSplitOptions.RemoveEmptyEntries);
+        var pieces = replacedString.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim())
+            .ToArray();
 
         if (pieces.Length != 5)
         {
