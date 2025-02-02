@@ -337,17 +337,28 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
     private async Task<SectorActivationOutcome> ActivateSector(SectorInstance sectorInstance)
     {
-        var spatialHashRepository = serviceProvider.GetRequiredService<IConstructSpatialHashRepository>();
-
-        var constructs = (await spatialHashRepository.FindPlayerLiveConstructsOnSector(sectorInstance.Sector))
-            .ToList();
+        var areaScanService = serviceProvider.GetRequiredService<IAreaScanService>();
+        var contacts = await areaScanService.ScanForPlayerContacts(0, 
+            sectorInstance.Sector, 
+            DistanceHelpers.OneSuInMeters * 10, 
+            1);
+        
+        var constructs = contacts.Select(x => x.ConstructId).ToList();
 
         if (constructs.Count == 0)
         {
             return SectorActivationOutcome.Failed("No Player Constructs");
         }
 
+        var constructService = serviceProvider.GetRequiredService<IConstructService>();
+        var constructInfo = await constructService.GetConstructInfoAsync(constructs.First()); 
+        
         HashSet<ulong> playerIds = [];
+
+        if (constructInfo.Info?.mutableData.pilot != null)
+        {
+            playerIds.Add(constructInfo.Info.mutableData.pilot.Value);
+        }
 
         _logger.LogInformation(
             "Starting up sector F({Faction}) ({Sector}) encounter: '{Encounter}'",
@@ -414,7 +425,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                     playerIds,
                     playerId,
                     sectorInstance.Sector,
-                    random.PickOneAtRandom(constructIds),
+                    constructIds.First(),
                     playerIds.Count
                 )
             );
