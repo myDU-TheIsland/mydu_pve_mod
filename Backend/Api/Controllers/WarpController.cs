@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Warp.Data;
@@ -51,17 +52,22 @@ public class WarpController : Controller
 
     [HttpPost]
     [Route("cooldown")]
-    public async Task<IActionResult> SetCooldown([FromBody] SetWarpPropertyRequest request)
+    public IActionResult SetCooldown([FromBody] SetWarpPropertyRequest request)
     {
-        var provider = ModBase.ServiceProvider;
-        var warpAnchorService = provider.GetRequiredService<IWarpAnchorService>();
-        var outcome = await warpAnchorService.SetWarpCooldown(new SetWarpCooldownCommand
+        _ = Task.Run(async () =>
         {
-            ConstructId = request.ConstructId,
-            ElementTypeName = request.ElementTypeName
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            
+            var provider = ModBase.ServiceProvider;
+            var warpAnchorService = provider.GetRequiredService<IWarpAnchorService>();
+            var outcome = await warpAnchorService.SetWarpCooldown(new SetWarpCooldownCommand
+            {
+                ConstructId = request.ConstructId,
+                ElementTypeName = request.ElementTypeName
+            });
         });
-
-        return Ok(outcome);
+        
+        return Ok();
     }
 
     public class SetWarpPropertyRequest
