@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Mod.DynamicEncounters.Api;
 using Mod.DynamicEncounters.Common.Extensions;
 using Mod.DynamicEncounters.Threads.Handles;
-using Mod.DynamicEncounters.Threads.Handles.Test;
 using NQutils.Config;
 
 namespace Mod.DynamicEncounters;
@@ -56,8 +55,7 @@ public static class Program
                     services.AddHostedService<ReconnectBotWorker>();
                     services.AddHostedService<TaskQueueWorker>();
                     services.AddHostedService<CommandHandlerWorker>();
-                    services.AddSingleHostedService(p => new ActorLoop(new NpcManagerActor()));
-                    // services.RegisterActorPlugins();
+                    services.RegisterActorPlugins();
                 })
                 .Build();
 
