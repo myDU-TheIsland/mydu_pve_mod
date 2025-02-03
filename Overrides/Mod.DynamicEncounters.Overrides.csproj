@@ -35,6 +35,7 @@
         <EmbeddedResource Include="Resources\party-app.css" />
         <None Remove="Resources\party-app.js" />
         <EmbeddedResource Include="Resources\party-app.js" />
+        <EmbeddedResource Include="Resources\change-recipe-sub-panel.js" />
     </ItemGroup>
     <ItemGroup>
       <Folder Include="Overrides\" />
