@@ -12,11 +12,15 @@ modApi.cb = (data) => {
 };
 
 modApi.interact = () => {
-    CPPMod.sendModAction("Mod.DynamicEncounters", 1000101, [], JSON.stringify(window.player_context || {}       ));
+    CPPMod.sendModAction("Mod.DynamicEncounters", 1000101, [], JSON.stringify(window.player_context || {}));
 };
 
 modApi.setWaypoint = (pos) => {
     CPPMapsManagerPlanet.setCoordinateAsDestination(`${pos}`);
+};
+
+modApi.saveGuiPosition = (pos) => {
+    CPPMod.sendModAction("Mod.DynamicEncounters", 117, [], JSON.stringify(pos));
 };
 
 modApi.setContext = (data) => {

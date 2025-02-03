@@ -278,6 +278,10 @@ public class MyDuMod : IMod
                 var fetchPlayerParty = new FetchPartyDataAction(_provider);
                 await fetchPlayerParty.HandleAction(playerId, action);
                 break;
+            case ActionType.SavePartyGuiPosition:
+                var position = JsonConvert.DeserializeObject<Vec3>(action.payload);
+                await partyApi.SaveGuiPosition(playerId, position, CancellationToken.None);
+                break;
             case ActionType.Interact:
             case ActionType.InteractInternal:
                 var interactAction = new InteractAction(_provider);

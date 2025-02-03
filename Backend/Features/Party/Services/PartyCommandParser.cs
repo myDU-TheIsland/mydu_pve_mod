@@ -62,7 +62,8 @@ public class PartyCommandParser : IPartyCommandParser
                         "> @g cancel - Cancels a group request you sent; (same as decline)",
                         "> @g leave - Leaves the group; (same as cancel)",
                         "> @g disband - Disbands the group;",
-                        "> @g role commander - Sets your role as commander;"
+                        "> @g role commander - Sets your role as commander;",
+                        "> @g reset - Resets the group UI settings;"
                     };
 
                     foreach (var m in messages)
@@ -161,6 +162,8 @@ public class PartyCommandParser : IPartyCommandParser
 
                 return PartyCommandHandlerOutcome.Execute(service =>
                     service.SetPlayerPartyRole(instigatorPlayerId, pieces.Dequeue()));
+            case "reset":
+                return PartyCommandHandlerOutcome.Execute(service => service.SetPartyGuiPosition(instigatorPlayerId, new Vec3()));
         }
 
         return PartyCommandHandlerOutcome.Failed("Invalid Command");

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.NQ.Interfaces;
 using Mod.DynamicEncounters.Features.Party.Interfaces;
+using NQ;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
 
@@ -134,6 +135,26 @@ public class PartyController : Controller
         return Ok(result);
     }
 
+    [HttpPost]
+    [Route("save/position")]
+    public async Task<IActionResult> SaveSettings([FromBody] SavePartySettingsRequest request)
+    {
+        if (!request.GuiPosition.HasValue)
+        {
+            return BadRequest();
+        }
+        
+        await _service.SetPartyGuiPosition(request.InstigatorPlayerId, request.GuiPosition.Value);
+        
+        return Ok();
+    }
+
+    public class SavePartySettingsRequest
+    {
+        public ulong InstigatorPlayerId { get; set; }
+        public Vec3? GuiPosition { get; set; }
+    }
+    
     public class PartyRequest
     {
         public ulong InstigatorPlayerId { get; set; }

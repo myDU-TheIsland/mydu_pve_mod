@@ -24,5 +24,6 @@ public interface IPlayerPartyService
     Task<PartyOperationOutcome> KickPartyMember(PlayerId instigatorPlayerId, PlayerId invitedPlayerId);
     Task<PartyOperationOutcome> KickPartyMember(PlayerId instigatorPlayerId, string playerName);
     Task<PartyOperationOutcome> SetPlayerPartyRole(PlayerId instigatorPlayerId, string role);
+    Task<PartyOperationOutcome> SetPartyGuiPosition(PlayerId instigatorPlayerId, Vec3 position);
     Task<IEnumerable<PlayerPartyItem>> GetPartyByPlayerId(PlayerId playerId);
 }

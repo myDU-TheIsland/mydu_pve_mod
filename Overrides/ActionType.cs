@@ -33,5 +33,6 @@ public enum ActionType
     PushConstructData = 114,
     GiveTakeContainer = 115,
     ShootWeapon = 116,
+    SavePartyGuiPosition = 117,
     Callback = 1999999
 }

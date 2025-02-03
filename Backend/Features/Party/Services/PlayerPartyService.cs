@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Backend.Database;
 using Microsoft.Extensions.DependencyInjection;
-using Mod.DynamicEncounters.Common;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Features.Common.Services;
 using Mod.DynamicEncounters.Features.NQ.Interfaces;
 using Mod.DynamicEncounters.Features.Party.Data;
 using Mod.DynamicEncounters.Features.Party.Interfaces;
 using NQ;
+using NQutils.Sql;
 
 namespace Mod.DynamicEncounters.Features.Party.Services;
 
@@ -335,6 +336,18 @@ public partial class PlayerPartyService(IServiceProvider provider) : IPlayerPart
         await _repository.SetPlayerPartyRole(instigatorPlayerId, role);
         
         return PartyOperationOutcome.Successful(groupId, $"Role '{role}' set");
+    }
+
+    public async Task<PartyOperationOutcome> SetPartyGuiPosition(PlayerId instigatorPlayerId, Vec3 position)
+    {
+        var sql = provider.GetRequiredService<ISql>();
+        await sql.UpdatePlayerProperty_Generic(
+            instigatorPlayerId,
+            "partyGuiPosition",
+            new PropertyValue(position)
+        );
+        
+        return PartyOperationOutcome.Successful("Saved GUI Position");
     }
 
     public Task<IEnumerable<PlayerPartyItem>> GetPartyByPlayerId(PlayerId playerId)

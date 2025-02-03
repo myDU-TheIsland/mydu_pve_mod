@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Overrides.ApiClient.Data;
 using Mod.DynamicEncounters.Overrides.ApiClient.Interfaces;
 using Newtonsoft.Json;
+using NQ;
 
 namespace Mod.DynamicEncounters.Overrides.ApiClient.Services;
 
@@ -32,6 +33,15 @@ public class PveModPartyApiClient(IServiceProvider provider) : IPveModPartyApiCl
         return JsonConvert.DeserializeObject<IEnumerable<PlayerPartyItem>>(jsonString);
     }
 
+    public async Task<BasicOutcome> SaveGuiPosition(ulong instigatorPlayerId, Vec3 position, CancellationToken cancellationToken)
+    {
+        return await PostAsync("party/save/position", new
+        {
+            InstigatorPlayerId = instigatorPlayerId,
+            GuiPosition = position
+        }, cancellationToken);
+    }
+    
     public async Task<BasicOutcome> CancelInvite(ulong instigatorPlayerId, ulong playerId, CancellationToken cancellationToken)
     {
         return await PostAsync("party/invite/cancel", new
