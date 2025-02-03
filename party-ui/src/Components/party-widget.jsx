@@ -132,6 +132,10 @@ const PartyWidget = () => {
             }, error => {
             })
             .then(resJson => {
+                if (resJson.Position)
+                {
+                    setOffset({x: resJson.Position.x, y: resJson.Position.y});
+                }
                 setMembers(resJson.Members);
                 setLeader(resJson.Leader);
                 setPendingAccept(resJson.PendingAccept);
@@ -206,6 +210,7 @@ const PartyWidget = () => {
 
     const handleMouseUp = () => {
         setDragging(false);
+        window.modApi.saveGuiPosition(offset);
     };
 
     const handleMouseMove = (e) => {

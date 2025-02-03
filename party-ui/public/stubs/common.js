@@ -15,6 +15,10 @@ modApi.setWaypoint = (pos) => {
     console.log('setWaypoint', pos);
 };
 
+modApi.saveGuiPosition = (pos) => {
+    console.log('saveGuiPosition', pos);
+};
+
 modApi.setPage = (page) => {
     window.page = page;
 };

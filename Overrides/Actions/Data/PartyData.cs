@@ -8,16 +8,19 @@ public class PartyData
 {
     public Guid GroupId { get; set; }
     public bool PlayerIsLeader { get; set; }
+
     /// <summary>
     /// indicates the instigator player hasn't been accepted yet 
     /// </summary>
     public bool PlayerIsPending { get; set; }
 
+    public Vec3? Position { get; set; }
+
     public PartyMemberEntry Leader { get; set; }
     public IEnumerable<PartyMemberEntry> Members { get; set; } = [];
     public IEnumerable<PartyMemberEntry> Invited { get; set; } = [];
     public IEnumerable<PartyMemberEntry> PendingAccept { get; set; } = [];
-    
+
     public class PartyMemberEntry
     {
         public bool IsLeader { get; set; }

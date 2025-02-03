@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Backend.Database;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Overrides.Actions.Data;
@@ -13,6 +14,7 @@ using Mod.DynamicEncounters.Overrides.Common.Interfaces;
 using Mod.DynamicEncounters.Overrides.Common.Services;
 using Newtonsoft.Json;
 using NQ;
+using NQutils.Sql;
 
 namespace Mod.DynamicEncounters.Overrides.Actions.Party;
 
@@ -84,6 +86,24 @@ public class FetchPartyDataAction(IServiceProvider provider) : IModActionHandler
             PendingAccept = pendingRequestList,
             Members = membersMappedTask
         };
+
+        try
+        {
+            var sql = provider.GetRequiredService<ISql>();
+            var positionPv = await sql.ReadPlayerProperty_Generic(playerId, "partyGuiPosition");
+            Vec3? position = null;
+            if (positionPv != null && !string.IsNullOrEmpty(positionPv.stringValue))
+            {
+                var positionStringValue = positionPv.stringValue;
+                position = JsonConvert.DeserializeObject<Vec3>(positionStringValue);
+            }
+
+            partyData.Position = position;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to Retrieve GUI Position Property");
+        }
 
         _logger.LogInformation("Party Data: {Json}", JsonConvert.SerializeObject(partyData));
         // _logger.LogInformation("FetchPartyDataAction Took: {Time}ms", sw.ElapsedMilliseconds);
