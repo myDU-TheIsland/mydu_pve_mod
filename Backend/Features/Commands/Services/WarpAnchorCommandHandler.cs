@@ -43,7 +43,7 @@ public partial class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
         {
             await HandleCreateWarpAnchorCommand(instigatorPlayerId);
         }
-        else if (command.StartsWith("@wac ::pos{0,0,"))
+        else if (command.StartsWith("@wacp ::pos{0,0,"))
         {
             var pieces = command.Split(" ");
             var position = pieces[1];
@@ -58,6 +58,33 @@ public partial class WarpAnchorCommandHandler : IWarpAnchorCommandHandler
                     {
                         TargetPosition = posVec,
                         PlayerId = instigatorPlayerId
+                    }
+                );
+
+                await SendAlertForOutcome(instigatorPlayerId, outcome);
+            }
+            catch (Exception e)
+            {
+                await _playerAlertService.SendErrorAlert(instigatorPlayerId, "Failed to process command. Invalid position");
+                _logger.LogError(e, "Failed to process wac position command");
+            }
+        }
+        else if (command.StartsWith("@wac ::pos{0,0,"))
+        {
+            var pieces = command.Split(" ");
+            var position = pieces[1];
+
+            try
+            {
+                var posVec = position.PositionToVec3();
+
+                var warpAnchorService = ModBase.ServiceProvider.GetRequiredService<IWarpAnchorService>();
+                var outcome = await warpAnchorService.CreateWarpAnchorForPosition(
+                    new CreateWarpAnchorCommand
+                    {
+                        TargetPosition = posVec,
+                        PlayerId = instigatorPlayerId,
+                        Offset = 0D
                     }
                 );
 
