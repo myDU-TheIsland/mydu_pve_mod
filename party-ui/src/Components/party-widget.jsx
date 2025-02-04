@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import PartyEntryMember from "./party-entry-member";
 import {Widget, WidgetButtonRow, WidgetFormRow, WidgetHeader, WidgetInputText, WidgetPage, WidgetRow} from "./widget";
 import {PartyEntryPending, SelfPartyEntryPending} from "./party-entry-pending";
@@ -111,6 +111,7 @@ const PartyWidget = () => {
     const [leader, setLeader] = useState(null);
     const [isLeader, setIsLeader] = useState(false);
     const [isPending, setIsPending] = useState(false);
+    const [positionLoaded, setPositionLoaded] = useState(false);
 
     const [position, setPosition] = useState({x: 0, y: 0});
     const [dragging, setDragging] = useState(false);
@@ -123,7 +124,12 @@ const PartyWidget = () => {
         setPosition({x: centerX, y: centerY});
     }, []);
 
-    const fetchData = () => {
+    const positionLoadedRef = useRef(false);
+    useEffect(() => {
+        positionLoadedRef.current = positionLoaded;
+    });
+
+    const fetchData = useCallback(() => {
         const url = window.global_resources["player-party"];
 
         fetch(url)
@@ -132,9 +138,9 @@ const PartyWidget = () => {
             }, error => {
             })
             .then(resJson => {
-                if (resJson.Position)
-                {
-                    setOffset({x: resJson.Position.x, y: resJson.Position.y});
+                if (!positionLoadedRef.current && resJson.Position) {
+                    setPosition({x: resJson.Position.x, y: resJson.Position.y});
+                    setPositionLoaded(true);
                 }
                 setMembers(resJson.Members);
                 setLeader(resJson.Leader);
@@ -144,7 +150,7 @@ const PartyWidget = () => {
                 setIsPending(resJson.PlayerIsPending);
             }, error => {
             });
-    };
+    }, [positionLoaded]);
 
     useEffect(() => fetchData(), []);
 
@@ -210,7 +216,7 @@ const PartyWidget = () => {
 
     const handleMouseUp = () => {
         setDragging(false);
-        window.modApi.saveGuiPosition(offset);
+        window.modApi.saveGuiPosition(position);
     };
 
     const handleMouseMove = (e) => {
@@ -254,7 +260,7 @@ const PartyWidget = () => {
                     <BackToMembersButton visible={page !== "members"} onClick={handleReturnToMembersClick}/>
                     <WidgetTitle onMouseDown={handleMouseDown}
                                  onMouseUp={handleMouseUp}
-                                 >Group {isLeader}</WidgetTitle>
+                    >Group {isLeader}</WidgetTitle>
                     <CloseWidget/>
                 </WidgetHeader>
                 <CreatePartyWidgetRow leader={leader}/>

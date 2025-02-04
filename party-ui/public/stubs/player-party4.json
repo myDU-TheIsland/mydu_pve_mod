@@ -2,6 +2,7 @@
   "GroupId": "27e28386-5e06-4f76-a453-5d8ce8e35ac1",
   "PlayerIsLeader": false,
   "PlayerIsPending": true,
+  "Position": {"x": 100, "y": 100, "z": 0},
   "Leader": {
     "IsLeader": true,
     "IsConnected": false,
