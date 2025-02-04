@@ -91,11 +91,10 @@ public class FetchPartyDataAction(IServiceProvider provider) : IModActionHandler
         {
             var sql = provider.GetRequiredService<ISql>();
             var positionPv = await sql.ReadPlayerProperty_Generic(playerId, "partyGuiPosition");
-            Vec3? position = null;
-            if (positionPv != null && !string.IsNullOrEmpty(positionPv.stringValue))
+            Vec3? position = new Vec3 { x = 100, y = 100 };
+            if (positionPv != null)
             {
-                var positionStringValue = positionPv.stringValue;
-                position = JsonConvert.DeserializeObject<Vec3>(positionStringValue);
+                position = positionPv.vec3Value;
             }
 
             partyData.Position = position;
