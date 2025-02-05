@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from "react";
 import PartyEntryMember from "./party-entry-member";
-import {Widget, WidgetButtonRow, WidgetFormRow, WidgetHeader, WidgetInputText, WidgetPage, WidgetRow} from "./widget";
+import {Widget, WidgetButtonRow, WidgetFormRow, WidgetHeader, WidgetPage, WidgetRow} from "./widget";
 import {PartyEntryPending, SelfPartyEntryPending} from "./party-entry-pending";
 import styled from "styled-components";
 import {ConfirmWidgetButton, WidgetFlexButton} from "./buttons";
@@ -163,7 +163,7 @@ const PartyWidget = () => {
         }, 250);
 
         return () => clearInterval(window.party_data_interval);
-    }, []);
+    }, [fetchData]);
 
     useEffect(() => {
         if (window.refresh_party_data_interval) {
@@ -229,11 +229,11 @@ const PartyWidget = () => {
     };
 
     const handleMouseLeave = (e) => {
-        clearTimeout(mouseLeaveTimeout.current);
-
-        mouseLeaveTimeout.current = setTimeout(() => {
-            setDragging(false);
-        }, 2000);
+        // clearTimeout(mouseLeaveTimeout.current);
+        //
+        // mouseLeaveTimeout.current = setTimeout(() => {
+        //     setDragging(false);
+        // }, 2000);
     };
 
     const handleSetRole = (role) => {
