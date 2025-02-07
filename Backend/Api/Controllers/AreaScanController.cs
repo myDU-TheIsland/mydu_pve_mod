@@ -13,6 +13,25 @@ namespace Mod.DynamicEncounters.Api.Controllers;
 [Route("area-scan")]
 public class AreaScanController : Controller
 {
+    [Route("npc-radar")]
+    [HttpPost]
+    public async Task<IActionResult> NpcRadarScan([FromBody] AreaScanRequest request)
+    {
+        var provider = ModBase.ServiceProvider;
+        var areaScanService = provider.GetRequiredService<IAreaScanService>();
+
+        var pos = await request.GetReferencePosition(provider);
+        
+        var contacts =
+            await areaScanService.ScanForNpcEnemyContacts(request.ConstructId ?? 1, 
+                pos, 
+                request.Radius, 
+                request.FactionId, 
+                request.Limit);
+
+        return Ok(contacts);
+    }
+    
     [Route("players")]
     [HttpPost]
     public async Task<IActionResult> PlayerScan([FromBody] AreaScanRequest request)
@@ -64,6 +83,7 @@ public class AreaScanController : Controller
     {
         [JsonProperty] public ulong? ConstructId { get; set; }
         [JsonProperty] public Vec3? Position { get; set; }
+        [JsonProperty] public long FactionId { get; set; }
         [JsonProperty] public double Radius { get; set; } = DistanceHelpers.OneSuInMeters * 20;
         [JsonProperty] public int Limit { get; set; } = 20;
 

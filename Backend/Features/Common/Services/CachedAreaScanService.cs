@@ -16,9 +16,14 @@ public class CachedAreaScanService(IAreaScanService areaScanService) : IAreaScan
         double radius,
         int limit)
     {
+        return areaScanService.ScanForPlayerContacts(constructId, position, radius);
+    }
+
+    public Task<IEnumerable<ScanContact>> ScanForNpcEnemyContacts(ulong constructId, Vec3 position, double radius, long factionId, int limit = 5)
+    {
         return _npcRadar.TryGetOrSetValue(
             constructId,
-            () => areaScanService.ScanForPlayerContacts(constructId, position, radius)
+            () => areaScanService.ScanForNpcEnemyContacts(constructId, position, radius, factionId)
         );
     }
 
