@@ -14,6 +14,14 @@ public interface IAreaScanService
         int limit = 5
     );
     
+    Task<IEnumerable<ScanContact>> ScanForNpcEnemyContacts(
+        ulong constructId,
+        Vec3 position,
+        double radius,
+        long factionId,
+        int limit = 5
+    );
+    
     Task<IEnumerable<ScanContact>> ScanForNpcConstructs(Vec3 position, double radius, int limit = 10);
     Task<IEnumerable<ScanContact>> ScanForAbandonedConstructs(Vec3 position, double radius, int limit = 10);
 

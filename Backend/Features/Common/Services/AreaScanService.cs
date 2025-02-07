@@ -58,6 +58,49 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
         return rows.Select(MapToModel);
     }
 
+    public async Task<IEnumerable<ScanContact>> ScanForNpcEnemyContacts(ulong constructId, 
+        Vec3 position, 
+        double radius,
+        long factionId,
+        int limit = 5)
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        var rows = (await db.QueryAsync<DbRow>(
+            $"""
+             SELECT 
+                 C.id, 
+                 C.name, 
+                 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance,
+                 C.position_x,
+                 C.position_y,
+                 C.position_z
+             FROM public.construct C
+             INNER JOIN public.ownership O ON O.id = C.owner_entity_id
+             LEFT JOIN mod_npc_construct_handle CH ON (CH.construct_id = C.id)
+             WHERE (CH.id IS NULL OR CH.faction_id != @factionId)
+                 AND ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
+                 AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
+                 AND C.deleted_at IS NULL
+                 AND (C.json_properties->>'isUntargetable' = 'false' OR C.json_properties->>'isUntargetable' IS NULL)
+                 AND (C.json_properties->>'kind' IN ('4', '5'))
+                 AND (C.owner_entity_id IS NOT NULL)
+                 AND (O.player_id IS NULL)
+                 AND C.id != @constructId
+             ORDER BY distance ASC
+             LIMIT {limit}
+             """,
+            new
+            {
+                constructId = (long)constructId, 
+                factionId
+            }
+        )).ToList();
+
+        return rows.Select(MapToModel);
+    }
+
     public async Task<IEnumerable<ScanContact>> ScanForNpcConstructs(Vec3 position, double radius, int limit = 5)
     {
         using var db = _factory.Create();
