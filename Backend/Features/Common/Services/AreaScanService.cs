@@ -33,7 +33,8 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
                  ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance,
                  C.position_x,
                  C.position_y,
-                 C.position_z
+                 C.position_z,
+                 0 as faction_id
              FROM public.construct C
              INNER JOIN public.ownership O ON O.id = C.owner_entity_id
              LEFT JOIN mod_npc_construct_handle CH ON (CH.construct_id = C.id)
@@ -75,18 +76,16 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
                  ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance,
                  C.position_x,
                  C.position_y,
-                 C.position_z
+                 C.position_z,
+                 CASE WHEN CH.faction_id IS NULL THEN 0 ELSE CH.faction_id END faction_id
              FROM public.construct C
-             INNER JOIN public.ownership O ON O.id = C.owner_entity_id
              LEFT JOIN mod_npc_construct_handle CH ON (CH.construct_id = C.id)
-             WHERE (CH.id IS NULL OR CH.faction_id != @factionId)
-                 AND ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
+             WHERE ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
                  AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
                  AND C.deleted_at IS NULL
                  AND (C.json_properties->>'isUntargetable' = 'false' OR C.json_properties->>'isUntargetable' IS NULL)
                  AND (C.json_properties->>'kind' IN ('4', '5'))
                  AND (C.owner_entity_id IS NOT NULL)
-                 AND (O.player_id IS NULL)
                  AND C.id != @constructId
              ORDER BY distance ASC
              LIMIT {limit}
@@ -114,7 +113,8 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
                  ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance,
                  C.position_x,
                  C.position_y,
-                 C.position_z
+                 C.position_z,
+                 0 as faction_id
              FROM public.construct C
              INNER JOIN public.ownership O ON O.id = C.owner_entity_id
              INNER JOIN mod_npc_construct_handle CH ON (CH.construct_id = C.id)
@@ -144,7 +144,8 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
              SELECT 
                  C.id, 
                  C.name, 
-                 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance 
+                 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance,
+                 0 as faction_id
              FROM public.construct C
              WHERE ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
                  AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
@@ -170,7 +171,8 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
               SELECT 
               	 C.id, 
               	 C.name,
-              	 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance 
+              	 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance,
+              	 0 as faction_id
                FROM public.construct C
                WHERE ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
               	 AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
@@ -193,7 +195,8 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
              SELECT 
              	 C.id, 
              	 C.name,
-             	 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance 
+             	 ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) as distance,
+             	 0 as faction_id
               FROM public.construct C
               WHERE ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
              	 AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
@@ -217,7 +220,8 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
                 x = row.position_x,
                 y = row.position_y,
                 z = row.position_z
-            }
+            },
+            row.faction_id
         );
     }
 
@@ -234,5 +238,6 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
         public double position_x { get; set; }
         public double position_y { get; set; }
         public double position_z { get; set; }
+        public long faction_id { get; set; }
     }
 }
