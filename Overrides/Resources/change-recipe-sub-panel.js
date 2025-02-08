@@ -7,11 +7,16 @@ ChangeRecipeSubPanel.prototype.updateSelectedItem = function(typeId) {
     {
         let label = "Recipe".concat(" ", count);
 
-        this.recipesDropdown.addListElement(recipeId, label);
-        ++count;
+        let recipe = recipesListObj[recipeId];
+        let modifiedRecipe = this.parentPanel._modifyRecipeByIndustry(recipe);
+        
+        if (this.parentPanel._testCanDoRecipe(modifiedRecipe)) {
+            this.recipesDropdown.addListElement(recipeId, label);
+            ++count;
+        }
     }
 
-    let hasMultipleRecipes = (Object.keys(recipesListObj).length > 1);
+    let hasMultipleRecipes = (count > 1);
     let defaultSelectedRecipeKey = Object.keys(recipesListObj)[0];
     this.HTMLNodes.recipesArea.classList.toggle("hide", !hasMultipleRecipes);
 
