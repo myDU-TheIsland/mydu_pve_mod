@@ -5,5 +5,5 @@ namespace Mod.DynamicEncounters.Overrides.Actions;
 
 public interface IModActionHandler
 {
-    Task HandleAction(ulong playerId, ModAction action);
+    Task HandleActionAsync(ulong playerId, ModAction action);
 }

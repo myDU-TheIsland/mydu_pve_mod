@@ -26,7 +26,7 @@ public class ShootWeaponAction(IServiceProvider provider) : IModActionHandler
     private readonly IScenegraph _sceneGraph = provider.GetRequiredService<IScenegraph>();
     private readonly ILogger _logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger<ShootWeaponAction>();
 
-    public async Task HandleAction(ulong playerId, ModAction action)
+    public async Task HandleActionAsync(ulong playerId, ModAction action)
     {
         var shotData = JsonConvert.DeserializeObject<ShootWeaponData>(action.payload);
         var weapon = shotData.Weapon;

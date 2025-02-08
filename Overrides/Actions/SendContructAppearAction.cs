@@ -16,7 +16,7 @@ namespace Mod.DynamicEncounters.Overrides.Actions;
 
 public class SendConstructAppearAction(IServiceProvider provider) : IModActionHandler
 {
-    public async Task HandleAction(ulong playerId, ModAction action)
+    public async Task HandleActionAsync(ulong playerId, ModAction action)
     {
         var data = JsonConvert.DeserializeObject<ConstructAppearData>(action.payload);
 

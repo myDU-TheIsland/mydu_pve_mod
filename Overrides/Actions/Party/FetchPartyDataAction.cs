@@ -26,7 +26,7 @@ public class FetchPartyDataAction(IServiceProvider provider) : IModActionHandler
     private readonly ILogger<FetchPartyDataAction> _logger = provider.GetRequiredService<ILoggerFactory>()
         .CreateLogger<FetchPartyDataAction>();
 
-    public async Task HandleAction(ulong playerId, ModAction action)
+    public async Task HandleActionAsync(ulong playerId, ModAction action)
     {
         var injection = ModServiceProvider.Get<IMyDuInjectionService>();
 

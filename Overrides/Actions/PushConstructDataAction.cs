@@ -10,7 +10,7 @@ public class PushConstructDataAction(
     ICachedConstructDataService cachedConstructDataService
 ) : IModActionHandler
 {
-    public Task HandleAction(ulong playerId, ModAction action)
+    public Task HandleActionAsync(ulong playerId, ModAction action)
     {
         var constructData = JsonConvert.DeserializeObject<ConstructData>(action.payload);
         

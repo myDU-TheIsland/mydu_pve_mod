@@ -8,7 +8,7 @@ namespace Mod.DynamicEncounters.Overrides.Actions.Party;
 
 public class RenderPartyAppAction : IModActionHandler
 {
-    public async Task HandleAction(ulong playerId, ModAction action)
+    public async Task HandleActionAsync(ulong playerId, ModAction action)
     {
         var injection = ModServiceProvider.Get<IMyDuInjectionService>();
 

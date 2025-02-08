@@ -15,7 +15,7 @@ namespace Mod.DynamicEncounters.Overrides.Actions;
 
 public class InteractAction(IServiceProvider provider) : IModActionHandler
 {
-    public async Task HandleAction(ulong playerId, ModAction action)
+    public async Task HandleActionAsync(ulong playerId, ModAction action)
     {
         var logger = provider.GetRequiredService<ILoggerFactory>()
             .CreateLogger<InteractAction>();

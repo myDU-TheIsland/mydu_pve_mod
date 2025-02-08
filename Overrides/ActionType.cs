@@ -15,6 +15,7 @@ public enum ActionType
     SendConstructAppear = 1000007,
     RemoveConstructBuffs = 1000008,
     UpgradeConstructBuffs = 1000009,
+    FinishInitializingPlayerScript = 1000010,
     GiveTakePlayerItems = 100,
     Interact = 101,
     InteractInternal = 1000101,

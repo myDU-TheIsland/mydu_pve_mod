@@ -19,7 +19,7 @@ namespace Mod.DynamicEncounters.Overrides.Actions;
 
 public class GiveTakeContainerAction(IServiceProvider provider) : IModActionHandler
 {
-    public async Task HandleAction(ulong playerId, ModAction action)
+    public async Task HandleActionAsync(ulong playerId, ModAction action)
     {
         var itemStorage = provider.GetRequiredService<IItemStorageService>();
         var orleans = provider.GetRequiredService<IClusterClient>();

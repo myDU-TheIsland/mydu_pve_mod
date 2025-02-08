@@ -12,7 +12,7 @@ namespace Mod.DynamicEncounters.Overrides.Actions;
 
 public class RemoveConstructBuffsAction(IServiceProvider provider) : IModActionHandler
 {
-    public async Task HandleAction(ulong playerId, ModAction action)
+    public async Task HandleActionAsync(ulong playerId, ModAction action)
     {
         var orleans = provider.GetRequiredService<IClusterClient>();
         var bank = provider.GetRequiredService<IGameplayBank>();

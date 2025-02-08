@@ -2,7 +2,7 @@
 
 public static class Resources
 {
-    private const string Namespace = "Mod.DynamicEncounters.Overrides.Resources"; 
+    private const string Namespace = "Mod.DynamicEncounters.Overrides.Resources";
     public static string CommonJs => ResourceLoader
         .GetStringContents($"{Namespace}.common.js");
     public static string CreateRootDivJs => ResourceLoader
@@ -17,4 +17,6 @@ public static class Resources
         .GetStringContents($"{Namespace}.party-app.js");
     public static string PartyAppCss => ResourceLoader
         .GetStringContents($"{Namespace}.party-app.css");
+    public static string ChangeRecipeSubPanel => ResourceLoader
+        .GetStringContents($"{Namespace}.change-recipe-sub-panel.js");
 }

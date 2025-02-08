@@ -11,6 +11,10 @@ modApi.cb = (data) => {
     CPPMod.sendModAction("Mod.DynamicEncounters", 1999999, [], JSON.stringify(data));
 };
 
+modApi.pongPlayer = () => {
+    CPPMod.sendModAction("Mod.DynamicEncounters", 1000010, [], "");
+};
+
 modApi.interact = () => {
     CPPMod.sendModAction("Mod.DynamicEncounters", 1000101, [], JSON.stringify(window.player_context || {}));
 };
@@ -178,3 +182,8 @@ modApi.removeAppRoot = () => {
 }
 
 window.modApi = modApi;
+
+// Confirm Player can respond
+setTimeout(() => {
+    window.modApi.pongPlayer();
+});

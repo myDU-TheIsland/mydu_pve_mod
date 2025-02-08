@@ -33,6 +33,7 @@ public class MyDuMod : IMod
     private IMyDuInjectionService _injection;
     private ICachedConstructDataService _cachedConstructDataService;
     private ShootWeaponAction _shootWeaponAction;
+    private InitializePlayerScripts _initializePlayerScripts;
 
     public string GetName()
     {
@@ -49,6 +50,7 @@ public class MyDuMod : IMod
         _cachedConstructDataService = new CachedConstructDataService();
         _weaponGrainOverrides = new WeaponGrainOverrides(_provider, _cachedConstructDataService);
         _shootWeaponAction = new ShootWeaponAction(_provider);
+        _initializePlayerScripts = new InitializePlayerScripts(_provider, _injection);
 
         var hookCallManager = provider.GetRequiredService<IHookCallManager>();
         hookCallManager.Register(
@@ -57,14 +59,14 @@ public class MyDuMod : IMod
             _weaponGrainOverrides,
             nameof(WeaponGrainOverrides.WeaponFireOnce)
         );
-        
+
         hookCallManager.Register(
             "PlayerGrain.InventoryReady",
             HookMode.Replace,
             this,
             nameof(InventoryReady)
         );
-        
+
         hookCallManager.Register(
             "ConstructGrain.WarpEnd",
             HookMode.Replace,
@@ -87,7 +89,7 @@ public class MyDuMod : IMod
         await context.Invoke();
 
         var constructId = (ulong)context.Grain.GetPrimaryKeyLong();
-        
+
         var orleans = _provider.GetRequiredService<IClusterClient>();
         var bank = _provider.GetRequiredService<IGameplayBank>();
         var constructElementsGrain = orleans.GetConstructElementsGrain(constructId);
@@ -96,12 +98,12 @@ public class MyDuMod : IMod
         if (warpDrives.Count == 0)
         {
             _logger.LogError("No Warp Drives Detected");
-            
+
             return;
         }
 
         var elementInfo = await constructElementsGrain.GetElement(warpDrives.First());
-        
+
         var warpAnchorApiClient = new WarpAnchorApiClient(_provider);
         await warpAnchorApiClient.SetWarpEndCooldown(new SetWarpEndCooldownRequest
         {
@@ -120,9 +122,8 @@ public class MyDuMod : IMod
         var grain = context.Grain.AsReference<IPlayerGrain>();
         var playerId = (ulong)grain.GetPrimaryKeyLong();
 
-        // TODO implement any initializing required
-
         await context.Invoke();
+        await _initializePlayerScripts.StartPlayerPingAsync(playerId);
     }
 
     public Task<ModInfo> GetModInfoFor(ulong playerId, bool admin)
@@ -180,10 +181,10 @@ public class MyDuMod : IMod
         if (action.actionId == (ulong)ActionType.PushConstructData)
         {
             var pushConstructData = new PushConstructDataAction(_cachedConstructDataService);
-            await pushConstructData.HandleAction(playerId, action);
+            await pushConstructData.HandleActionAsync(playerId, action);
             return;
         }
-        
+
         _playerRateLimiter.TrackRequest(playerId);
         if (_playerRateLimiter.ExceededRateLimit(playerId))
         {
@@ -203,12 +204,15 @@ public class MyDuMod : IMod
 
         switch ((ActionType)action.actionId)
         {
+            case ActionType.FinishInitializingPlayerScript:
+                await _initializePlayerScripts.HandleActionAsync(playerId, action);
+                break;
             case ActionType.ShootWeapon:
-                await _shootWeaponAction.HandleAction(playerId, action);
+                await _shootWeaponAction.HandleActionAsync(playerId, action);
                 break;
             case ActionType.SendConstructAppear:
                 var sendConstructAppearAction = new SendConstructAppearAction(_provider);
-                await sendConstructAppearAction.HandleAction(playerId, action);
+                await sendConstructAppearAction.HandleActionAsync(playerId, action);
                 break;
             case ActionType.InviteToParty:
                 var partyInviteRequest = action.PayloadAs<PartyRequest>();
@@ -269,14 +273,14 @@ public class MyDuMod : IMod
                 await _injection.InjectJs(playerId, Resources.CommonJs);
 
                 var fetchPlayerPartyForLoad = new FetchPartyDataAction(_provider);
-                await fetchPlayerPartyForLoad.HandleAction(playerId, action);
+                await fetchPlayerPartyForLoad.HandleActionAsync(playerId, action);
 
                 var renderPlayerParty = new RenderPartyAppAction();
-                await renderPlayerParty.HandleAction(playerId, action);
+                await renderPlayerParty.HandleActionAsync(playerId, action);
                 break;
             case ActionType.FetchPlayerParty:
                 var fetchPlayerParty = new FetchPartyDataAction(_provider);
-                await fetchPlayerParty.HandleAction(playerId, action);
+                await fetchPlayerParty.HandleActionAsync(playerId, action);
                 break;
             case ActionType.SavePartyGuiPosition:
                 var position = JsonConvert.DeserializeObject<Vec3>(action.payload);
@@ -285,15 +289,15 @@ public class MyDuMod : IMod
             case ActionType.Interact:
             case ActionType.InteractInternal:
                 var interactAction = new InteractAction(_provider);
-                await interactAction.HandleAction(playerId, action);
+                await interactAction.HandleActionAsync(playerId, action);
                 break;
             case ActionType.GiveTakePlayerItems:
                 var giveItemsToPlayerAction = new GiveTakePlayerItemsAction(_provider);
-                await giveItemsToPlayerAction.HandleAction(playerId, action);
+                await giveItemsToPlayerAction.HandleActionAsync(playerId, action);
                 break;
             case ActionType.GiveTakeContainer:
                 var giveTakeContainerAction = new GiveTakeContainerAction(_provider);
-                await giveTakeContainerAction.HandleAction(playerId, action);
+                await giveTakeContainerAction.HandleActionAsync(playerId, action);
                 break;
             case ActionType.LoadBoardApp:
                 var loadBoardApp = JsonConvert.DeserializeObject<LoadBoardApp>(action.payload);
@@ -301,7 +305,7 @@ public class MyDuMod : IMod
                 {
                     loadBoardApp.ConstructId = action.constructId;
                 }
-                
+
                 await _injection.InjectJs(playerId, Resources.CommonJs);
                 await _injection.InjectJs(playerId, Resources.CreateRootDivJs);
                 await _injection.InjectJs(playerId, "window.modApi.setPage('npc');");
@@ -371,7 +375,7 @@ public class MyDuMod : IMod
                 }
 
                 var refreshedJsonData = await questApi.GetNpcQuests(
-                    playerId, 
+                    playerId,
                     refreshedNpcQuests.ConstructId,
                     refreshedNpcQuests.FactionId,
                     refreshedNpcQuests.TerritoryId,
@@ -453,11 +457,11 @@ public class MyDuMod : IMod
                 break;
             case ActionType.RemoveConstructBuffs:
                 var removeConstructBuffsAction = new RemoveConstructBuffsAction(_provider);
-                await removeConstructBuffsAction.HandleAction(playerId, action);
+                await removeConstructBuffsAction.HandleActionAsync(playerId, action);
                 break;
             case ActionType.UpgradeConstructBuffs:
                 var upgradeConstructBuffs = new UpgradeConstructAction(_provider);
-                await upgradeConstructBuffs.HandleAction(playerId, action);
+                await upgradeConstructBuffs.HandleActionAsync(playerId, action);
                 break;
         }
     }
