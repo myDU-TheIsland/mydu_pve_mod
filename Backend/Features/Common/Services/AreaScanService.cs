@@ -87,6 +87,7 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
                  AND (C.json_properties->>'kind' IN ('4', '5'))
                  AND (C.owner_entity_id IS NOT NULL)
                  AND C.id != @constructId
+                 AND CH.faction_id != @factionId
              ORDER BY distance ASC
              LIMIT {limit}
              """,
