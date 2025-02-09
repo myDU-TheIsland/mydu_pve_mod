@@ -68,9 +68,9 @@
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="Dapper" Version="2.1.35" />
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.1" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="9.0.1" />
     <PackageReference Include="Npgsql" Version="6.0.11" />
-    <PackageReference Include="Google.Protobuf" Version="3.21.9" />
+    <PackageReference Include="Google.Protobuf" Version="3.26.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Database\Migrations\Orleans\" />
@@ -126,6 +126,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Mod.DynamicEncounters.SDK\Mod.DynamicEncounters.SDK.csproj" />
+    <ProjectReference Include="..\Mod.DynamicEncounters.Workers\Mod.DynamicEncounters.Workers.csproj" />
   </ItemGroup>
 
   <!-- https://github.com/dotnet/efcore/issues/15047 -->
