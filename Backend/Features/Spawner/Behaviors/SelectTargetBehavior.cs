@@ -102,11 +102,10 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             var spatialQuerySw = new StopWatch();
             spatialQuerySw.Start();
 
-            radarContacts = (await _areaScanService.ScanForNpcEnemyContacts(
+            radarContacts = (await _areaScanService.ScanForPlayerContacts(
                     constructId,
                     context.Position.Value,
-                    DistanceHelpers.OneSuInMeters * 8,
-                    context.FactionId
+                    DistanceHelpers.OneSuInMeters * 8
                 ))
                 .Where(c => !safeZones.Any(sz => sz.IsPointInside(c.Position)))
                 .ToList();
