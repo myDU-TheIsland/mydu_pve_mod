@@ -102,13 +102,27 @@ public class SelectTargetBehavior(ulong constructId, IPrefab prefab) : IConstruc
             var spatialQuerySw = new StopWatch();
             spatialQuerySw.Start();
 
-            radarContacts = (await _areaScanService.ScanForPlayerContacts(
-                    constructId,
-                    context.Position.Value,
-                    DistanceHelpers.OneSuInMeters * 8
-                ))
-                .Where(c => !safeZones.Any(sz => sz.IsPointInside(c.Position)))
-                .ToList();
+            if (prefab.DefinitionItem.UseFactionScan)
+            {
+                radarContacts = (await _areaScanService.ScanForNpcEnemyContacts(
+                        constructId,
+                        context.Position.Value,
+                        DistanceHelpers.OneSuInMeters * 8,
+                        context.FactionId
+                    ))
+                    .Where(c => !safeZones.Any(sz => sz.IsPointInside(c.Position)))
+                    .ToList();
+            }
+            else
+            {
+                radarContacts = (await _areaScanService.ScanForPlayerContacts(
+                        constructId,
+                        context.Position.Value,
+                        DistanceHelpers.OneSuInMeters * 8
+                    ))
+                    .Where(c => !safeZones.Any(sz => sz.IsPointInside(c.Position)))
+                    .ToList();
+            }
 
             await Task.WhenAll(radarContacts
                 .Select(x => _pveVoxelService.TriggerConstructCacheAsync(x.ConstructId)));

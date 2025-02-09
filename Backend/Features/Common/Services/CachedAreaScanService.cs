@@ -23,7 +23,7 @@ public class CachedAreaScanService(IAreaScanService areaScanService) : IAreaScan
     {
         return _npcRadar.TryGetOrSetValue(
             constructId,
-            () => areaScanService.ScanForNpcEnemyContacts(constructId, position, radius, factionId)
+            () => areaScanService.ScanForNpcEnemyContacts(constructId, position, radius, factionId, limit)
         );
     }
 
