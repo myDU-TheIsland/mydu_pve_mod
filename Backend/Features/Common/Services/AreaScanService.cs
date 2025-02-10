@@ -80,6 +80,7 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
                  CASE WHEN CH.faction_id IS NULL THEN 0 ELSE CH.faction_id END faction_id
              FROM public.construct C
              LEFT JOIN mod_npc_construct_handle CH ON (CH.construct_id = C.id)
+             INNER JOIN ownership O ON O.id = C.owner_entity_id
              WHERE ST_DWithin(C.position, ST_MakePoint({VectorToSql(position)}), {radius})
                  AND ST_3DDistance(C.position, ST_MakePoint({VectorToSql(position)})) <= {radius}
                  AND C.deleted_at IS NULL
@@ -88,7 +89,8 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
                  AND (C.owner_entity_id IS NOT NULL)
                  AND C.id != @constructId
                  AND (CH.faction_id IS NULL OR CH.faction_id != @factionId)
-                 AND (C.faction_id IS NULL OR C.faction_id != @factionId)
+                 AND (C.faction_id IS NULL OR C.faction_id != @factionId) 
+                 AND (O.faction_id IS NULL OR O.faction_id != @factionId)
              ORDER BY distance ASC
              LIMIT {limit}
              """,
