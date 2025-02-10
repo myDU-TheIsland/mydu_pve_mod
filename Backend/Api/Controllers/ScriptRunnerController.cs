@@ -56,7 +56,11 @@ public class ScriptRunnerController : Controller
         
         var result = await scriptAction.ExecuteAsync(context);
 
-        return Ok(result);
+        return Ok(new
+        {
+            result,
+            context
+        });
     }
 
     public class RunScriptActionItemRequest

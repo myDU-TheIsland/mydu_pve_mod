@@ -4,5 +4,5 @@ namespace Mod.DynamicEncounters.Features.Commands.Interfaces;
 
 public interface ITeleportConstructCommandHandler
 {
-    Task TeleportConstruct(ulong instigatorPlayerId, string command);
+    Task Teleport(ulong instigatorPlayerId, string command);
 }

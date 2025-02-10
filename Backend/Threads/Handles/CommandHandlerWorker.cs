@@ -95,7 +95,7 @@ public class CommandHandlerWorker : BackgroundService
                 {
                     var teleportCommandHandler =
                         ModBase.ServiceProvider.GetRequiredService<ITeleportConstructCommandHandler>();
-                    await teleportCommandHandler.TeleportConstruct(commandItem.PlayerId, commandItem.Message);
+                    await teleportCommandHandler.Teleport(commandItem.PlayerId, commandItem.Message);
                 }
             }
             catch (Exception e)

@@ -12,12 +12,11 @@ namespace Mod.DynamicEncounters.Features.Commands.Services;
 
 public class TeleportConstructCommandHandler : ITeleportConstructCommandHandler
 {
-    public async Task TeleportConstruct(ulong instigatorPlayerId, string command)
+    public async Task Teleport(ulong instigatorPlayerId, string command)
     {
         var provider = ModBase.ServiceProvider;
         var orleans = provider.GetOrleans();
         var sceneGraph = provider.GetRequiredService<IScenegraph>();
-        var playerAlertService = provider.GetRequiredService<IPlayerAlertService>();
 
         var playerGrain = orleans.GetPlayerGrain(instigatorPlayerId);
         if (!await playerGrain.IsAdmin())
@@ -25,24 +24,26 @@ public class TeleportConstructCommandHandler : ITeleportConstructCommandHandler
             return;
         }
         
-        var (local, _) = await sceneGraph.GetPlayerWorldPosition(instigatorPlayerId);
-
-        if (local.constructId <= 0)
-        {
-            await playerAlertService.SendErrorAlert(instigatorPlayerId, "You need to be on a construct");
-            return;
-        }
-
         var commandPieces = command.Split(" ");
         var positionString = commandPieces[1];
         var position = positionString.PositionToVec3();
 
-        var constructGrain = orleans.GetConstructGrain(local.constructId);
-        await constructGrain.TeleportConstruct(new RelativeLocation
+        var tpLocation = new RelativeLocation
         {
             position = position,
             constructId = 0,
             rotation = Quat.Identity
-        });
+        };
+        
+        var (local, _) = await sceneGraph.GetPlayerWorldPosition(instigatorPlayerId);
+
+        if (local.constructId <= 0)
+        {
+            await playerGrain.TeleportPlayer(tpLocation);
+            return;
+        }
+
+        var constructGrain = orleans.GetConstructGrain(local.constructId);
+        await constructGrain.TeleportConstruct(tpLocation);
     }
 }
