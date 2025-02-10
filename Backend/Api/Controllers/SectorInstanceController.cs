@@ -109,7 +109,7 @@ public class SectorInstanceController(IServiceProvider provider) : Controller
 
     [HttpPost]
     [Route("delete-npc-by-sector")]
-    public async Task<IActionResult> DeleteNpcsBySector(SectorRequest request)
+    public async Task<IActionResult> DeleteNpcsBySector([FromBody] SectorRequest request)
     {
         await ModBase.ServiceProvider.GetRequiredService<ISectorPoolManager>()
             .DeleteNpCsBySector(request.Sector!.Value);
