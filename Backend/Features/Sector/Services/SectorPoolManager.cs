@@ -229,7 +229,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
             try
             {
-                await DeleteNpCsBySector(sector.Sector);
+                await DeleteNpcsBySector(sector.Sector);
             }
             catch (Exception e)
             {
@@ -247,7 +247,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         StatsRecorder.Record("ExecuteSectorCleanup", sw.ElapsedMilliseconds);
     }
 
-    public async Task DeleteNpCsBySector(Vec3 sector)
+    public async Task DeleteNpcsBySector(Vec3 sector)
     {
         var areaScanService = serviceProvider.GetRequiredService<IAreaScanService>();
         var contacts = await areaScanService.ScanForNpcConstructs(sector,
