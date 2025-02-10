@@ -229,7 +229,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
             try
             {
-                await DeleteNpCsBySector(sector.Sector);
+                await DeleteNpcsBySector(sector.Sector);
             }
             catch (Exception e)
             {
@@ -247,10 +247,26 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         StatsRecorder.Record("ExecuteSectorCleanup", sw.ElapsedMilliseconds);
     }
 
-    private async Task DeleteNpCsBySector(Vec3 sector)
+    public async Task DeleteNpcsBySector(Vec3 sector)
     {
         var areaScanService = serviceProvider.GetRequiredService<IAreaScanService>();
         var contacts = await areaScanService.ScanForNpcConstructs(sector,
+            DistanceHelpers.OneSuInMeters * 10, 50);
+
+        foreach (var contact in contacts)
+        {
+            await serviceProvider.GetScriptAction(new ScriptActionItem
+            {
+                Type = "delete",
+                ConstructId = contact.ConstructId
+            }).ExecuteAsync(new ScriptContext(serviceProvider, 1, [], new Vec3(), null));
+        }
+    }
+    
+    public async Task DeleteWrecksBySector(Vec3 sector)
+    {
+        var areaScanService = serviceProvider.GetRequiredService<IAreaScanService>();
+        var contacts = await areaScanService.ScanForAbandonedConstructs(sector,
             DistanceHelpers.OneSuInMeters * 10, 50);
 
         foreach (var contact in contacts)

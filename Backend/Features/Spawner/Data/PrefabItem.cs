@@ -18,6 +18,7 @@ public class PrefabItem
     public bool IsNpc { get; set; }
     public ServerPropertiesItem ServerProperties { get; set; } = new();
     public BehaviorModifiers Mods { get; set; } = new();
+    public bool UseFactionScan { get; set; } = false;
     public List<string> InitialBehaviors { get; set; } = [];
     public int AmmoTier { get; set; } = 3;
     public string AmmoVariant { get; set; } = "Agile";

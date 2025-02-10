@@ -6,11 +6,13 @@ using Backend;
 using Backend.AWS;
 using Backend.Fixture;
 using Backend.Fixture.Construct;
+using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Data;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Common.Interfaces;
+using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
@@ -115,6 +117,8 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
 
         var resultName = string.IsNullOrEmpty(overrideName) ? prefabConstructName : overrideName;
 
+        var factionId = actionItem.Override.FactionId ?? context.FactionId ?? 1;
+        
         if (string.IsNullOrEmpty(resultName))
         {
             resultName = $"E-{random.Next(1000, 9999)}";
@@ -124,7 +128,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         {
             var factionNameRepository = provider.GetRequiredService<IFactionNameRepository>();
             var randomName = await factionNameRepository.GetRandomFactionNameByGroup(
-                context.FactionId ?? 1,
+                factionId,
                 constructDef.DefinitionItem.RandomNameGroup
             );
 
@@ -134,10 +138,12 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
             }
         }
 
+        var ownerPlayerId = actionItem.Override.OwnerPlayerId ?? constructDef.DefinitionItem.OwnerId;
+
         var fixture = ConstructFixture.FromSource(source);
         fixture.parentId = actionItem.Override.PositionParentId;
         fixture.header.prettyName = resultName;
-        fixture.ownerId = new EntityId { playerId = constructDef.DefinitionItem.OwnerId };
+        fixture.ownerId = new EntityId { playerId = ownerPlayerId };
         fixture.position = spawnPosition;
         fixture.isUntargetable = constructDef.DefinitionItem.IsUntargetable;
         fixture.isNPC = constructDef.DefinitionItem.IsNpc;
@@ -183,9 +189,9 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
                     Id = Guid.NewGuid(),
                     Sector = context.Sector,
                     ConstructDefinitionItem = constructDef.DefinitionItem,
-                    OriginalOwnerPlayerId = constructDef.DefinitionItem.OwnerId,
+                    OriginalOwnerPlayerId = ownerPlayerId,
                     OriginalOrganizationId = 0,
-                    FactionId = context.FactionId ?? 1,
+                    FactionId = factionId,
                     JsonProperties = new ConstructHandleProperties
                     {
                         ConstructName = resultName,
@@ -269,6 +275,24 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         catch (Exception e)
         {
             _logger.LogError(e, "Failed to Raise {Event}", nameof(ConstructSpawnedEvent));
+        }
+
+        try
+        {
+            var connectionFactory = provider.GetRequiredService<IPostgresConnectionFactory>();
+            using var connection = connectionFactory.Create();
+            connection.Open();
+
+            await connection.ExecuteAsync("UPDATE public.construct SET faction_id = @factionId WHERE id = @constructId",
+                new
+                {
+                    factionId,
+                    constructId = (long)constructId
+                });
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to Set FactionId {Id} to {ConstructId}", factionId, constructId);
         }
         
         return ScriptActionResult.Successful();
