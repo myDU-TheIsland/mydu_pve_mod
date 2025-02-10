@@ -117,6 +117,16 @@ public class SectorInstanceController(IServiceProvider provider) : Controller
         return Ok();
     }
     
+    [HttpPost]
+    [Route("delete-wrecks-by-sector")]
+    public async Task<IActionResult> DeleteWrecksBySector([FromBody] SectorRequest request)
+    {
+        await ModBase.ServiceProvider.GetRequiredService<ISectorPoolManager>()
+            .DeleteWrecksBySector(request.Sector!.Value);
+        
+        return Ok();
+    }
+    
     public class SectorRequest
     {
         public Vec3? Sector { get; set; }

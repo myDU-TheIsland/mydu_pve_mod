@@ -262,6 +262,22 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
             }).ExecuteAsync(new ScriptContext(serviceProvider, 1, [], new Vec3(), null));
         }
     }
+    
+    public async Task DeleteWrecksBySector(Vec3 sector)
+    {
+        var areaScanService = serviceProvider.GetRequiredService<IAreaScanService>();
+        var contacts = await areaScanService.ScanForAbandonedConstructs(sector,
+            DistanceHelpers.OneSuInMeters * 10, 50);
+
+        foreach (var contact in contacts)
+        {
+            await serviceProvider.GetScriptAction(new ScriptActionItem
+            {
+                Type = "delete",
+                ConstructId = contact.ConstructId
+            }).ExecuteAsync(new ScriptContext(serviceProvider, 1, [], new Vec3(), null));
+        }
+    }
 
     public async Task SetExpirationFromNow(Vec3 sector, TimeSpan span)
     {
