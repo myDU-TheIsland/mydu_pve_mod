@@ -134,10 +134,12 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
             }
         }
 
+        var ownerPlayerId = actionItem.Override.OwnerPlayerId ?? constructDef.DefinitionItem.OwnerId;
+
         var fixture = ConstructFixture.FromSource(source);
         fixture.parentId = actionItem.Override.PositionParentId;
         fixture.header.prettyName = resultName;
-        fixture.ownerId = new EntityId { playerId = constructDef.DefinitionItem.OwnerId };
+        fixture.ownerId = new EntityId { playerId = ownerPlayerId };
         fixture.position = spawnPosition;
         fixture.isUntargetable = constructDef.DefinitionItem.IsUntargetable;
         fixture.isNPC = constructDef.DefinitionItem.IsNpc;
@@ -183,7 +185,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
                     Id = Guid.NewGuid(),
                     Sector = context.Sector,
                     ConstructDefinitionItem = constructDef.DefinitionItem,
-                    OriginalOwnerPlayerId = constructDef.DefinitionItem.OwnerId,
+                    OriginalOwnerPlayerId = ownerPlayerId,
                     OriginalOrganizationId = 0,
                     FactionId = context.FactionId ?? 1,
                     JsonProperties = new ConstructHandleProperties
