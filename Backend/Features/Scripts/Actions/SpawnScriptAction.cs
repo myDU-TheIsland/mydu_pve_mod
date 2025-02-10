@@ -6,11 +6,13 @@ using Backend;
 using Backend.AWS;
 using Backend.Fixture;
 using Backend.Fixture.Construct;
+using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Data;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Common.Interfaces;
+using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Faction.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
@@ -273,6 +275,24 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         catch (Exception e)
         {
             _logger.LogError(e, "Failed to Raise {Event}", nameof(ConstructSpawnedEvent));
+        }
+
+        try
+        {
+            var connectionFactory = provider.GetRequiredService<IPostgresConnectionFactory>();
+            using var connection = connectionFactory.Create();
+            connection.Open();
+
+            await connection.ExecuteAsync("UPDATE public.construct SET faction_id = @factionId WHERE id = @constructId",
+                new
+                {
+                    factionId,
+                    constructId = (long)constructId
+                });
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to Set FactionId {Id} to {ConstructId}", factionId, constructId);
         }
         
         return ScriptActionResult.Successful();

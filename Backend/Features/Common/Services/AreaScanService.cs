@@ -88,6 +88,7 @@ public class AreaScanService(IServiceProvider provider) : IAreaScanService
                  AND (C.owner_entity_id IS NOT NULL)
                  AND C.id != @constructId
                  AND (CH.faction_id IS NULL OR CH.faction_id != @factionId)
+                 AND (C.faction_id IS NULL OR C.faction_id != @factionId)
              ORDER BY distance ASC
              LIMIT {limit}
              """,
