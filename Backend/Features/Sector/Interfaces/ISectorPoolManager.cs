@@ -19,4 +19,6 @@ public interface ISectorPoolManager
     Task ActivateEnteredSectors();
 
     Task UpdateExpirationNames();
+
+    Task DeleteNpCsBySector(Vec3 sector);
 }
