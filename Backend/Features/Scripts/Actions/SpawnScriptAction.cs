@@ -115,6 +115,8 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
 
         var resultName = string.IsNullOrEmpty(overrideName) ? prefabConstructName : overrideName;
 
+        var factionId = actionItem.Override.FactionId ?? context.FactionId ?? 1;
+        
         if (string.IsNullOrEmpty(resultName))
         {
             resultName = $"E-{random.Next(1000, 9999)}";
@@ -124,7 +126,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         {
             var factionNameRepository = provider.GetRequiredService<IFactionNameRepository>();
             var randomName = await factionNameRepository.GetRandomFactionNameByGroup(
-                context.FactionId ?? 1,
+                factionId,
                 constructDef.DefinitionItem.RandomNameGroup
             );
 
@@ -187,7 +189,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
                     ConstructDefinitionItem = constructDef.DefinitionItem,
                     OriginalOwnerPlayerId = ownerPlayerId,
                     OriginalOrganizationId = 0,
-                    FactionId = context.FactionId ?? 1,
+                    FactionId = factionId,
                     JsonProperties = new ConstructHandleProperties
                     {
                         ConstructName = resultName,
