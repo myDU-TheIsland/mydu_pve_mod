@@ -74,14 +74,61 @@ public class MyDuMod : IMod
             nameof(WarpEnd)
         );
 
-        // hookCallManager.Register(
-        //     "RadarGrain.ScanStart",
-        //     HookMode.Replace,
-        //     this,
-        //     nameof(ScanStart)
-        // );
+        hookCallManager.Register(
+            "RadarGrain.IdentifyStart",
+            HookMode.Replace,
+            this,
+            nameof(IdentifyStart)
+        );
+        
+        hookCallManager.Register(
+            "RadarGrain.IdentifyStop",
+            HookMode.Replace,
+            this,
+            nameof(IdentifyStop)
+        );
 
         return Task.CompletedTask;
+    }
+
+    public async Task IdentifyStart(IIncomingGrainCallContext context, PlayerId pid, RadarIdentifyTarget target)
+    {
+        await context.Invoke();
+
+        var orleans = _provider.GetRequiredService<IClusterClient>();
+
+        var constructInfoGrain = orleans.GetConstructInfoGrain(target.targetConstructId);
+        var constructInfo = await constructInfoGrain.Get();
+        if (constructInfo.mutableData.ownerId.playerId != 4) return;
+        
+        var constructElementsGrain = orleans.GetConstructElementsGrain(target.targetConstructId);
+        var spaceEngines = await constructElementsGrain.GetElementsOfType<SpaceEngine>();
+        
+        var scriptList = spaceEngines
+            .Select(r => $"CPPMod.pkfxElementStart({target.targetConstructId}, {r.elementId}, \"vfx_start\", 1);\n");
+        var scriptText = string.Join("", scriptList);
+
+        await _injection.InjectJs(pid, scriptText);
+    }
+
+    public async Task IdentifyStop(IIncomingGrainCallContext context, PlayerId pid, RadarIdentifyTarget target)
+    {
+        await context.Invoke();
+
+        var orleans = _provider.GetRequiredService<IClusterClient>();
+        
+        var constructInfoGrain = orleans.GetConstructInfoGrain(target.targetConstructId);
+        var constructInfo = await constructInfoGrain.Get();
+        if (constructInfo.mutableData.ownerId.playerId != 4) return;
+        
+        var constructElementsGrain = orleans.GetConstructElementsGrain(target.targetConstructId);
+        var spaceEngines = await constructElementsGrain.GetElementsOfType<SpaceEngine>();
+        
+        var scriptList = spaceEngines
+            .Select(r => $"CPPMod.pkfxElementKill({target.targetConstructId}, {r.elementId}, \"vfx_start\");\n");
+        var scriptText = string.Join("", scriptList);
+
+        await _injection.InjectJs(pid, scriptText);
     }
 
     public async Task WarpEnd(IIncomingGrainCallContext context, PlayerId playerId)
