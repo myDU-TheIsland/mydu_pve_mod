@@ -110,8 +110,8 @@ public class IndyCommandHandler : IIndyCommandHandler
             var tags = new HashSet<string> { $"{elementId}" };
 
             if (isJammed) tags.Add("JAMMED");
-            if (isNegativeTime && status.state != IndustryState.STOPPED) tags.Add("STUCK");
-            if (isStuck && status.state != IndustryState.STOPPED) tags.Add("STUCK");
+            if (!isJammed && isNegativeTime && status.state != IndustryState.STOPPED) tags.Add("STUCK");
+            if (!isJammed && isStuck && status.state != IndustryState.STOPPED) tags.Add("STUCK");
             if (status.state == IndustryState.RUNNING) tags.Add("RUNNING");
             if (status.state == IndustryState.STOPPED) tags.Add("STOPPED");
             if (status.state == IndustryState.PENDING) tags.Add("PENDING");
