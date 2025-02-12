@@ -23,7 +23,7 @@ public static class TemporalConfig
 
     public static string GetHost()
     {
-        return EnvironmentVariableHelper.GetEnvironmentVarOrDefault("TEMPORAL_HOST", "localhost:7233");
+        return EnvironmentVariableHelper.GetEnvironmentVarOrDefault("TEMPORAL_HOST", "10.10.42.100:7233");
     }
 
     public static string GetNamespace()

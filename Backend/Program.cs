@@ -55,8 +55,8 @@ public static class Program
                     services.AddHostedService<ReconnectBotWorker>();
                     services.AddHostedService<TaskQueueWorker>();
                     services.AddHostedService<CommandHandlerWorker>();
-                    // services.RegisterTemporalWorker();
-                    // services.AddHostedService<TemporalStartupBackgroundService>();
+                    services.RegisterTemporalWorker();
+                    services.AddHostedService<TemporalStartupBackgroundService>();
                 })
                 .Build();
 
