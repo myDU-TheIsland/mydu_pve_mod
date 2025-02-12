@@ -10,6 +10,7 @@ using Mod.DynamicEncounters.Features.Common.Services;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQ.Interfaces;
+using NQ.RDMS;
 using NQutils.Def;
 
 namespace Mod.DynamicEncounters.Features.Commands.Services;
@@ -40,6 +41,15 @@ public class IndyCommandHandler : IIndyCommandHandler
             await playerAlertService.SendErrorAlert(instigatorPlayerId, "You need to stand/board the construct you want to use these commands");
             return;
         }
+        
+        var rdmsRightGrain = orleans.GetRDMSRightGrain(instigatorPlayerId);
+        var rights = await rdmsRightGrain.GetRightsForPlayerOnAsset(instigatorPlayerId, new AssetId
+        {
+            construct = local.constructId,
+            type = AssetType.Construct
+        });
+        
+        if(!rights.HasRight(Right.ConstructBuild)) return;
         
         var commandPieces = command.Split(" ");
         var queuePieces = new Queue<string>(commandPieces);

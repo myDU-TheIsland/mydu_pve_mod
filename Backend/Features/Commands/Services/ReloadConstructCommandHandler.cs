@@ -7,6 +7,7 @@ using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 using NQ.Interfaces;
+using NQ.RDMS;
 
 namespace Mod.DynamicEncounters.Features.Commands.Services;
 
@@ -18,13 +19,22 @@ public class ReloadConstructCommandHandler : IReloadConstructCommandHandler
         var safeZoneService = provider.GetRequiredService<ISafeZoneService>();
         var orleans = provider.GetOrleans();
         var sceneGraph = provider.GetRequiredService<IScenegraph>();
-        
+
         var (local, _) = await sceneGraph.GetPlayerWorldPosition(instigatorPlayerId);
 
         if (local.constructId <= 0)
         {
             return;
         }
+        
+        var rdmsRightGrain = orleans.GetRDMSRightGrain(instigatorPlayerId);
+        var rights = await rdmsRightGrain.GetRightsForPlayerOnAsset(instigatorPlayerId, new AssetId
+        {
+            construct = local.constructId,
+            type = AssetType.Construct
+        });
+        
+        if(!rights.HasRight(Right.ConstructBuild)) return;
 
         var position = await sceneGraph.GetConstructCenterWorldPosition(local.constructId);
         var safeZones = await safeZoneService.GetSafeZones();
