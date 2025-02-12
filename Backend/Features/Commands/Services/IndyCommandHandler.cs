@@ -104,6 +104,7 @@ public class IndyCommandHandler : IIndyCommandHandler
             ];
             
             var isJammed = jammedStates.Contains(status.state);
+            var isPending = status.state == IndustryState.PENDING;
             var timeDiff = status.end.networkTime - DateTime.UtcNow.ToNQTimePoint().networkTime;
             var isNegativeTime = timeDiff < 0;
             var isStuck = TimeSpan.FromSeconds(timeDiff) < TimeSpan.FromSeconds(2);
@@ -111,8 +112,8 @@ public class IndyCommandHandler : IIndyCommandHandler
             var tags = new HashSet<string> { def!.Name, $"{elementId}" };
 
             if (isJammed) tags.Add("JAMMED");
-            if (!isJammed && isNegativeTime && status.state != IndustryState.STOPPED) tags.Add("STUCK");
-            if (!isJammed && isStuck && status.state != IndustryState.STOPPED) tags.Add("STUCK");
+            if (!isPending && !isJammed && isNegativeTime && status.state != IndustryState.STOPPED) tags.Add("STUCK");
+            if (!isPending && !isJammed && isStuck && status.state != IndustryState.STOPPED) tags.Add("STUCK");
             if (status.state == IndustryState.RUNNING) tags.Add("RUNNING");
             if (status.state == IndustryState.STOPPED) tags.Add("STOPPED");
             if (status.state == IndustryState.PENDING) tags.Add("PENDING");
