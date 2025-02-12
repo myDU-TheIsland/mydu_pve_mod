@@ -56,7 +56,7 @@ public static class Program
                     services.AddHostedService<TaskQueueWorker>();
                     services.AddHostedService<CommandHandlerWorker>();
                     services.RegisterTemporalWorker();
-                    services.AddHostedService<TemporalStartupBackgroundService>();
+                    // services.AddHostedService<TemporalStartupBackgroundService>();
                 })
                 .Build();
 
