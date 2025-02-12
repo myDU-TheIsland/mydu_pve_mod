@@ -8,14 +8,13 @@ namespace Mod.DynamicEncounters.Workers.Workflows.Live;
 public class LiveWorkflow
 {
     [WorkflowRun]
-    public async Task RunAsync(IRawValue[] args)
+    public async Task RunAsync()
     {
         var options = new ActivityOptions
         {
             StartToCloseTimeout = TimeSpan.FromSeconds(15)
         };
         
-        await Workflow.ExecuteActivityAsync((SendTestMessageActivity a) => a.SendTestMessage(args), options);
-        await Workflow.DelayAsync(TimeSpan.FromSeconds(5));
+        await Workflow.ExecuteActivityAsync((SendTestMessageActivity a) => a.SendDiscordMessage("PVE Started"), options);
     }
 }

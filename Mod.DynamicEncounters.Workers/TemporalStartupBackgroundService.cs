@@ -3,7 +3,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Workers.Workflows.Live;
 using Temporalio.Client;
-using Temporalio.Converters;
 
 namespace Mod.DynamicEncounters.Workers;
 
@@ -18,8 +17,8 @@ public class TemporalStartupBackgroundService(IServiceProvider provider) : Backg
 
         try
         {
-            await client.StartWorkflowAsync((LiveWorkflow wf) => wf.RunAsync(Array.Empty<IRawValue>()),
-                new WorkflowOptions(id: "test", taskQueue: TemporalConfig.GetTaskQueue()));
+            await client.StartWorkflowAsync((LiveWorkflow wf) => wf.RunAsync(),
+                new WorkflowOptions(id: $"{Guid.NewGuid()}", taskQueue: TemporalConfig.GetTaskQueue()));
         }
         catch (Exception e)
         {

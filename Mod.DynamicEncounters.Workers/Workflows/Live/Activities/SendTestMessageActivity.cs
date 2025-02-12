@@ -1,14 +1,13 @@
 ﻿using Discord;
 using Discord.Rest;
 using Temporalio.Activities;
-using Temporalio.Converters;
 
 namespace Mod.DynamicEncounters.Workers.Workflows.Live.Activities;
 
 public class SendTestMessageActivity
 {
     [Activity]
-    public async Task SendTestMessage(IRawValue[] args)
+    public async Task SendDiscordMessage(string message)
     {
         var token = EnvironmentVariableHelper.GetEnvironmentVarOrDefault("DISCORD_BOT_TOKEN", "");
 
@@ -20,7 +19,7 @@ public class SendTestMessageActivity
             var channel = await client.GetChannelAsync(1337913634424225862);
             if (channel is ITextChannel textChannel)
             {
-                await textChannel.SendMessageAsync($"{DateTime.UtcNow}");
+                await textChannel.SendMessageAsync(message);
             }
         }
         catch (Exception e)
