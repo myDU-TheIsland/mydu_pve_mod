@@ -97,6 +97,19 @@ public class CommandHandlerWorker : BackgroundService
                         ModBase.ServiceProvider.GetRequiredService<ITeleportConstructCommandHandler>();
                     await teleportCommandHandler.Teleport(commandItem.PlayerId, commandItem.Message);
                 }
+
+                if (commandItem.Message.StartsWith("@reload", StringComparison.OrdinalIgnoreCase))
+                {
+                    var reloadConstruct =
+                        ModBase.ServiceProvider.GetRequiredService<IReloadConstructCommandHandler>();
+                    await reloadConstruct.ReloadConstruct(commandItem.PlayerId, commandItem.Message);
+                }
+
+                if (commandItem.Message.StartsWith("@indy", StringComparison.OrdinalIgnoreCase))
+                {
+                    var indy = ModBase.ServiceProvider.GetRequiredService<IIndyCommandHandler>();
+                    await indy.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                }
             }
             catch (Exception e)
             {

@@ -14,5 +14,7 @@ public static class CommandsRegistration
         services.AddSingleton<IWarpAnchorCommandHandler, WarpAnchorCommandHandler>();
         services.AddSingleton<IOpenPlayerBoardCommandHandler, OpenPlayerBoardCommandHandler>();
         services.AddSingleton<ITeleportConstructCommandHandler, TeleportConstructCommandHandler>();
+        services.AddSingleton<IReloadConstructCommandHandler, ReloadConstructCommandHandler>();
+        services.AddSingleton<IIndyCommandHandler, IndyCommandHandler>();
     }
 }
