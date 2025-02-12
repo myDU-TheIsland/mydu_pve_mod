@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Commands.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Services;
 using Mod.DynamicEncounters.Helpers;
+using Mod.DynamicEncounters.Vector.Helpers;
 using NQ;
 using NQ.Interfaces;
 using NQ.RDMS;
@@ -85,7 +86,7 @@ public class IndyCommandHandler : IIndyCommandHandler
                 tagValue = queuePieces.Dequeue().ToUpper();
             }
         }
-        
+
         var constructElementsGrain = orleans.GetConstructElementsGrain(local.constructId);
         var industryUnits = await constructElementsGrain.GetElementsOfType<IndustryUnit>();
         
@@ -107,7 +108,7 @@ public class IndyCommandHandler : IIndyCommandHandler
             var isNegativeTime = timeDiff < 0;
             var isStuck = TimeSpan.FromSeconds(timeDiff) < TimeSpan.FromSeconds(2);
 
-            var tags = new HashSet<string> { $"{elementId}" };
+            var tags = new HashSet<string> { def!.Name, $"{elementId}" };
 
             if (isJammed) tags.Add("JAMMED");
             if (!isJammed && isNegativeTime && status.state != IndustryState.STOPPED) tags.Add("STUCK");
@@ -115,8 +116,16 @@ public class IndyCommandHandler : IIndyCommandHandler
             if (status.state == IndustryState.RUNNING) tags.Add("RUNNING");
             if (status.state == IndustryState.STOPPED) tags.Add("STOPPED");
             if (status.state == IndustryState.PENDING) tags.Add("PENDING");
-
-            var baseMessage = $"{def!.Name}: {string.Join(", ", tags)}";
+            
+            var elementPos = await sceneGraph.ResolveWorldLocation(new RelativeLocation
+            {
+                constructId = local.constructId,
+                position = element.position,
+                rotation = element.rotation
+            });
+            
+            var baseMessage = string.Join(", ", tags);
+            baseMessage += $" >> {elementPos.position.Vec3ToPosition()}";
             
             if (subcommand == "restart" && tags.Contains(tagValue))
             {
