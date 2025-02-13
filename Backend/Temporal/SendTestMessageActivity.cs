@@ -1,10 +1,13 @@
-﻿using Discord;
+﻿using System;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Rest;
 using Microsoft.Extensions.Logging;
+using Mod.DynamicEncounters.Common.Helpers;
 using Temporalio.Activities;
 using Temporalio.Workflows;
 
-namespace Mod.DynamicEncounters.Workers.Workflows.Live.Activities;
+namespace Mod.DynamicEncounters.Temporal;
 
 public class SendTestMessageActivity
 {

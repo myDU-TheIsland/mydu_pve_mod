@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using NQ;
 
 namespace Mod.DynamicEncounters.Api.Controllers;
@@ -61,6 +62,28 @@ public class ScriptRunnerController : Controller
             result,
             context
         });
+    }
+    
+    [HttpPost]
+    [Route("action/run/v2")]
+    public async Task<IActionResult> RunScriptActionV2([FromBody] RunScriptActionItemRequest request)
+    {
+        var provider = ModBase.ServiceProvider;
+
+        var workflowEnqueueService = provider.GetRequiredService<IWorkflowEnqueueService>();
+        await workflowEnqueueService.EnqueueAsync(new IWorkflowEnqueueService.RunScriptCommand
+        {
+            Script = request.Script,
+            Context = new IWorkflowEnqueueService.WorkflowScriptContext
+            {
+                ConstructId = request.Context.ConstructId,
+                PlayerIds = request.Context.PlayerIds,
+                Sector = request.Context.Sector,
+                TerritoryId = request.Context.TerritoryId,
+            }
+        });
+        
+        return Ok();
     }
 
     public class RunScriptActionItemRequest

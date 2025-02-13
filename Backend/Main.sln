@@ -10,8 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Migrations", "..\Or
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mod.DynamicEncounters.SDK", "..\Mod.DynamicEncounters.SDK\Mod.DynamicEncounters.SDK.csproj", "{4F8506B8-BF85-4C1A-BB33-0C14D4490355}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mod.DynamicEncounters.Workers", "..\Mod.DynamicEncounters.Workers\Mod.DynamicEncounters.Workers.csproj", "{32B6C4E6-5680-4934-A3B3-C7EC4F727BFD}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,9 +36,5 @@ Global
 		{4F8506B8-BF85-4C1A-BB33-0C14D4490355}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F8506B8-BF85-4C1A-BB33-0C14D4490355}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F8506B8-BF85-4C1A-BB33-0C14D4490355}.Release|Any CPU.Build.0 = Release|Any CPU
-		{32B6C4E6-5680-4934-A3B3-C7EC4F727BFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{32B6C4E6-5680-4934-A3B3-C7EC4F727BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{32B6C4E6-5680-4934-A3B3-C7EC4F727BFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{32B6C4E6-5680-4934-A3B3-C7EC4F727BFD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Mod.DynamicEncounters.Common.Helpers;
 using Temporalio.Client;
 
-namespace Mod.DynamicEncounters.Workers;
+namespace Mod.DynamicEncounters.Temporal.Services;
 
 public static class TemporalConfig
 {

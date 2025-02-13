@@ -11,5 +11,6 @@ public static class TaskQueueRegistration
     {
         services.AddSingleton<ITaskQueueRepository, TaskQueueRepository>();
         services.AddSingleton<ITaskQueueService, TaskQueueService>();
+        services.AddSingleton<IWorkflowEnqueueService, WorkflowEnqueueService>();
     }
 }

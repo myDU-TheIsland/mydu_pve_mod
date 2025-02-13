@@ -1,8 +1,8 @@
-﻿using Mod.DynamicEncounters.Workers.Workflows.Live.Activities;
-using Temporalio.Converters;
+﻿using System;
+using System.Threading.Tasks;
 using Temporalio.Workflows;
 
-namespace Mod.DynamicEncounters.Workers.Workflows.Live;
+namespace Mod.DynamicEncounters.Temporal.Workflows;
 
 [Workflow]
 public class LiveWorkflow

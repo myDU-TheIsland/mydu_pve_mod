@@ -1,10 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Workers.Workflows.Live;
+using Mod.DynamicEncounters.Temporal.Workflows;
 using Temporalio.Client;
 
-namespace Mod.DynamicEncounters.Workers;
+namespace Mod.DynamicEncounters.Temporal.Services;
 
 public class TemporalStartupBackgroundService(IServiceProvider provider) : BackgroundService
 {
