@@ -19,14 +19,12 @@ public class InitializePlayerScripts(IServiceProvider provider, IMyDuInjectionSe
     {
         await injection.InjectJs(playerId, Resources.ChangeRecipeSubPanel);
 
-        if (_activePings.TryGetValue(playerId, out Timer timer))
-        {
-            timer.Stop();
-        }
-
+        var timer = (Timer)_activePings.Get(playerId);
+        timer?.Stop();
+        
         _activePings.Remove(playerId);
 
-        await Notifications.SimpleNotificationToPlayer(provider, playerId, "Mods Loaded");
+        // await Notifications.SimpleNotificationToPlayer(provider, playerId, "Mods Loaded");
         
         _logger.LogInformation("Mods Loaded");
     }
@@ -42,7 +40,7 @@ public class InitializePlayerScripts(IServiceProvider provider, IMyDuInjectionSe
 
     private Timer CreatePingTimer(ulong playerId)
     {
-        var timer = new Timer(1000);
+        var timer = new Timer(2000);
         timer.Elapsed += async (_, _) =>
         {
             await injection.InjectJs(playerId, Resources.CommonJs);

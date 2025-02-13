@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.Rest;
+using Microsoft.Extensions.Logging;
 using Temporalio.Activities;
+using Temporalio.Workflows;
 
 namespace Mod.DynamicEncounters.Workers.Workflows.Live.Activities;
 
@@ -11,6 +13,12 @@ public class SendTestMessageActivity
     {
         var token = EnvironmentVariableHelper.GetEnvironmentVarOrDefault("DISCORD_BOT_TOKEN", "");
 
+        if (string.IsNullOrEmpty(token))
+        {
+            Workflow.Logger.LogError("Discord Token Invalid");
+            return;
+        }
+        
         try
         {
             var client = new DiscordRestClient();
