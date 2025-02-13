@@ -21,7 +21,7 @@ public class TemporalStartupBackgroundService(IServiceProvider provider) : Backg
             var client = await TemporalClient.ConnectAsync(TemporalConfig.CreateClientConnectOptions(provider));
             
             await client.StartWorkflowAsync((LiveWorkflow wf) => wf.RunAsync(),
-                new WorkflowOptions(id: $"{nameof(LiveWorkflow)}({DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()})", taskQueue: TemporalConfig.GetTaskQueue()));
+                new WorkflowOptions(id: $"{nameof(LiveWorkflow)}/{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", taskQueue: TemporalConfig.GetTaskQueue()));
         }
         catch (Exception e)
         {

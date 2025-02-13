@@ -17,7 +17,6 @@ using Mod.DynamicEncounters.Features.Common.Services;
 using Mod.DynamicEncounters.Features.ExtendedProperties.Extensions;
 using Mod.DynamicEncounters.Features.ExtendedProperties.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
-using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Features.Warp.Data;
 using Mod.DynamicEncounters.Features.Warp.Interfaces;
 using Mod.DynamicEncounters.Helpers;
