@@ -1,5 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Mod.DynamicEncounters.Features.Scripts.Actions.Extensions;
+using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
+using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NQ;
@@ -55,5 +60,41 @@ public class ScriptActionItem
     public T GetProperties<T>()
     {
         return JObject.FromObject(Properties).ToObject<T>();
+    }
+
+    public ScriptActionItem WithTag(string tag)
+    {
+        Tags = [tag];
+        
+        return this;
+    }
+
+    public IScriptAction ToScriptAction()
+    {
+        return ModBase.ServiceProvider.GetScriptAction(this);
+    }
+
+    public async Task EnqueueRunAsync(ScriptContext? context = null, DateTime? startAt = null)
+    {
+        var workflowEnqueueService = ModBase.ServiceProvider.GetRequiredService<IWorkflowEnqueueService>();
+
+        var workflowScriptContext = new IWorkflowEnqueueService.WorkflowScriptContext();
+        if (context != null)
+        {
+            workflowScriptContext = new IWorkflowEnqueueService.WorkflowScriptContext
+            {
+                ConstructId = context.ConstructId,
+                PlayerIds = context.PlayerIds,
+                Sector = context.Sector,
+                TerritoryId = context.TerritoryId,
+            };
+        }
+
+        await workflowEnqueueService.EnqueueAsync(new IWorkflowEnqueueService.RunScriptCommand
+        {
+            Script = this,
+            Context = workflowScriptContext,
+            StartAt = startAt
+        });
     }
 }

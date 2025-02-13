@@ -12,9 +12,9 @@ public interface IWorkflowEnqueueService
 
     public class RunScriptCommand
     {
-        public ScriptActionItem Script { get; set; }
-        public WorkflowScriptContext Context { get; set; }
-        public DateTime? DeliveryAt { get; set; }
+        public required ScriptActionItem Script { get; set; }
+        public WorkflowScriptContext Context { get; set; } = new();
+        public DateTime? StartAt { get; set; }
     }
 
     public class WorkflowScriptContext

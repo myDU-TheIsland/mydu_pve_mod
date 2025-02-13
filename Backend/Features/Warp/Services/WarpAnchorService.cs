@@ -47,7 +47,6 @@ public class WarpAnchorService(IServiceProvider provider) : IWarpAnchorService
 
         var spawner = provider.GetRequiredService<IBlueprintSpawnerService>();
         var sql = provider.GetRequiredService<ISql>();
-        var taskQueueService = provider.GetRequiredService<ITaskQueueService>();
         var traitRepository = provider.GetRequiredService<ITraitRepository>();
         var elementTraitMap = (await traitRepository.GetElementTraits(command.ElementTypeName)).Map();
 
@@ -99,24 +98,14 @@ public class WarpAnchorService(IServiceProvider provider) : IWarpAnchorService
                 }
             );
 
-            await taskQueueService.EnqueueScript(
-                new ScriptActionItem
-                {
-                    Type = "reload-construct",
-                    ConstructId = constructId
-                },
-                DateTime.UtcNow + TimeSpan.FromSeconds(60 + 50)
-            );
+            await Script.ReloadConstruct(constructId)
+                .WithTag("wac")
+                .EnqueueRunAsync(startAt: DateTime.UtcNow + TimeSpan.FromSeconds(60 + 50));
 
-            await taskQueueService.EnqueueScript(
-                new ScriptActionItem
-                {
-                    Type = "delete",
-                    ConstructId = constructId
-                },
-                DateTime.UtcNow + TimeSpan.FromMinutes(2)
-            );
-
+            await Script.DeleteConstruct(constructId)
+                .WithTag("wac")
+                .EnqueueRunAsync(startAt: DateTime.UtcNow + TimeSpan.FromMinutes(2));
+            
             await sql.UpdatePlayerProperty_Generic(
                 command.PlayerId,
                 "warpDestinationConstructName",

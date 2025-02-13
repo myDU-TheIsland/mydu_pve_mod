@@ -81,7 +81,7 @@ public class FeatureService(IServiceProvider provider) : IFeatureReaderService, 
 
             _logger.LogDebug("Read {Feature} as value {Value}", name, result);
 
-            return result;
+            return string.IsNullOrEmpty(result) ? @default : result;
         }
         catch (Exception e)
         {

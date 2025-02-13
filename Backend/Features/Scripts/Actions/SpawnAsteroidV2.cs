@@ -170,13 +170,8 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
                 deletePoiTimeSpan
             );
 
-            await context.ServiceProvider.GetRequiredService<ITaskQueueService>()
-                .EnqueueScript(new ScriptActionItem
-                    {
-                        Type = "delete",
-                        ConstructId = spawnContext.ConstructId.Value
-                    },
-                    DateTime.UtcNow + deletePoiTimeSpan);
+            await Script.DeleteConstruct(spawnContext.ConstructId.Value)
+                .EnqueueRunAsync(startAt: DateTime.UtcNow + deletePoiTimeSpan);
         }
 
         if (properties.HiddenFromDsat)
@@ -184,13 +179,8 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
             await context.ServiceProvider.GetRequiredService<IAsteroidService>()
                 .HideFromDsatListAsync(asteroidId);
 
-            await context.ServiceProvider.GetRequiredService<ITaskQueueService>()
-                .EnqueueScript(new ScriptActionItem
-                    {
-                        Type = "delete-asteroid",
-                        ConstructId = asteroidId
-                    },
-                    DateTime.UtcNow + deletePoiTimeSpan);
+            await Script.DeleteAsteroid(asteroidId)
+                .EnqueueRunAsync(startAt: DateTime.UtcNow + deletePoiTimeSpan);
         }
 
         var scriptActionFactory = context.ServiceProvider.GetRequiredService<IScriptActionFactory>();

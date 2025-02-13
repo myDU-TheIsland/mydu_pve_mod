@@ -9,9 +9,7 @@ using Mod.DynamicEncounters.Features.Loot.Data;
 using Mod.DynamicEncounters.Features.Loot.Interfaces;
 using Mod.DynamicEncounters.Features.Quests.Data;
 using Mod.DynamicEncounters.Features.Quests.Interfaces;
-using Mod.DynamicEncounters.Features.Scripts.Actions;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
-using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Quests.Services;
@@ -140,21 +138,8 @@ public class QuestInteractionService(IServiceProvider provider) : IQuestInteract
             );
         }
 
-        var taskQueueService = provider.GetRequiredService<ITaskQueueService>();
-        await taskQueueService.EnqueueScript(
-            new ScriptActionItem
-            {
-                Type = GiveQuantaToPlayer.ActionName,
-                Value = questItem.Properties.QuantaReward,
-                Properties =
-                {
-                    { "PlayerIds", new ulong[] { playerId } },
-                    { "QuestId", questItem.Id },
-                    { "Reason", "Quest Completion" }
-                }
-            },
-            DateTime.UtcNow
-        );
+        await Script.GiveQuantaToPlayers([playerId], questItem.Properties.QuantaReward, reason: "Quest Completion")
+            .EnqueueRunAsync();
 
         await provider.GetRequiredService<IPlayerAlertService>()
             .SendInfoAlert(playerId, "Mission completed");

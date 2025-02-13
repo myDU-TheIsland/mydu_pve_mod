@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Backend.Scenegraph;
@@ -14,7 +13,6 @@ using Mod.DynamicEncounters.Features.Spawner.Behaviors.Data;
 using Mod.DynamicEncounters.Features.Spawner.Behaviors.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.Spawner.Interfaces;
-using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -66,7 +64,6 @@ public class AsteroidController : Controller
         var provider = ModBase.ServiceProvider;
         var areaScanService = provider.GetRequiredService<IAreaScanService>();
         var sceneGraph = provider.GetRequiredService<IScenegraph>();
-        var taskQueueService = provider.GetRequiredService<ITaskQueueService>();
 
         var pos = await sceneGraph.GetConstructCenterWorldPosition(request.ConstructId);
 
@@ -74,11 +71,7 @@ public class AsteroidController : Controller
 
         foreach (var contact in result)
         {
-            await taskQueueService.EnqueueScript(new ScriptActionItem
-            {
-                Type = "delete-asteroid",
-                ConstructId = contact.ConstructId
-            }, DateTime.UtcNow);
+            await Script.DeleteAsteroid(contact.ConstructId).EnqueueRunAsync();
         }
 
         return Ok();

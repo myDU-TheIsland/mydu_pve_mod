@@ -26,7 +26,6 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
     {
         var logger = context.ServiceProvider.CreateLogger<SpawnSectorAsteroid>();
         var areaScanService = context.ServiceProvider.GetRequiredService<IAreaScanService>();
-        var taskQueueService = context.ServiceProvider.GetRequiredService<ITaskQueueService>();
         var random = context.ServiceProvider.GetRequiredService<IRandomProvider>().GetRandom();
         var orleans = context.ServiceProvider.GetOrleans();
         var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
@@ -45,14 +44,7 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
         var contacts = await areaScanService.ScanForAsteroids(context.Sector, 20 * DistanceHelpers.OneSuInMeters);
         foreach (var contact in contacts)
         {
-            await taskQueueService.EnqueueScript(
-                new ScriptActionItem
-                {
-                    Type = "delete-asteroid",
-                    ConstructId = contact.ConstructId
-                },
-                DateTime.UtcNow
-            );
+            await Script.DeleteAsteroid(contact.ConstructId).EnqueueRunAsync();
         }
 
         var offset = random.NextDouble() * actionItem.Area.Radius;
@@ -74,14 +66,8 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
         var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
         var info = await constructService.GetConstructInfoAsync(asteroidId);
 
-        await taskQueueService.EnqueueScript(
-            new ScriptActionItem
-            {
-                Type = "delete-asteroid",
-                ConstructId = asteroidId
-            },
-            DateTime.UtcNow + TimeSpan.FromHours(sectorAsteroidDeleteHours)
-        );
+        await Script.DeleteAsteroid(asteroidId)
+            .EnqueueRunAsync(startAt: DateTime.UtcNow + TimeSpan.FromHours(sectorAsteroidDeleteHours));
 
         if (info.Info != null)
         {
