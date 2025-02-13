@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Backend.Scenegraph;
 using BotLib.Generated;
@@ -16,7 +17,7 @@ using NQutils.Def;
 
 namespace Mod.DynamicEncounters.Features.Commands.Services;
 
-public class IndyCommandHandler : IIndyCommandHandler
+public partial class IndyCommandHandler : IIndyCommandHandler
 {
     private readonly string[] _help = new[]
     {
@@ -107,7 +108,7 @@ public class IndyCommandHandler : IIndyCommandHandler
             var isPending = status.state == IndustryState.PENDING;
             var timeDiff = status.end.networkTime - DateTime.UtcNow.ToNQTimePoint().networkTime;
             var isNegativeTime = timeDiff < 0;
-            var isStuck = TimeSpan.FromSeconds(timeDiff) < TimeSpan.FromSeconds(2);
+            var isStuck = isNegativeTime || TimeSpan.FromSeconds(timeDiff) < TimeSpan.FromSeconds(2);
 
             var tags = new HashSet<string> { def!.Name, $"{elementId}" };
 
@@ -125,6 +126,15 @@ public class IndyCommandHandler : IIndyCommandHandler
                 rotation = element.rotation
             });
             
+            element.properties.TryGetValue(Element.d_name.name, out var pValName);
+
+            var nameAsTag = pValName?.stringValue.ToUpper();
+            if (!string.IsNullOrEmpty(nameAsTag))
+            {
+                nameAsTag = ReplaceNonWords().Replace(nameAsTag, "_");
+                tags.Add(nameAsTag);
+            }
+
             var baseMessage = string.Join(", ", tags);
             baseMessage += $" >> {elementPos.position.Vec3ToPosition()}";
             
@@ -200,4 +210,7 @@ public class IndyCommandHandler : IIndyCommandHandler
             }
         }
     }
+
+    [GeneratedRegex("[^\\w]")]
+    private static partial Regex ReplaceNonWords();
 }
