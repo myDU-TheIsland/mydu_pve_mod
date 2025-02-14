@@ -51,7 +51,11 @@ public partial class IndyCommandHandler : IIndyCommandHandler
             type = AssetType.Construct
         });
         
-        if(!rights.HasRight(Right.ConstructBuild)) return;
+        var playerGrain = orleans.GetPlayerGrain(instigatorPlayerId);
+        var isAdmin = await playerGrain.IsAdmin();
+        var hasRight = rights.HasRight(Right.ConstructBuild);
+        
+        if(!isAdmin && !hasRight) return;
         
         var commandPieces = command.Split(" ");
         var queuePieces = new Queue<string>(commandPieces);
