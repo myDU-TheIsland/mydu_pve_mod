@@ -17,7 +17,7 @@ public static class WorkerRegistration
             taskQueue: TemporalConfig.GetTaskQueue()
         );
 
-        builder.AddScopedActivities<SendTestMessageActivity>();
+        builder.AddScopedActivities<DiscordActivities>();
         builder.AddScopedActivities<ScriptActivities>();
 
         builder.AddWorkflow<LiveWorkflow>();

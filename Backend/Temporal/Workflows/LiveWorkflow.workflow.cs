@@ -15,6 +15,6 @@ public class LiveWorkflow
             StartToCloseTimeout = TimeSpan.FromSeconds(15)
         };
         
-        await Workflow.ExecuteActivityAsync((SendTestMessageActivity a) => a.SendDiscordMessage("PVE Started"), options);
+        await Workflow.ExecuteActivityAsync((DiscordActivities a) => a.SendDiscordMessage("PVE Started"), options);
     }
 }

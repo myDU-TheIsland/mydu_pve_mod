@@ -7,23 +7,22 @@ using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Helpers;
 using Temporalio.Activities;
-using Temporalio.Workflows;
 
 namespace Mod.DynamicEncounters.Temporal;
 
-public class SendTestMessageActivity
+public class DiscordActivities
 {
     [Activity]
     public async Task SendDiscordMessage(string message)
     {
         await using var scope = ModBase.ServiceProvider.CreateAsyncScope();
-        var logger = scope.ServiceProvider.CreateLogger<SendTestMessageActivity>();
+        var logger = scope.ServiceProvider.CreateLogger<DiscordActivities>();
         
         var token = EnvironmentVariableHelper.GetEnvironmentVarOrDefault("DISCORD_BOT_TOKEN", "");
 
         if (string.IsNullOrEmpty(token))
         {
-            Workflow.Logger.LogError("Discord Token Invalid");
+            logger.LogError("Discord Token Invalid");
             return;
         }
         
