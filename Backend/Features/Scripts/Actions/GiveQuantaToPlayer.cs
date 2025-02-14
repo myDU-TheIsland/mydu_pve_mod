@@ -37,7 +37,7 @@ public class GiveQuantaToPlayer(ScriptActionItem actionItem) : IScriptAction
 
         if (context.PlayerIds.Count == 0)
         {
-            return ScriptActionResult.Failed();
+            return ScriptActionResult.Failed("No Player Ids");
         }
 
         var valuePerPlayer = actionItem.Value / context.PlayerIds.Count;

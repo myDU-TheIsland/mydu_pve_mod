@@ -19,7 +19,6 @@ public static class Script
             Type = GiveQuantaToPlayer.ActionName,
             Value = quanta,
             Properties =
-                
             {
                 { "PlayerIds", playerIds },
                 { "Reason", reason }

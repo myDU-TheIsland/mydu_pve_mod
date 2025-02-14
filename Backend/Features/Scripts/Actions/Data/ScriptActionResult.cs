@@ -8,10 +8,13 @@ public class ScriptActionResult
     public ScriptActionResult WithMessage(string message)
     {
         Message = message;
-        
+
         return this;
     }
 
     public static ScriptActionResult Successful() => new ScriptActionResult { Success = true };
     public static ScriptActionResult Failed() => new ScriptActionResult { Success = false };
+
+    public static ScriptActionResult Failed(string message) =>
+        new ScriptActionResult { Success = false, Message = message };
 }
