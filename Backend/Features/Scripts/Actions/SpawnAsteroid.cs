@@ -93,6 +93,8 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                     }
                 });
 
+            context.Properties.TryAdd("AddConstructHandle", false);
+
             var spawnContext = new ScriptContext(
                 context.ServiceProvider,
                 context.FactionId,
