@@ -139,6 +139,7 @@ public class QuestInteractionService(IServiceProvider provider) : IQuestInteract
         }
 
         await Script.GiveQuantaToPlayers([playerId], questItem.Properties.QuantaReward, reason: "Quest Completion")
+            .WithTag("quest")
             .EnqueueRunAsync(context: new ScriptContext(provider, questItem.FactionId, [playerId], new Vec3(), null));
 
         await provider.GetRequiredService<IPlayerAlertService>()

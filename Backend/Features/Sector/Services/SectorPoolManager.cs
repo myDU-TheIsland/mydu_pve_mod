@@ -255,11 +255,13 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
         foreach (var contact in contacts)
         {
+            var context =
+                new ScriptContext(serviceProvider, 1, [], new Vec3(), null).WithConstructId(contact.ConstructId);
             await serviceProvider.GetScriptAction(new ScriptActionItem
             {
                 Type = "delete",
                 ConstructId = contact.ConstructId
-            }).ExecuteAsync(new ScriptContext(serviceProvider, 1, [], new Vec3(), null));
+            }).ExecuteAsync(context);
         }
     }
     

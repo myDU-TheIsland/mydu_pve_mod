@@ -67,6 +67,7 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
         var info = await constructService.GetConstructInfoAsync(asteroidId);
 
         await Script.DeleteAsteroid(asteroidId)
+            .WithTag("sector")
             .EnqueueRunAsync(startAt: DateTime.UtcNow + TimeSpan.FromHours(sectorAsteroidDeleteHours));
 
         if (info.Info != null)

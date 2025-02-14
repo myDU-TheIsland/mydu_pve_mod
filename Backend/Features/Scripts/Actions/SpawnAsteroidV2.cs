@@ -158,6 +158,7 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
             );
 
             await Script.DeleteConstruct(spawnContext.ConstructId.Value)
+                .WithTag("asteroid")
                 .EnqueueRunAsync(startAt: DateTime.UtcNow + deletePoiTimeSpan);
         }
 
@@ -167,6 +168,7 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
                 .HideFromDsatListAsync(asteroidId);
 
             await Script.DeleteAsteroid(asteroidId)
+                .WithTag("asteroid")
                 .EnqueueRunAsync(startAt: DateTime.UtcNow + deletePoiTimeSpan);
         }
 
