@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,24 @@ namespace Mod.DynamicEncounters.Api.Controllers;
 [Route("script")]
 public class ScriptRunnerController : Controller
 {
+    [HttpPost]
+    [Route("lua")]
+    public async Task<IActionResult> RunLua()
+    {
+        using var reader = new StreamReader(Request.Body);
+        var receivedText = await reader.ReadToEndAsync();
+
+        if (string.IsNullOrEmpty(receivedText))
+        {
+            return BadRequest();
+        }
+
+        await Script.RunLua(receivedText)
+            .EnqueueRunAsync();
+
+        return Ok();
+    }
+    
     [HttpPost]
     [Route("run/{name}")]
     public async Task<IActionResult> RunScript(string name, [FromBody] RunScriptContextRequest request)

@@ -41,4 +41,11 @@ public static class Script
                 { "AddConstructHandle", false }
             }
         };
+
+    public static ScriptActionItem RunLua(string code)
+        => new()
+        {
+            Type = LuaScriptAction.ActionName,
+            Script = code
+        };
 }

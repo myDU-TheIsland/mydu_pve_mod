@@ -45,7 +45,7 @@ public class ProceduralQuestGeneratorService(IServiceProvider provider) : IProce
                     }
                     else
                     {
-                        _logger.LogWarning("Failed to Generate Quest: {Message}", orderOutcome.Message);
+                        _logger.LogInformation("Failed to Generate Quest: {Message}", orderOutcome.Message);
                     }
                     
                     break;
@@ -58,7 +58,7 @@ public class ProceduralQuestGeneratorService(IServiceProvider provider) : IProce
                     }
                     else
                     {
-                        _logger.LogWarning("Failed to Generate Quest: {Message}", transportOutcome.Message);
+                        _logger.LogInformation("Failed to Generate Quest: {Message}", transportOutcome.Message);
                     }
 
                     break;
@@ -71,7 +71,7 @@ public class ProceduralQuestGeneratorService(IServiceProvider provider) : IProce
                     }
                     else
                     {
-                        _logger.LogWarning("Failed to Generate Quest: {Message}", reverseTransportOutcome.Message);
+                        _logger.LogInformation("Failed to Generate Quest: {Message}", reverseTransportOutcome.Message);
                     }
 
                     break;

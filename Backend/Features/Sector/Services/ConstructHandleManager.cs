@@ -35,8 +35,6 @@ public class ConstructHandleManager(IServiceProvider provider) : IConstructHandl
 
     private async Task CleanupHandles(IEnumerable<ConstructHandleItem> handleItems)
     {
-        var scriptActionFactory = provider.GetRequiredService<IScriptActionFactory>();
-
         foreach (var handle in handleItems)
         {
             try
@@ -46,29 +44,25 @@ public class ConstructHandleManager(IServiceProvider provider) : IConstructHandl
                     continue;
                 }
 
-                var scriptAction = scriptActionFactory.Create(
-                    new ScriptActionItem
-                    {
-                        ConstructId = handle.ConstructId,
-                        Type = handle.OnCleanupScript
-                    }
-                );
+                var script = new ScriptActionItem
+                {
+                    ConstructId = handle.ConstructId,
+                    Type = handle.OnCleanupScript
+                };
 
-                await scriptAction.ExecuteAsync(
-                    new ScriptContext(
-                        provider,
-                        handle.FactionId,
-                        [],
-                        handle.Sector,
-                        null // TODO TerritoryId
-                    )
-                    {
-                        ConstructId = handle.ConstructId,
-                        // TODO Properties for Cleanup Script
-                        // Properties = handle.
-                    }
-                );
+                var context = new ScriptContext(
+                    provider,
+                    handle.FactionId,
+                    [],
+                    handle.Sector,
+                    null // TODO TerritoryId
+                )
+                {
+                    ConstructId = handle.ConstructId,
+                };
 
+                await script.EnqueueRunAsync(context);
+                
                 _logger.LogInformation("Construct {ConstructId} removed from tracking", handle.ConstructId);
             }
             catch (Exception e)
