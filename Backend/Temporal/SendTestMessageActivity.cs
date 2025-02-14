@@ -2,8 +2,10 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Rest;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Helpers;
+using Mod.DynamicEncounters.Helpers;
 using Temporalio.Activities;
 using Temporalio.Workflows;
 
@@ -14,6 +16,9 @@ public class SendTestMessageActivity
     [Activity]
     public async Task SendDiscordMessage(string message)
     {
+        await using var scope = ModBase.ServiceProvider.CreateAsyncScope();
+        var logger = scope.ServiceProvider.CreateLogger<SendTestMessageActivity>();
+        
         var token = EnvironmentVariableHelper.GetEnvironmentVarOrDefault("DISCORD_BOT_TOKEN", "");
 
         if (string.IsNullOrEmpty(token))
@@ -35,8 +40,7 @@ public class SendTestMessageActivity
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            logger.LogError(e, "Failed to Send Discord Message");
         }
     }
 }
