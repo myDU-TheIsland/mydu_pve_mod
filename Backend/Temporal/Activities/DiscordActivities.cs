@@ -8,7 +8,7 @@ using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Helpers;
 using Temporalio.Activities;
 
-namespace Mod.DynamicEncounters.Temporal;
+namespace Mod.DynamicEncounters.Temporal.Activities;
 
 public class DiscordActivities
 {

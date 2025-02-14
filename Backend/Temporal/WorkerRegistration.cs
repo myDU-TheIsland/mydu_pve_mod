@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Mod.DynamicEncounters.Features.TaskQueue.Activities;
 using Mod.DynamicEncounters.Features.TaskQueue.Workflows;
+using Mod.DynamicEncounters.Temporal.Activities;
 using Mod.DynamicEncounters.Temporal.Services;
 using Mod.DynamicEncounters.Temporal.Workflows;
 using Temporalio.Extensions.Hosting;

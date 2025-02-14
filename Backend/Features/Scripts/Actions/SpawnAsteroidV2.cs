@@ -13,7 +13,6 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
 using Mod.DynamicEncounters.Features.Spawner.Data;
 using Mod.DynamicEncounters.Features.Spawner.Interfaces;
 using Mod.DynamicEncounters.Features.Spawner.Services;
-using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -64,7 +63,7 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
                 { "Ore1", ores.ToArray() }
             };
         }
-        
+
         var minTier = properties.MinTier;
         var maxTier = properties.MaxTier + 1;
         var isPublished = properties.Published;
@@ -86,7 +85,7 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
         }
 
         properties.Data = JToken.Parse(jsonString);
-        
+
         var outcome = await asteroidSpawner.SpawnAsteroidWithData(new SpawnAsteroidCommand
         {
             Position = position,
@@ -106,7 +105,7 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
         {
             return ScriptActionResult.Failed();
         }
-        
+
         var asteroidId = outcome.AsteroidId!.Value;
 
         var info = await constructService.GetConstructInfoAsync(asteroidId);
@@ -126,23 +125,6 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
         {
             await asteroidManagerGrain.ForcePublish(asteroidId);
 
-            var spawnScriptAction = new SpawnScriptAction(
-                new ScriptActionItem
-                {
-                    Area = new ScriptActionAreaItem { Type = "null" },
-                    Prefab = properties.PointOfInterestPrefabName,
-                    Override = new ScriptActionOverrides
-                    {
-                        ConstructName = info.Info.rData.name,
-                    },
-                    Properties = new Dictionary<string, object>
-                    {
-                        { "AddConstructHandle", false }
-                    }
-                });
-
-            context.Properties.TryAdd("AddConstructHandle", false);
-
             var spawnContext = new ScriptContext(
                 context.ServiceProvider,
                 context.FactionId,
@@ -153,7 +135,12 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
                 Properties = context.Properties
             };
 
-            var spawnResult = await spawnScriptAction.ExecuteAsync(spawnContext);
+            var spawnResult = await Script.SpawnAsteroidMarker(
+                    prefab: properties.PointOfInterestPrefabName,
+                    name: info.Info.rData.name
+                )
+                .ToScriptAction()
+                .ExecuteAsync(spawnContext);
 
             if (!spawnResult.Success)
             {
@@ -219,8 +206,7 @@ public class SpawnAsteroidV2(ScriptActionItem actionItem) : IScriptAction
         [JsonProperty] public int MinRadius { get; set; } = AsteroidData.MinRadius;
         [JsonProperty] public int MaxRadius { get; set; } = 64;
 
-        [JsonProperty]
-        public Dictionary<string, string[]> Ores { get; set; } = [];
+        [JsonProperty] public Dictionary<string, string[]> Ores { get; set; } = [];
         [JsonProperty] public JToken Data { get; set; }
 
         /// <summary>

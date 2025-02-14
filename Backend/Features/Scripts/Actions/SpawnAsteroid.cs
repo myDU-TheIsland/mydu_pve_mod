@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Backend;
 using Backend.Scenegraph;
@@ -9,7 +8,6 @@ using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Services;
-using Mod.DynamicEncounters.Features.TaskQueue.Interfaces;
 using Mod.DynamicEncounters.Helpers;
 using Newtonsoft.Json;
 using NQ;
@@ -34,7 +32,6 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
         var bank = context.ServiceProvider.GetGameplayBank();
         var sceneGraph = context.ServiceProvider.GetRequiredService<IScenegraph>();
-        var workflowEnqueueService = context.ServiceProvider.GetRequiredService<IWorkflowEnqueueService>();
 
         var number = random.Next(1, 100);
         var properties = actionItem.GetProperties<Properties>();
@@ -78,23 +75,6 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
         {
             await asteroidManagerGrain.ForcePublish(asteroidId);
 
-            var spawnScriptAction = new SpawnScriptAction(
-                new ScriptActionItem
-                {
-                    Area = new ScriptActionAreaItem { Type = "null" },
-                    Prefab = properties.PointOfInterestPrefabName,
-                    Override = new ScriptActionOverrides
-                    {
-                        ConstructName = name,
-                    },
-                    Properties = new Dictionary<string, object>
-                    {
-                        { "AddConstructHandle", false }
-                    }
-                });
-
-            context.Properties.TryAdd("AddConstructHandle", false);
-
             var spawnContext = new ScriptContext(
                 context.ServiceProvider,
                 context.FactionId,
@@ -104,9 +84,14 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
             {
                 Properties = context.Properties
             };
-
-            var spawnResult = await spawnScriptAction.ExecuteAsync(spawnContext);
-
+            
+            var spawnResult = await Script.SpawnAsteroidMarker(
+                    prefab: properties.PointOfInterestPrefabName,
+                    name: name
+                )
+                .ToScriptAction()
+                .ExecuteAsync(spawnContext);
+            
             if (!spawnResult.Success)
             {
                 return spawnResult;
@@ -122,19 +107,8 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                 deletePoiTimeSpan
             );
 
-            await workflowEnqueueService.EnqueueAsync(new IWorkflowEnqueueService.RunScriptCommand
-                {
-                    Script = new ScriptActionItem
-                    {
-                        Type = "delete",
-                        ConstructId = spawnContext.ConstructId.Value
-                    },
-                    Context = new IWorkflowEnqueueService.WorkflowScriptContext
-                    {
-                    },
-                    StartAt = DateTime.UtcNow + deletePoiTimeSpan
-                }
-            );
+            await Script.DeleteConstruct(spawnContext.ConstructId.Value)
+                .EnqueueRunAsync(startAt: DateTime.UtcNow + deletePoiTimeSpan);
         }
 
         if (properties.HiddenFromDsat)
@@ -142,16 +116,8 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
             await context.ServiceProvider.GetRequiredService<IAsteroidService>()
                 .HideFromDsatListAsync(asteroidId);
 
-            await workflowEnqueueService.EnqueueAsync(new IWorkflowEnqueueService.RunScriptCommand
-                {
-                    Script = new ScriptActionItem
-                    {
-                        Type = "delete-asteroid",
-                        ConstructId = asteroidId
-                    },
-                    Context = new IWorkflowEnqueueService.WorkflowScriptContext(),
-                    StartAt = DateTime.UtcNow + deletePoiTimeSpan
-                });
+            await Script.DeleteAsteroid(asteroidId)
+                .EnqueueRunAsync(startAt: DateTime.UtcNow + deletePoiTimeSpan);
         }
 
         var scriptActionFactory = context.ServiceProvider.GetRequiredService<IScriptActionFactory>();

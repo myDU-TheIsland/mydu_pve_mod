@@ -177,9 +177,9 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
             behaviorList.AddRange(constructDefItem.InitialBehaviors);
         }
 
-        var properties = context.GetProperties<Properties>();
+        var scriptProp = actionItem.GetProperties<Properties>();
 
-        if (properties.AddConstructHandle)
+        if (scriptProp.AddConstructHandle)
         {
             await constructHandleRepo.AddAsync(
                 new ConstructHandleItem
@@ -257,7 +257,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         try
         {
             // Keep POIs hidden
-            if (!actionItem.Tags.Contains("poi") && properties.Visible)
+            if (!actionItem.Tags.Contains("poi") && scriptProp.Visible)
             {
                 await orleans.GetConstructParentingGrain().ReloadConstruct(constructId)
                     .WithRetry(RetryOptions.Default(_logger));
