@@ -12,7 +12,7 @@ using NQ.Interfaces;
 namespace Mod.DynamicEncounters.Features.Scripts.Actions;
 
 [ScriptActionName(ActionName)]
-public class DespawnWreckConstructAction : IScriptAction
+public class DespawnWreckConstructAction(ScriptActionItem actionItem) : IScriptAction
 {
     public const string ActionName = "despawn-wreck";
     
@@ -25,8 +25,10 @@ public class DespawnWreckConstructAction : IScriptAction
         var provider = context.ServiceProvider;
 
         var logger = provider.CreateLogger<DespawnWreckConstructAction>();
+
+        ulong? constructId = context.ConstructId ?? actionItem.ConstructId;
         
-        if (!context.ConstructId.HasValue)
+        if (constructId is null or 0)
         {
             logger.LogError("No construct id on context to execute this action");
             return ScriptActionResult.Failed();
@@ -40,17 +42,17 @@ public class DespawnWreckConstructAction : IScriptAction
         var sector = await sectorInstanceRepository.FindBySector(context.Sector);
         if (sector is { StartedAt: not null })
         {
-            logger.LogWarning("Construct was already discovered: {Construct}. Aborting", context.ConstructId.Value);
+            logger.LogWarning("Construct was already discovered: {Construct}. Aborting", constructId);
             return ScriptActionResult.Successful();
         }
 
-        var constructInfoGrain = orleans.GetConstructInfoGrain(context.ConstructId.Value);
+        var constructInfoGrain = orleans.GetConstructInfoGrain(constructId.Value);
         var constructInfo = await constructInfoGrain.Get();
         
-        var handleItem = await constructHandleRepository.FindByConstructIdAsync(context.ConstructId.Value);
+        var handleItem = await constructHandleRepository.FindByConstructIdAsync(constructId.Value);
         if (handleItem == null)
         {
-            logger.LogWarning("No handle found for Construct {Construct}. Aborting", context.ConstructId.Value);
+            logger.LogWarning("No handle found for Construct {Construct}. Aborting", constructId.Value);
             return ScriptActionResult.Failed();
         }
         
@@ -64,13 +66,13 @@ public class DespawnWreckConstructAction : IScriptAction
         try
         {
             var parentingGrain = orleans.GetConstructParentingGrain();
-            await parentingGrain.DeleteConstruct(context.ConstructId.Value, hardDelete: true);
+            await parentingGrain.DeleteConstruct(constructId.Value, hardDelete: true);
         
-            logger.LogInformation("Deleted Wreck construct {ConstructId}", context.ConstructId.Value);
+            logger.LogInformation("Deleted Wreck construct {ConstructId}", constructId.Value);
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Failed to delete Wreck construct {Construct}", context.ConstructId.Value);
+            logger.LogInformation(e, "Failed to delete Wreck construct {Construct}", constructId.Value);
             return ScriptActionResult.Failed();
         }
         
