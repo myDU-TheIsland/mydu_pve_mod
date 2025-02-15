@@ -31,7 +31,7 @@ public class DespawnWreckConstructAction(ScriptActionItem actionItem) : IScriptA
         if (constructId is null or 0)
         {
             logger.LogError("No construct id on context to execute this action");
-            return ScriptActionResult.Failed();
+            return ScriptActionResult.Failed("No construct id on context to execute this action");
         }
         
         var orleans = provider.GetOrleans();
@@ -53,7 +53,7 @@ public class DespawnWreckConstructAction(ScriptActionItem actionItem) : IScriptA
         if (handleItem == null)
         {
             logger.LogWarning("No handle found for Construct {Construct}. Aborting", constructId.Value);
-            return ScriptActionResult.Failed();
+            return ScriptActionResult.Failed($"No handle found for Construct {constructId.Value}. Aborting");
         }
         
         var owner = constructInfo.mutableData.ownerId;
@@ -73,7 +73,7 @@ public class DespawnWreckConstructAction(ScriptActionItem actionItem) : IScriptA
         catch (Exception e)
         {
             logger.LogInformation(e, "Failed to delete Wreck construct {Construct}", constructId.Value);
-            return ScriptActionResult.Failed();
+            return ScriptActionResult.Failed($"Failed to delete Wreck construct {constructId.Value}");
         }
         
         return ScriptActionResult.Successful();
