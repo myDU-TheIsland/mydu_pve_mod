@@ -15,7 +15,7 @@ using NQutils.Exceptions;
 namespace Mod.DynamicEncounters.Features.Scripts.Actions;
 
 [ScriptActionName(ActionName)]
-public class SendDiscordMessageAction : IScriptAction
+public class SendDiscordMessageAction(ScriptActionItem actionItem) : IScriptAction
 {
     public const string ActionName = "send-discord-message";
     
@@ -28,7 +28,7 @@ public class SendDiscordMessageAction : IScriptAction
         var logger = scope.ServiceProvider.CreateLogger<SendDiscordMessageAction>();
         var featureService = scope.ServiceProvider.GetRequiredService<IFeatureReaderService>();
 
-        var properties = context.GetProperties<Properties>();
+        var properties = actionItem.GetProperties<Properties>();
 
         var channelIdString = await featureService.GetStringValueAsync($"DiscordChannel_{properties.Channel}", string.Empty);
 
