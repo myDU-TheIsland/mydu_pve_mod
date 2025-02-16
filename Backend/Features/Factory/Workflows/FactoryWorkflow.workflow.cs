@@ -33,9 +33,10 @@ public class FactoryWorkflow
 
         var resultTask = await Workflow.WhenAnyAsync(waitForStopTask, waitForCompletionTask);
 
+        cts.Cancel();
+        
         if (resultTask == waitForStopTask)
         {
-            cts.Cancel();
             await Workflow.ExecuteActivityAsync((FactoryActivities a) => a.RefundInputItems(),
                 DefaultOptions());
 
@@ -46,10 +47,7 @@ public class FactoryWorkflow
             DefaultOptions());
 
         if (_finishAndStop || outcome.AbortProduction)
-        {
-            cts.Cancel();
             return;
-        }
 
         throw Workflow.CreateContinueAsNewException((FactoryWorkflow wf) => wf.RunAsync(command));
 
