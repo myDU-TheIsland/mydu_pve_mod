@@ -58,6 +58,10 @@ public class SpawnDynamicSector(ScriptActionItem actionItem) : IScriptAction
                 HasActiveMarker = props.HasActiveMarker
             }
         });
+
+        var scriptActionFactory = provider.GetRequiredService<IScriptActionFactory>();
+        var scriptAction = scriptActionFactory.Create(actionItem.Events.OnLoad);
+        await scriptAction.ExecuteAsync(context);
         
         return ScriptActionResult.Successful();
     }
