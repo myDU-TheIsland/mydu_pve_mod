@@ -38,9 +38,6 @@
         <EmbeddedResource Include="Resources\change-recipe-sub-panel.js" />
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="Overrides\" />
-    </ItemGroup>
-    <ItemGroup>
       <Content Include="obj\Debug\net6.0\Mod.DynamicEncounters.AssemblyInfoInputs.cache" />
       <Content Include="obj\Debug\net6.0\Mod.DynamicEncounters.assets.cache" />
       <Content Include="obj\Debug\net6.0\Mod.DynamicEncounters.csproj.AssemblyReference.cache" />

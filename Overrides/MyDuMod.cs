@@ -14,6 +14,7 @@ using Mod.DynamicEncounters.Overrides.ApiClient.Services;
 using Mod.DynamicEncounters.Overrides.Common;
 using Mod.DynamicEncounters.Overrides.Common.Interfaces;
 using Mod.DynamicEncounters.Overrides.Common.Services;
+using Mod.DynamicEncounters.Overrides.Overrides.IndustryGrain;
 using Mod.DynamicEncounters.Overrides.Overrides.WeaponGrain;
 using Newtonsoft.Json;
 using NQ;
@@ -34,6 +35,7 @@ public class MyDuMod : IMod
     private ICachedConstructDataService _cachedConstructDataService;
     private ShootWeaponAction _shootWeaponAction;
     private InitializePlayerScripts _initializePlayerScripts;
+    private IndustryGrainOverrides _industryGrainOverrides;
 
     public string GetName()
     {
@@ -51,6 +53,7 @@ public class MyDuMod : IMod
         _weaponGrainOverrides = new WeaponGrainOverrides(_provider, _cachedConstructDataService);
         _shootWeaponAction = new ShootWeaponAction(_provider);
         _initializePlayerScripts = new InitializePlayerScripts(_provider, _injection);
+        _industryGrainOverrides = new IndustryGrainOverrides(_provider);
 
         var hookCallManager = provider.GetRequiredService<IHookCallManager>();
         hookCallManager.Register(
@@ -87,6 +90,8 @@ public class MyDuMod : IMod
             this,
             nameof(IdentifyStop)
         );
+        
+        // _industryGrainOverrides.RegisterHooks(hookCallManager);
 
         return Task.CompletedTask;
     }
