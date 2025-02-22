@@ -60,7 +60,7 @@ public class ConstructHandleManager(IServiceProvider provider) : IConstructHandl
                     ConstructId = handle.ConstructId,
                 };
 
-                await script.WithTag("construct-handle").EnqueueRunAsync(context);
+                await script.ToScriptAction().ExecuteAsync(context);
                 
                 _logger.LogInformation("Construct {ConstructId} removed from tracking", handle.ConstructId);
             }
