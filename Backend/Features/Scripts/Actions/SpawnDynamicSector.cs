@@ -24,7 +24,7 @@ public class SpawnDynamicSector(ScriptActionItem actionItem) : IScriptAction
 
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var logger = provider.CreateLogger<SpawnDynamicSector>();
         var sectorInstanceRepository = provider.GetRequiredService<ISectorInstanceRepository>();
 

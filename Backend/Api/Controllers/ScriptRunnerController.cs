@@ -46,7 +46,6 @@ public class ScriptRunnerController : Controller
             await scriptService.ExecuteScriptAsync(
                 name,
                 new ScriptContext(
-                    provider,
                     request.FactionId,
                     [..request.PlayerIds],
                     request.Sector,
@@ -72,7 +71,6 @@ public class ScriptRunnerController : Controller
         var scriptAction = scriptActionFactory.Create(request.Script);
 
         var context = request.Context;
-        context.ServiceProvider = provider;
         
         var result = await scriptAction.ExecuteAsync(context);
 

@@ -58,7 +58,6 @@ public class WaypointSkill(WaypointSkill.WaypointSkillItem skillItem) : BaseSkil
                 var scriptAction = context.Provider.GetScriptAction(skillItem.ArrivedAtFinalDestinationScript);
 
                 await scriptAction.ExecuteAsync(new ScriptContext(
-                    context.Provider,
                     context.FactionId,
                     context.PlayerIds,
                     context.Sector,

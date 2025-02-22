@@ -29,6 +29,8 @@ public class WorkflowEnqueueService : IWorkflowEnqueueService
             TaskQueue = TemporalConfig.GetTaskQueue(),
             RetryPolicy = new RetryPolicy { MaximumAttempts = command.Context.RetryCount },
             RunTimeout = TimeSpan.FromMinutes(1),
+            TypedSearchAttributes = new SearchAttributeCollection.Builder()
+                .ToSearchAttributeCollection()
         };
         
         var now = DateTime.UtcNow;

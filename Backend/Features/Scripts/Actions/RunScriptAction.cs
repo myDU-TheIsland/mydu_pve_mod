@@ -15,12 +15,12 @@ public class RunScriptAction(ScriptActionItem actionItem) : IScriptAction
 
     public Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var scriptService = provider.GetRequiredService<IScriptService>();
 
         return scriptService.ExecuteScriptAsync(
             actionItem.Script,
-            new ScriptContext(provider, context.FactionId, context.PlayerIds, context.Sector, context.TerritoryId)
+            new ScriptContext(context.FactionId, context.PlayerIds, context.Sector, context.TerritoryId)
             {
                 ConstructId = context.ConstructId,
                 Properties = context.Properties

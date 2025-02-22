@@ -20,7 +20,7 @@ public class PublishWreckDiscoveredEvent : IScriptAction
     
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var eventService = provider.GetRequiredService<IEventService>();
 
         foreach (var playerId in context.PlayerIds)

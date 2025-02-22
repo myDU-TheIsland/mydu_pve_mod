@@ -39,7 +39,7 @@ public class NpcController : Controller
             {
                 Type = "delete",
                 ConstructId = contact.ConstructId
-            }).ExecuteAsync(new ScriptContext(provider, 1, [], new Vec3(), null).WithConstructId(contact.ConstructId));
+            }).ExecuteAsync(new ScriptContext(1, [], new Vec3(), null).WithConstructId(contact.ConstructId));
         }
         
         return Ok(contacts);

@@ -39,7 +39,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
 
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
 
         _logger = provider.GetRequiredService<ILoggerFactory>()
             .CreateLogger<SpawnScriptAction>();
@@ -74,7 +74,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
 
     private async Task<ScriptActionResult> SpawnOneAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var orleans = provider.GetOrleans();
         var constructHandleRepo = provider.GetRequiredService<IConstructHandleRepository>();
 
@@ -216,7 +216,7 @@ public class SpawnScriptAction(ScriptActionItem actionItem) : IScriptAction
         {
             if (!isWreck)
             {
-                await context.ServiceProvider
+                await ModBase.ServiceProvider
                     .GetRequiredService<IConstructService>()
                     .ActivateShieldsAsync(constructId);
             }

@@ -43,7 +43,6 @@ public class WaveScriptSkill(WaveScriptSkill.WaveScriptSkillItem skillItem) : Ba
         var scriptAction = actionFactory.Create(skillItem.Script);
 
         var scriptContext = new ScriptContext(
-            provider,
             context.FactionId,
             context.PlayerIds,
             context.Sector,

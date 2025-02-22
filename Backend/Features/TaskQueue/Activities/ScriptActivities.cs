@@ -20,7 +20,6 @@ public sealed class ScriptActivities
 
         return await scriptAction.ExecuteAsync(
             new ScriptContext(
-                scope.ServiceProvider,
                 command.Context.FactionId,
                 command.Context.PlayerIds,
                 command.Context.Sector,

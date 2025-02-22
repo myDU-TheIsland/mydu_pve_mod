@@ -57,7 +57,6 @@ public class TaskQueueService(IServiceProvider provider) : ITaskQueueService
                     }
 
                     var context = new ScriptContext(
-                        provider,
                         scriptActionItem.FactionId,
                         [..playerIds],
                         scriptActionItem.Sector ?? new Vec3(),

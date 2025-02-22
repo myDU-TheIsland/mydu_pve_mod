@@ -16,7 +16,7 @@ public class RandomScriptAction(IEnumerable<IScriptAction> actions) : IScriptAct
     public string Name => ActionName;
     public Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var random = provider.GetRequiredService<IRandomProvider>()
             .GetRandom();
 

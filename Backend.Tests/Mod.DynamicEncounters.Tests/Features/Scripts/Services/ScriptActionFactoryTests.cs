@@ -69,7 +69,6 @@ public class ScriptActionFactoryTests
         {
             var result = await action.ExecuteAsync(
                 new ScriptContext(
-                    provider,
                     1,
                     [],
                     new Vec3(),

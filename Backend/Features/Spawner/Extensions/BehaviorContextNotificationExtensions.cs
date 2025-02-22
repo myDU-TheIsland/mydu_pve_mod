@@ -24,7 +24,6 @@ public static class BehaviorContextNotificationExtensions
 
         await context.Prefab.Events.OnShieldHalfAction.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 eventArgs.Context.PlayerIds,
                 eventArgs.Context.Sector,
@@ -47,7 +46,6 @@ public static class BehaviorContextNotificationExtensions
 
         await context.Prefab.Events.OnShieldLowAction.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 eventArgs.Context.PlayerIds,
                 eventArgs.Context.Sector,
@@ -70,7 +68,6 @@ public static class BehaviorContextNotificationExtensions
 
         await context.Prefab.Events.OnShieldDownAction.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 eventArgs.Context.PlayerIds,
                 eventArgs.Context.Sector,
@@ -93,7 +90,6 @@ public static class BehaviorContextNotificationExtensions
 
         await context.Prefab.Events.OnCoreStressHigh.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 eventArgs.Context.PlayerIds.ToHashSet(),
                 eventArgs.Context.Sector,
@@ -211,7 +207,6 @@ public static class BehaviorContextNotificationExtensions
 
         var scriptExecutionTask = context.Prefab.Events.OnDestruction.ExecuteAsync(
             new ScriptContext(
-                eventArgs.Context.Provider,
                 eventArgs.Context.FactionId,
                 playerIds,
                 eventArgs.Context.Sector,

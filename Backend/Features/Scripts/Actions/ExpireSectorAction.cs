@@ -19,7 +19,7 @@ public class ExpireSectorAction : IScriptAction
 
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
 
         var sectorPoolManager = provider.GetRequiredService<ISectorPoolManager>();
         await sectorPoolManager.SetExpirationFromNow(context.Sector, TimeSpan.FromHours(1));

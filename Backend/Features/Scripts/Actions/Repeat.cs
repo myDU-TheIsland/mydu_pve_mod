@@ -16,7 +16,7 @@ public class Repeat(ScriptActionItem actionItem) : IScriptAction
     public string GetKey() => Name;
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var actionFactory = provider.GetRequiredService<IScriptActionFactory>();
         
         for (var i = 0; i < actionItem.Value; i++)

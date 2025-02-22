@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mod.DynamicEncounters.Api;
+using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Temporal;
 using Mod.DynamicEncounters.Temporal.Services;
 using Mod.DynamicEncounters.Threads.Handles;
@@ -31,6 +32,10 @@ public static class Program
             return;
         }
 
+        var pveRole = EnvironmentVariableHelper.GetEnvironmentVarOrDefault("PVE_ROLE", string.Empty);
+        var enabledPve = string.IsNullOrEmpty(pveRole) || pveRole == "pve";
+        var enabledWorker = string.IsNullOrEmpty(pveRole) || pveRole == "pve-worker";
+
         try
         {
             Config.ReadYamlFileFromArgs("mod", args);
@@ -42,22 +47,29 @@ public static class Program
             var host = CreateHostBuilder(serviceCollection, args)
                 .ConfigureServices(services =>
                 {
-                    services.AddHostedService<MovementPriority>();
-                    services.AddHostedService<HighPriority>();
-                    services.AddHostedService<MediumPriority>();
-                    services.AddHostedService<ConstructHandleListQueryWorker>();
-                    services.AddHostedService<SectorLoaderWorker>();
-                    services.AddHostedService<SectorActivationWorker>();
-                    services.AddHostedService<SectorCleanupWorker>();
-                    services.AddHostedService<SectorSpawnerWorker>();
-                    services.AddHostedService<ExpirationNamesWorker>();
-                    services.AddHostedService<CleanupWorker>();
-                    services.AddHostedService<KeepAliveBotWorker>();
-                    services.AddHostedService<ReconnectBotWorker>();
-                    services.AddHostedService<TaskQueueWorker>();
-                    services.AddHostedService<CommandHandlerWorker>();
-                    services.RegisterTemporalWorker();
-                    services.AddHostedService<TemporalStartupBackgroundService>();
+                    if (enabledPve)
+                    {
+                        services.AddHostedService<MovementPriority>();
+                        services.AddHostedService<HighPriority>();
+                        services.AddHostedService<MediumPriority>();
+                        services.AddHostedService<ConstructHandleListQueryWorker>();
+                        services.AddHostedService<SectorLoaderWorker>();
+                        services.AddHostedService<SectorActivationWorker>();
+                        services.AddHostedService<SectorCleanupWorker>();
+                        services.AddHostedService<SectorSpawnerWorker>();
+                        services.AddHostedService<ExpirationNamesWorker>();
+                        services.AddHostedService<CleanupWorker>();
+                        services.AddHostedService<KeepAliveBotWorker>();
+                        services.AddHostedService<ReconnectBotWorker>();
+                        services.AddHostedService<TaskQueueWorker>();
+                        services.AddHostedService<CommandHandlerWorker>();
+                    }
+
+                    if (enabledWorker)
+                    {
+                        services.RegisterTemporalWorker();
+                        services.AddHostedService<TemporalStartupBackgroundService>();
+                    }
                 })
                 .Build();
 

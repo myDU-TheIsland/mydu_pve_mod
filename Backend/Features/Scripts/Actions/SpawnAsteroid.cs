@@ -25,13 +25,14 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
 
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var random = context.ServiceProvider.GetRequiredService<IRandomProvider>().GetRandom();
-        var pointGeneratorFactory = context.ServiceProvider.GetRequiredService<IPointGeneratorFactory>();
-        var orleans = context.ServiceProvider.GetOrleans();
+        var provider = ModBase.ServiceProvider;
+        var random = provider.GetRequiredService<IRandomProvider>().GetRandom();
+        var pointGeneratorFactory = provider.GetRequiredService<IPointGeneratorFactory>();
+        var orleans = provider.GetOrleans();
         var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
-        var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
-        var bank = context.ServiceProvider.GetGameplayBank();
-        var sceneGraph = context.ServiceProvider.GetRequiredService<IScenegraph>();
+        var constructService = provider.GetRequiredService<IConstructService>();
+        var bank = provider.GetGameplayBank();
+        var sceneGraph = provider.GetRequiredService<IScenegraph>();
 
         var number = random.Next(1, 100);
         var properties = actionItem.GetProperties<Properties>();
@@ -76,7 +77,6 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
             await asteroidManagerGrain.ForcePublish(asteroidId);
 
             var spawnContext = new ScriptContext(
-                context.ServiceProvider,
                 context.FactionId,
                 context.PlayerIds,
                 asteroidCenterPos,
@@ -114,7 +114,7 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
 
         if (properties.HiddenFromDsat)
         {
-            await context.ServiceProvider.GetRequiredService<IAsteroidService>()
+            await provider.GetRequiredService<IAsteroidService>()
                 .HideFromDsatListAsync(asteroidId);
 
             await Script.DeleteAsteroid(asteroidId)
@@ -122,11 +122,10 @@ public class SpawnAsteroid(ScriptActionItem actionItem) : IScriptAction
                 .EnqueueRunAsync(startAt: DateTime.UtcNow + deletePoiTimeSpan);
         }
 
-        var scriptActionFactory = context.ServiceProvider.GetRequiredService<IScriptActionFactory>();
+        var scriptActionFactory = provider.GetRequiredService<IScriptActionFactory>();
         var action = scriptActionFactory.Create(actionItem.Actions);
 
         var actionContext = new ScriptContext(
-            context.ServiceProvider,
             context.FactionId,
             context.PlayerIds,
             asteroidCenterPos,

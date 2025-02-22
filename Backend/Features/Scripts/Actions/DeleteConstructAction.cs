@@ -20,14 +20,11 @@ public class DeleteConstructAction(ScriptActionItem actionItem) : IScriptAction
     
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
 
         var logger = provider.CreateLogger<DeleteConstructAction>();
 
-        if (!context.ConstructId.HasValue && actionItem.ConstructId > 0)
-        {
-            context.ConstructId = actionItem.ConstructId;
-        }
+        context.ConstructId ??= actionItem.ConstructId;
         
         if (!context.ConstructId.HasValue)
         {

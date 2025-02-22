@@ -22,7 +22,7 @@ public class GiveTitleToPlayerAction(ScriptActionItem actionItem) : IScriptActio
 
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var playerService = provider.GetRequiredService<IPlayerService>();
         var logger = provider.CreateLogger<GiveTitleToPlayerAction>();
 

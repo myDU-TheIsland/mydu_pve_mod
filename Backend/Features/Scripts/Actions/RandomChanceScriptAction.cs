@@ -20,7 +20,7 @@ public class RandomChanceScriptAction(ScriptActionItem actionItem) : IScriptActi
 
     public Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var random = provider.GetRequiredService<IRandomProvider>()
             .GetRandom();
         var scriptActionFactory = provider.GetRequiredService<IScriptActionFactory>();

@@ -654,7 +654,6 @@ public class BehaviorContext(
     public ScriptContext GetScriptContext()
     {
         return new ScriptContext(
-            Provider,
             FactionId,
             PlayerIds,
             Sector,

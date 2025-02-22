@@ -25,7 +25,6 @@ public class RunScriptSkill(RunScriptSkill.RunScriptSkillItem skillItem) : BaseS
         var scriptActionFactory = context.Provider.GetRequiredService<IScriptActionFactory>();
         var scriptAction = scriptActionFactory.Create(skillItem.Script);
         scriptAction.ExecuteAsync(new ScriptContext(
-            context.Provider,
             context.FactionId,
             context.PlayerIds,
             context.Sector,

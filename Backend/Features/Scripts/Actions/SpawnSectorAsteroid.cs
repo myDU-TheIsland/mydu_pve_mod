@@ -24,12 +24,13 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
 
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var logger = context.ServiceProvider.CreateLogger<SpawnSectorAsteroid>();
-        var areaScanService = context.ServiceProvider.GetRequiredService<IAreaScanService>();
-        var random = context.ServiceProvider.GetRequiredService<IRandomProvider>().GetRandom();
-        var orleans = context.ServiceProvider.GetOrleans();
+        var provider = ModBase.ServiceProvider;
+        var logger = provider.CreateLogger<SpawnSectorAsteroid>();
+        var areaScanService = provider.GetRequiredService<IAreaScanService>();
+        var random = provider.GetRequiredService<IRandomProvider>().GetRandom();
+        var orleans = provider.GetOrleans();
         var asteroidManagerGrain = orleans.GetAsteroidManagerGrain();
-        var featureService = context.ServiceProvider.GetRequiredService<IFeatureReaderService>();
+        var featureService = provider.GetRequiredService<IFeatureReaderService>();
 
         var sectorAsteroidDeleteHours = await featureService
             .GetIntValueAsync("SectorAsteroidDeleteHours", 4);
@@ -63,7 +64,7 @@ public class SpawnSectorAsteroid(ScriptActionItem actionItem) : IScriptAction
             2
         );
 
-        var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
+        var constructService = ModBase.ServiceProvider.GetRequiredService<IConstructService>();
         var info = await constructService.GetConstructInfoAsync(asteroidId);
 
         await Script.DeleteAsteroid(asteroidId)

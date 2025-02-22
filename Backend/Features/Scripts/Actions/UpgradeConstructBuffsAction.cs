@@ -24,7 +24,7 @@ public class UpgradeConstructBuffsAction(ScriptActionItem actionItem) : IScriptA
             return ScriptActionResult.Failed();
         }
         
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
 
         var orleans = provider.GetOrleans();
         var modManagerGrain = orleans.GetModManagerGrain();

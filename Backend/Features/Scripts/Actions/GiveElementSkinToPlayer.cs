@@ -23,7 +23,7 @@ public class GiveElementSkinToPlayer(ScriptActionItem actionItem) : IScriptActio
 
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var logger = provider.CreateLogger<GiveElementSkinToPlayer>();
 
         var playerService = provider.GetRequiredService<IPlayerService>();

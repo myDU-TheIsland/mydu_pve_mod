@@ -18,7 +18,7 @@ public class RepeatAction(ScriptActionItem actionItem) : IScriptAction
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
         var repeatCount = (int)actionItem.Value;
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var scriptFactory = provider.GetRequiredService<IScriptActionFactory>();
 
         var action = scriptFactory.Create(actionItem.Actions);
@@ -27,7 +27,6 @@ public class RepeatAction(ScriptActionItem actionItem) : IScriptAction
         {
             await action.ExecuteAsync(
                 new ScriptContext(
-                    provider,
                     context.FactionId,
                     context.PlayerIds,
                     context.Sector,

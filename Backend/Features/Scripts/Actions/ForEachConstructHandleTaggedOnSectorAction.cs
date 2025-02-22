@@ -27,7 +27,7 @@ public class ForEachConstructHandleTaggedOnSectorAction(
 
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var constructHandlerRepo = provider.GetRequiredService<IConstructHandleRepository>();
         var logger = provider.CreateLogger<ForEachConstructHandleTaggedOnSectorAction>();
         
@@ -39,7 +39,6 @@ public class ForEachConstructHandleTaggedOnSectorAction(
         foreach (var handleItem in result)
         {
             var itemContext = new ScriptContext(
-                context.ServiceProvider,
                 context.FactionId,
                 context.PlayerIds,
                 context.Sector,

@@ -26,7 +26,7 @@ public class DeactivateDynamicWreckAction : IScriptAction
             return ScriptActionResult.Failed();
         }
         
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var logger = provider.CreateLogger<DeactivateDynamicWreckAction>();
 
         var constructService = provider.GetRequiredService<IConstructService>();

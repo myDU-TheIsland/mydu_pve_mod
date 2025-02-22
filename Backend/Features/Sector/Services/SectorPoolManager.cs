@@ -162,7 +162,6 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 await scriptService.ExecuteScriptAsync(
                     sector.OnLoadScript,
                     new ScriptContext(
-                        serviceProvider,
                         sector.FactionId,
                         [],
                         sector.Sector,
@@ -256,7 +255,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         foreach (var contact in contacts)
         {
             var context =
-                new ScriptContext(serviceProvider, 1, [], new Vec3(), null).WithConstructId(contact.ConstructId);
+                new ScriptContext(1, [], new Vec3(), null).WithConstructId(contact.ConstructId);
             await serviceProvider.GetScriptAction(new ScriptActionItem
             {
                 Type = "delete",
@@ -277,7 +276,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
             {
                 Type = "delete",
                 ConstructId = contact.ConstructId
-            }).ExecuteAsync(new ScriptContext(serviceProvider, 1, [], new Vec3(), null));
+            }).ExecuteAsync(new ScriptContext(1, [], new Vec3(), null));
         }
     }
 
@@ -412,7 +411,6 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
             await scriptService.ExecuteScriptAsync(
                 sectorInstance.OnSectorEnterScript,
                 new ScriptContext(
-                    serviceProvider,
                     sectorInstance.FactionId,
                     [],
                     sectorInstance.Sector,

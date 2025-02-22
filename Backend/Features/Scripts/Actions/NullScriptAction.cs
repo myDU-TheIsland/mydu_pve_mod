@@ -13,7 +13,7 @@ public class NullScriptAction : IScriptAction
 
     public Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        context.ServiceProvider.CreateLogger<NullScriptAction>()
+        ModBase.ServiceProvider.CreateLogger<NullScriptAction>()
             .LogWarning("NULL ACTION");
         
         return Task.FromResult(ScriptActionResult.Successful());

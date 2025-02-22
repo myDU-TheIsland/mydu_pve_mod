@@ -31,7 +31,7 @@ public class SpawnLootForConstruct(ScriptActionItem actionItem) : IScriptAction
             return ScriptActionResult.Failed();
         }
         
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var logger = provider.CreateLogger<SpawnLootForConstruct>();
 
         var lootGeneratorService = provider.GetRequiredService<ILootGeneratorService>();

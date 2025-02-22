@@ -51,7 +51,6 @@ public class ConstructHandleManager(IServiceProvider provider) : IConstructHandl
                 };
 
                 var context = new ScriptContext(
-                    provider,
                     handle.FactionId,
                     [],
                     handle.Sector,
@@ -107,7 +106,7 @@ public class ConstructHandleManager(IServiceProvider provider) : IConstructHandl
             try
             {
                 await scriptAction.ExecuteAsync(
-                    new ScriptContext(provider, null, [], new Vec3(), null)
+                    new ScriptContext(null, [], new Vec3(), null)
                         .WithConstructId(constructId)
                 );
             }

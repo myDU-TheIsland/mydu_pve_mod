@@ -21,7 +21,7 @@ public class NpcAreaScanScript(ScriptActionItem actionItem) : IScriptAction
     public string GetKey() => Name;
     public async Task<ScriptActionResult> ExecuteAsync(ScriptContext context)
     {
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var areaScanService = provider.GetRequiredService<IAreaScanService>(); 
         var actionFactory = provider.GetRequiredService<IScriptActionFactory>();
 

@@ -172,7 +172,6 @@ public class FacilityStrikeScenarioSkill(
     {
         await context.Provider.GetScriptAction(skillItem.OnFinishedScript)
             .ExecuteAsync(new ScriptContext(
-                context.Provider,
                 context.FactionId,
                 context.PlayerIds,
                 context.Sector,

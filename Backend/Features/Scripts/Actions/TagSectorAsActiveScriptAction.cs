@@ -39,7 +39,7 @@ public partial class TagSectorAsActiveScriptAction : IScriptAction
 
         context.Properties.TryAdd("DelaySeconds", TimeSpan.FromMinutes(30).TotalSeconds);
 
-        var provider = context.ServiceProvider;
+        var provider = ModBase.ServiceProvider;
         var constructHandlerRepo = provider.GetRequiredService<IConstructHandleRepository>();
         
         var result = (await constructHandlerRepo
@@ -48,7 +48,7 @@ public partial class TagSectorAsActiveScriptAction : IScriptAction
         foreach (var handleItem in result)
         {
             var constructId = handleItem.ConstructId;
-            var constructService = context.ServiceProvider.GetRequiredService<IConstructService>();
+            var constructService = provider.GetRequiredService<IConstructService>();
             var info = await constructService.GetConstructInfoAsync(constructId);
 
             if (!info.ConstructExists)

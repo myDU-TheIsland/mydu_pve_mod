@@ -57,7 +57,6 @@ public class GiveTakeLootSkill(GiveTakeLootSkill.GiveTakeLootSkillItem skillItem
             {
                 var scriptAction = provider.GetScriptAction(skillItem.OnFinishedScript);
                 await scriptAction.ExecuteAsync(new ScriptContext(
-                    provider,
                     context.FactionId,
                     context.PlayerIds,
                     context.Sector,
