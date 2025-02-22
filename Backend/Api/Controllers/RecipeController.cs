@@ -45,7 +45,7 @@ public class RecipeController : Controller
         {
             outputRecipes.Add(new YamlLikeRecipeItem
             {
-                id = recipe.id,
+                id = recipe.id * (ulong)request.Multiplier,
                 time = (long)recipe.time,
                 nanocraftable = recipe.nanocraftable,
                 @in = recipe.ingredients.Select(i => new KeyValuePair<string, long>(
