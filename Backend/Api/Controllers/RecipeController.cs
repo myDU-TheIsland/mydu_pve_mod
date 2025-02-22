@@ -39,10 +39,19 @@ public class RecipeController : Controller
         var recipesService = provider.GetRequiredService<IRecipes>();
         var recipes = await recipesService.GetAllRecipes();
 
+        var groupDef = bank.GetDefinition(groupName);
+        if (groupDef == null)
+            return NotFound($"Group {groupName} not found.");
+        
         var outputRecipes = new List<YamlLikeRecipeItem>();
 
         foreach (var recipe in recipes)
         {
+            var mainProduct = recipe.producers.First();
+            var def = bank.GetDefinition(mainProduct)!;
+            if (!def.IsChildOf(groupDef.Id))
+                continue;
+            
             outputRecipes.Add(new YamlLikeRecipeItem
             {
                 id = recipe.id * (ulong)request.Multiplier,
