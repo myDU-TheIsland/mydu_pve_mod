@@ -39,13 +39,13 @@ public static class Program
 
         try
         {
+            Config.ReadYamlFileFromArgs("mod", args);
+            await ModBase.Setup(serviceCollection);
+            
             var logger = LoggerFactory.Create(builder => builder.SetupPveModLog())
                 .CreateLogger(nameof(Program));
             
             logger.LogInformation("Initializing PVE...");
-            
-            Config.ReadYamlFileFromArgs("mod", args);
-            await ModBase.Setup(serviceCollection);
 
             using var scope = ModBase.ServiceProvider.CreateScope();
             ModBase.UpdateDatabase(scope);
