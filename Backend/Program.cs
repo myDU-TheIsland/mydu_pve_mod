@@ -39,6 +39,11 @@ public static class Program
 
         try
         {
+            var logger = LoggerFactory.Create(builder => builder.SetupPveModLog())
+                .CreateLogger(nameof(Program));
+            
+            logger.LogInformation("Initializing PVE...");
+            
             Config.ReadYamlFileFromArgs("mod", args);
             await ModBase.Setup(serviceCollection);
 
@@ -75,7 +80,7 @@ public static class Program
 
             await host.RunAsync();
 
-            Console.WriteLine("Finished Main");
+            logger.LogError("Finished Main");
         }
         catch (Exception e)
         {

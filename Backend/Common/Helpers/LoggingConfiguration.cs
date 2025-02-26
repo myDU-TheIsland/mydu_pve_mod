@@ -38,6 +38,11 @@ public static class LoggingConfiguration
             log.level = LogEventLevel.Warning;
             log.console_level = LogEventLevel.Warning;
         }
+        else
+        {
+            log.level = LogEventLevel.Information;
+            log.console_level = LogEventLevel.Information;
+        }
 
         var interpolatedStringHandler = new DefaultInterpolatedStringHandler(38, 2);
         interpolatedStringHandler.AppendLiteral("configuring log system from ");
