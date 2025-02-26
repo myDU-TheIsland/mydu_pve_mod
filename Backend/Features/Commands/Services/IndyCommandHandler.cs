@@ -170,6 +170,7 @@ public partial class IndyCommandHandler : IIndyCommandHandler
                         message = baseMessage
                     }
                 );
+                await Task.Delay(100);
             }
             else if (subcommand == "stop" && tags.Contains(tagValue))
             {
