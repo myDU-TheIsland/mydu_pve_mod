@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Api;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Temporal;
@@ -68,7 +69,6 @@ public static class Program
                     if (enabledWorker)
                     {
                         services.RegisterTemporalWorker();
-                        services.AddHostedService<TemporalStartupBackgroundService>();
                     }
                 })
                 .Build();
@@ -80,6 +80,9 @@ public static class Program
         catch (Exception e)
         {
             Console.WriteLine(e);
+            LoggerFactory.Create(builder => builder.SetupPveModLog())
+                .CreateLogger(nameof(Program))
+                .LogError(e, "Failed to Initialize");
             throw;
         }
     }
