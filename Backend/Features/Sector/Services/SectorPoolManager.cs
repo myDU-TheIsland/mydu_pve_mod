@@ -206,7 +206,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
         try
         {
             await _sectorInstanceRepository.ExpireSectorsWithDeletedConstructHandles();
-            await _constructHandleManager.TagAsDeletedConstructHandledThatAreDeletedConstructs();
+            await _constructHandleManager.TagAsDeletedConstructHandlesThatAreDeletedConstructs();
         }
         catch (Exception e)
         {
