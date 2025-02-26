@@ -62,13 +62,6 @@ public class ScriptActionItem
         return JObject.FromObject(Properties).ToObject<T>();
     }
 
-    public ScriptActionItem WithTag(string tag)
-    {
-        Tags = [tag];
-        
-        return this;
-    }
-
     public IScriptAction ToScriptAction()
     {
         return ModBase.ServiceProvider.GetScriptAction(this);

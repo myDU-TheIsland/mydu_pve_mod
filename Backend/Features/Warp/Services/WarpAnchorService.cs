@@ -98,11 +98,9 @@ public class WarpAnchorService(IServiceProvider provider) : IWarpAnchorService
             );
 
             await Script.ReloadConstruct(constructId)
-                .WithTag("wac")
                 .EnqueueRunAsync(startAt: DateTime.UtcNow + TimeSpan.FromSeconds(60 + 50));
 
             await Script.DeleteConstruct(constructId)
-                .WithTag("wac")
                 .EnqueueRunAsync(startAt: DateTime.UtcNow + TimeSpan.FromMinutes(2));
             
             await sql.UpdatePlayerProperty_Generic(
