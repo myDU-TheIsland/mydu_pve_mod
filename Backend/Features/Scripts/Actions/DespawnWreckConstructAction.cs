@@ -38,9 +38,12 @@ public class DespawnWreckConstructAction(ScriptActionItem actionItem) : IScriptA
 
         var constructHandleRepository = provider.GetRequiredService<IConstructHandleRepository>();
         var sectorInstanceRepository = provider.GetRequiredService<ISectorInstanceRepository>();
+
+        var handleItem = await constructHandleRepository.FindByConstructIdAsync(constructId.Value);
+        var isPoi = handleItem != null && handleItem!.JsonProperties.Tags.Contains("poi");
         
         var sector = await sectorInstanceRepository.FindBySector(context.Sector);
-        if (sector is { StartedAt: not null })
+        if (!isPoi && sector is { StartedAt: not null })
         {
             logger.LogWarning("Construct was already discovered: {Construct}. Aborting", constructId);
             return ScriptActionResult.Successful();
@@ -49,7 +52,6 @@ public class DespawnWreckConstructAction(ScriptActionItem actionItem) : IScriptA
         var constructInfoGrain = orleans.GetConstructInfoGrain(constructId.Value);
         var constructInfo = await constructInfoGrain.Get();
         
-        var handleItem = await constructHandleRepository.FindByConstructIdAsync(constructId.Value);
         if (handleItem == null)
         {
             logger.LogWarning("No handle found for Construct {Construct}. Aborting", constructId.Value);
