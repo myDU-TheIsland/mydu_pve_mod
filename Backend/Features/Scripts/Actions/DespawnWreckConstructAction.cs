@@ -42,6 +42,7 @@ public class DespawnWreckConstructAction(ScriptActionItem actionItem) : IScriptA
         var handleItem = await constructHandleRepository.FindByConstructIdAsync(constructId.Value);
         var isPoi = handleItem != null && handleItem!.JsonProperties.Tags.Contains("poi");
         
+        // TODO this is prob not needed anymore
         var sector = await sectorInstanceRepository.FindBySector(context.Sector);
         if (!isPoi && sector is { StartedAt: not null })
         {
