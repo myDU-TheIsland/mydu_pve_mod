@@ -8,12 +8,6 @@ public class PostgresConnectionFactory : IPostgresConnectionFactory
 {
     public IDbConnection Create()
     {
-        return new NpgsqlConnection(NQutils.Config.Config.Instance.postgres.ConnectionString())
-        {
-            Settings =
-            {
-                CommandTimeout = 30
-            }
-        };
+        return new NpgsqlConnection(NQutils.Config.Config.Instance.postgres.ConnectionString());
     }
 }
