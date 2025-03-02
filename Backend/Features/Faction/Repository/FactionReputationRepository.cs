@@ -20,6 +20,8 @@ public class FactionReputationRepository(IServiceProvider provider) : IFactionRe
         using var connection = _factory.Create();
         connection.Open();
 
+        using var transaction = connection.BeginTransaction();
+        
         var currentReputation = await GetFactionReputationAsync(playerId, factionId);
         if (currentReputation == null)
         {
@@ -43,8 +45,9 @@ public class FactionReputationRepository(IServiceProvider provider) : IFactionRe
                     player_id = (long)playerId.id,
                     faction_id = factionId.Id,
                     reputation
-                });
-            
+                }, transaction);
+
+            transaction.Commit();
             return;
         }
 
@@ -60,7 +63,9 @@ public class FactionReputationRepository(IServiceProvider provider) : IFactionRe
                 player_id = (long)playerId.id,
                 faction_id = factionId.Id,
                 reputation
-            });
+            }, transaction);
+        
+        transaction.Commit();
     }
 
     public async Task<long?> GetFactionReputationAsync(PlayerId playerId, FactionId factionId)
@@ -68,7 +73,7 @@ public class FactionReputationRepository(IServiceProvider provider) : IFactionRe
         using var connection = _factory.Create();
         connection.Open();
 
-        return await connection.ExecuteScalarAsync<long>(
+        return await connection.ExecuteScalarAsync<long?>(
             """
             SELECT reputation FROM mod_faction_rep WHERE player_id = @player_id AND faction_id = @faction_id
             """,
@@ -88,7 +93,7 @@ public class FactionReputationRepository(IServiceProvider provider) : IFactionRe
         var rows = await connection.QueryAsync<DbRow>(
             """
             SELECT 
-                F.id,
+                F.id faction_id,
                 FR.player_id,
                 COALESCE(FR.reputation, 0) reputation,
                 F.name faction_name

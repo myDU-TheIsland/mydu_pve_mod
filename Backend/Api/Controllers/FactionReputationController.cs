@@ -10,7 +10,7 @@ namespace Mod.DynamicEncounters.Api.Controllers;
 public class FactionReputationController : Controller
 {
     private readonly IServiceProvider _provider = ModBase.ServiceProvider;
-    
+
     [HttpGet]
     [Route("{playerId:long}")]
     public async Task<IActionResult> GetPlayerReputationReport(ulong playerId)
@@ -23,12 +23,18 @@ public class FactionReputationController : Controller
 
     [HttpPost]
     [Route("")]
-    public async Task<IActionResult> AddFactionReputation([FromBody]AddFactionReputationRequest request)
+    public async Task<IActionResult> AddFactionReputation([FromBody] AddFactionReputationRequest request)
     {
         var factionReputationRepository = _provider.GetRequiredService<IFactionReputationRepository>();
-        await factionReputationRepository.AddFactionReputationAsync(request.PlayerId, request.FactionId, request.Reputation);
-        
-        return Ok(await GetPlayerReputationReport(request.PlayerId));
+        await factionReputationRepository.AddFactionReputationAsync(
+            request.PlayerId,
+            request.FactionId,
+            request.Reputation
+        );
+
+        var report = await factionReputationRepository.GetPlayerFactionReputationAsync(request.PlayerId);
+
+        return Ok(report);
     }
 
     public class AddFactionReputationRequest
