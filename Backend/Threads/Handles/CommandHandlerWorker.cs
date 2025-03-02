@@ -110,6 +110,12 @@ public class CommandHandlerWorker : BackgroundService
                     var indy = ModBase.ServiceProvider.GetRequiredService<IIndyCommandHandler>();
                     await indy.HandleCommand(commandItem.PlayerId, commandItem.Message);
                 }
+
+                if (commandItem.Message.StartsWith("@rep", StringComparison.OrdinalIgnoreCase))
+                {
+                    var faction = ModBase.ServiceProvider.GetRequiredService<IFactionCommandHandler>();
+                    await faction.HandleCommand(commandItem.PlayerId, commandItem.Message);
+                }
             }
             catch (Exception e)
             {

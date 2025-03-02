@@ -16,5 +16,6 @@ public static class CommandsRegistration
         services.AddSingleton<ITeleportConstructCommandHandler, TeleportConstructCommandHandler>();
         services.AddSingleton<IReloadConstructCommandHandler, ReloadConstructCommandHandler>();
         services.AddSingleton<IIndyCommandHandler, IndyCommandHandler>();
+        services.AddSingleton<IFactionCommandHandler, FactionCommandHandler>();
     }
 }
