@@ -226,6 +226,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 continue;
             }
 
+            await _constructHandleManager.CleanupConstructHandlesInSectorAsync(sector.Sector);
             try
             {
                 await DeleteNpcsBySector(sector.Sector);
@@ -235,7 +236,14 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
                 _logger.LogError(e, "Failed to Delete NPCs");
             }
 
-            await _constructHandleManager.CleanupConstructHandlesInSectorAsync(sector.Sector);
+            try
+            {
+                await DeleteWrecksBySector(sector.Sector);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to Delete Wrecks");
+            }
             await Task.Delay(200);
         }
 
