@@ -37,29 +37,29 @@ public class ConstructHandleManager(IServiceProvider provider) : IConstructHandl
     {
         foreach (var handle in handleItems)
         {
+            if (string.IsNullOrEmpty(handle.OnCleanupScript))
+            {
+                continue;
+            }
+
+            var script = new ScriptActionItem
+            {
+                ConstructId = handle.ConstructId,
+                Type = handle.OnCleanupScript
+            };
+
+            var context = new ScriptContext(
+                handle.FactionId,
+                [],
+                handle.Sector,
+                null // TODO TerritoryId
+            )
+            {
+                ConstructId = handle.ConstructId,
+            };
+            
             try
             {
-                if (string.IsNullOrEmpty(handle.OnCleanupScript))
-                {
-                    continue;
-                }
-
-                var script = new ScriptActionItem
-                {
-                    ConstructId = handle.ConstructId,
-                    Type = handle.OnCleanupScript
-                };
-
-                var context = new ScriptContext(
-                    handle.FactionId,
-                    [],
-                    handle.Sector,
-                    null // TODO TerritoryId
-                )
-                {
-                    ConstructId = handle.ConstructId,
-                };
-
                 await script.ToScriptAction().ExecuteAsync(context);
                 
                 _logger.LogInformation("Construct {ConstructId} removed from tracking", handle.ConstructId);
@@ -72,6 +72,7 @@ public class ConstructHandleManager(IServiceProvider provider) : IConstructHandl
                     handle.ConstructId
                 );
 
+                await script.EnqueueRunAsync(context, DateTime.UtcNow.AddMinutes(30));
                 ConstructsPendingDelete.Data.Enqueue(handle.ConstructId);
             }
 
