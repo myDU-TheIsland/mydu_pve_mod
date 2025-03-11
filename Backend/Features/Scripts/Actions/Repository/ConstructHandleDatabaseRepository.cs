@@ -182,21 +182,6 @@ public class ConstructHandleDatabaseRepository(IServiceProvider provider) : ICon
         );
     }
 
-    public async Task DeleteAsync(object key)
-    {
-        using var db = _factory.Create();
-        db.Open();
-
-        await db.ExecuteAsync(
-            """
-            UPDATE public.mod_npc_construct_handle 
-                SET deleted_at = NOW() 
-            WHERE id = @key
-            """,
-            new { key = (Guid)key }
-        );
-    }
-
     public async Task DeleteByConstructId(ulong constructId)
     {
         using var db = _factory.Create();

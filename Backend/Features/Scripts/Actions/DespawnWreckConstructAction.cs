@@ -75,7 +75,7 @@ public class DespawnWreckConstructAction(ScriptActionItem actionItem) : IScriptA
         }
         catch (Exception e)
         {
-            logger.LogInformation(e, "Failed to delete Wreck construct {Construct}", constructId.Value);
+            logger.LogError(e, "Failed to delete Wreck construct {Construct}", constructId.Value);
             return ScriptActionResult.Failed($"Failed to delete Wreck construct {constructId.Value}");
         }
         

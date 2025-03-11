@@ -78,7 +78,7 @@ public class ConstructHandleManager(IServiceProvider provider) : IConstructHandl
 
             try
             {
-                await _repository.DeleteAsync(handle.Id);
+                await _repository.DeleteByConstructId(handle.ConstructId);
             }
             catch (Exception e)
             {
