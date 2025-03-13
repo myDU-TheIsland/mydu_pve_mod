@@ -18,7 +18,6 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Data;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
 using Mod.DynamicEncounters.Helpers;
-using Mod.DynamicEncounters.Vector.Helpers;
 using NQ;
 
 namespace Mod.DynamicEncounters.Features.Sector.Services;
@@ -47,7 +46,6 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
 
         if (missingQuantity <= 0)
         {
-            // _logger.LogInformation("No Territory({Territory}) Sectors Missing. Missing {Missing} of {Total}", args.TerritoryId, missingQuantity, args.Quantity);
             return;
         }
 
@@ -64,11 +62,6 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
             );
             return;
         }
-
-        var allSectorInstances = await _sectorInstanceRepository.GetAllAsync();
-        var sectorInstanceMap = allSectorInstances
-            .Select(k => k.Sector.GridSnap(SectorGridSnap * args.SectorMinimumGap).ToLongVector3())
-            .ToHashSet();
 
         var random = _randomProvider.GetRandom();
 

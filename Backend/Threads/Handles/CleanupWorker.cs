@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
+using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Services;
 using Mod.DynamicEncounters.Helpers;
@@ -79,6 +80,12 @@ public class CleanupWorker : BackgroundService
             }
 
             await constructHandleRepository.CleanupOldDeletedConstructHandles().WaitAsync(stoppingToken);
+            var constructsToDelete = await constructHandleRepository.GetInvalidNpcWrecks();
+            foreach (var constructId in constructsToDelete)
+            {
+                logger.LogWarning("Deleting Bugged {ConstructId}", constructId);
+                await Script.DeleteConstruct(constructId).EnqueueRunAsync().WaitAsync(stoppingToken);
+            }
             
             logger.LogInformation("Cleanup Total = {Time}ms", sw.ElapsedMilliseconds);
         }

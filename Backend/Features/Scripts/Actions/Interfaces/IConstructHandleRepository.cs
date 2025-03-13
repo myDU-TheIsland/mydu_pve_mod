@@ -22,4 +22,6 @@ public interface IConstructHandleRepository
     Task TagAsDeletedConstructHandledThatAreDeletedConstructs();
     Task<int> GetActiveCount();
     Task CleanupOldDeletedConstructHandles();
+
+    Task<IEnumerable<ulong>> GetInvalidNpcWrecks();
 }

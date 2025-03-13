@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Mod.DynamicEncounters.Features.Interfaces;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Data;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
@@ -15,11 +14,6 @@ namespace Mod.DynamicEncounters.Features.Sector.Services;
 
 public class ConstructHandleManager(IServiceProvider provider) : IConstructHandleManager
 {
-    private const string ConstructHandleExpirationMinutesFeatureName = "ConstructHandleExpirationMinutes";
-
-    private readonly IFeatureReaderService _featureReaderService =
-        provider.GetRequiredService<IFeatureReaderService>();
-
     private readonly IConstructHandleRepository _repository =
         provider.GetRequiredService<IConstructHandleRepository>();
 

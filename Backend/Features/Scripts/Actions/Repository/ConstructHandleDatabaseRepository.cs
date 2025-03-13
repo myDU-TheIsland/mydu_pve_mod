@@ -339,6 +339,22 @@ public class ConstructHandleDatabaseRepository(IServiceProvider provider) : ICon
         );
     }
 
+    public async Task<IEnumerable<ulong>> GetInvalidNpcWrecks()
+    {
+        using var db = _factory.Create();
+        db.Open();
+
+        return await db.QueryAsync<ulong>(
+            """
+            SELECT C.id FROM public.mod_npc_construct_handle CH
+            INNER JOIN construct C ON C.id = CH.construct_id
+            WHERE CH.deleted_at IS NOT NULL AND 
+            	C.deleted_at IS NULL AND
+            	C.json_properties->'serverProperties'->>'isDynamicWreck' = 'true'
+            """
+        );
+    }
+
     private ConstructHandleItem MapToModel(DbRow row)
     {
         PrefabItem? constructDefinition = null;
