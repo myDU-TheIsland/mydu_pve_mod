@@ -51,7 +51,7 @@ public class SectorInstanceWorkflow
     public record Input
     {
         public required Guid SectorId { get; set; }
-        public long FactionId { get; set; }
+        public required long FactionId { get; set; }
         public required TimeSpan ExpirationTimeSpan { get; set; }
         public required TimeSpan ForcedExpirationTimeSpan { get; set; }
     }

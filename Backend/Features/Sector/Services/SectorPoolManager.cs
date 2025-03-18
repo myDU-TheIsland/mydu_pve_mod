@@ -93,6 +93,7 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
             await SectorInstanceWorkflow.CreateWorkflowAsync(new SectorInstanceWorkflow.Input
             {
                 SectorId = id,
+                FactionId = args.FactionId,
                 ExpirationTimeSpan = encounter.Properties.ExpirationTimeSpan,
                 ForcedExpirationTimeSpan = (encounter.Properties.ForcedExpirationTimeSpan ?? TimeSpan.FromHours(3)) -
                                            encounter.Properties.ExpirationTimeSpan
