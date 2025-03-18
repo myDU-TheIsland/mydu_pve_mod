@@ -17,20 +17,20 @@ public class SectorInstanceWorkflow
     {
         await Workflow.DelayAsync(input.ExpirationTimeSpan);
 
-        var expirationOutcome = await Workflow.ExecuteActivityAsync((SectorInstanceActivities a) => a.TryExpireSectorAsync(input.SectorId), Options());
+        var expirationOutcome = await Workflow.ExecuteLocalActivityAsync((SectorInstanceActivities a) => a.TryExpireSectorAsync(input.SectorId), Options());
         if (!expirationOutcome.Expired)
         {
             await Workflow.DelayAsync(input.ForcedExpirationTimeSpan);
-            await Workflow.ExecuteActivityAsync((SectorInstanceActivities a) => a.ForceExpireSectorAsync(input.SectorId), Options());
+            await Workflow.ExecuteLocalActivityAsync((SectorInstanceActivities a) => a.ForceExpireSectorAsync(input.SectorId), Options());
         }
 
         await Workflow.WaitConditionAsync(() => Workflow.AllHandlersFinished);
         
         return;
 
-        ActivityOptions Options() => new()
+        LocalActivityOptions Options() => new()
         {
-            HeartbeatTimeout = TimeSpan.FromMinutes(1),
+            ScheduleToCloseTimeout = TimeSpan.FromMinutes(5),
             RetryPolicy = new RetryPolicy { MaximumAttempts = 100 }
         };
     }
