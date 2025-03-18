@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Mod.DynamicEncounters.Common.Helpers;
 using Mod.DynamicEncounters.Common.Interfaces;
+using Mod.DynamicEncounters.Common.Services;
 using Mod.DynamicEncounters.Database.Interfaces;
 using Mod.DynamicEncounters.Features.Common.Interfaces;
 using Mod.DynamicEncounters.Features.Events.Data;
@@ -17,6 +18,7 @@ using Mod.DynamicEncounters.Features.Scripts.Actions.Extensions;
 using Mod.DynamicEncounters.Features.Scripts.Actions.Interfaces;
 using Mod.DynamicEncounters.Features.Sector.Data;
 using Mod.DynamicEncounters.Features.Sector.Interfaces;
+using Mod.DynamicEncounters.Features.Sector.Temporal.Workflows;
 using Mod.DynamicEncounters.Helpers;
 using NQ;
 
@@ -86,9 +88,19 @@ public class SectorPoolManager(IServiceProvider serviceProvider) : ISectorPoolMa
             position += encounter.Properties.CenterPosition;
             position = position.GridSnap(SectorGridSnap);
 
+            var id = Guid.NewGuid();
+
+            await SectorInstanceWorkflow.CreateWorkflowAsync(new SectorInstanceWorkflow.Input
+            {
+                SectorId = id,
+                ExpirationTimeSpan = encounter.Properties.ExpirationTimeSpan,
+                ForcedExpirationTimeSpan = (encounter.Properties.ForcedExpirationTimeSpan ?? TimeSpan.FromHours(3)) -
+                                           encounter.Properties.ExpirationTimeSpan
+            });
+            
             var instance = new SectorInstance
             {
-                Id = Guid.NewGuid(),
+                Id = id,
                 Name = encounter.Name,
                 Sector = position,
                 FactionId = args.FactionId,

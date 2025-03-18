@@ -34,6 +34,7 @@ public static class FeaturesRegistration
     {
         services.AddSingleton<IPostgresConnectionFactory, PostgresConnectionFactory>();
         services.AddSingleton<IRandomProvider, DefaultRandomProvider>();
+        services.AddSingleton<ITemporalClientFactory, TemporalClientFactory>();
         services.AddSingleton<IFeatureReaderService, FeatureService>();
         services.AddSingleton<IFeatureWriterService, FeatureService>();
         services.AddSingleton<IScriptLoaderService, FileSystemScriptLoaderService>();
